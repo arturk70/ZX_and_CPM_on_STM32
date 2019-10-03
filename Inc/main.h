@@ -69,7 +69,8 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void main_init();
+void main_loop();
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

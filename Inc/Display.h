@@ -16,7 +16,7 @@ public:
 	virtual ~Display();
 	void Init();
 	virtual void Clear()=0;
-private:
+protected:
 	ILI9341driver _LCD;
 };
 

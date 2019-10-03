@@ -18,5 +18,6 @@ Display::~Display() {
 
 void Display::Init() {
 	_LCD.Init();
+	_LCD.fillArea(0, 0, 319, 239, 0x0000);
 }
 
