@@ -18,6 +18,8 @@ ILI9341driver::~ILI9341driver() {
 void ILI9341driver::Init() {
 	if(_isinit) return;
 
+	while(!isReady());
+
 	//enable periphery used by driver
 	LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH);
 	LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_TX_CH);
@@ -112,6 +114,7 @@ void ILI9341driver::Init() {
 }
 
 void ILI9341driver::setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
+	while(!isReady());
 	LCD_CS_RESET;
 
 	SendCmd(LCD_COLUMN_ADDR);
@@ -126,6 +129,7 @@ void ILI9341driver::setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 }
 
 void ILI9341driver::SendBuf(uint8_t *buf, uint32_t len) {
+	while(!isReady());
 	LCD_CS_RESET;
 	LL_DMA_SetDataLength(ILI9341_DMA, ILI9341_DMA_TX_CH, len);
 	LL_DMA_ConfigAddresses(ILI9341_DMA, ILI9341_DMA_TX_CH,
@@ -137,6 +141,7 @@ void ILI9341driver::SendBuf(uint8_t *buf, uint32_t len) {
 }
 
 void ILI9341driver::ReadBuf(uint8_t *buf, uint32_t len) {
+	while(!isReady());
 	LCD_CS_RESET;
 	LL_DMA_SetDataLength(ILI9341_DMA, ILI9341_DMA_RX_CH, len);
 	LL_DMA_ConfigAddresses(ILI9341_DMA, ILI9341_DMA_RX_CH,
@@ -145,4 +150,17 @@ void ILI9341driver::ReadBuf(uint8_t *buf, uint32_t len) {
 
 	SendCmd(LCD_RAMRD);
 	LL_DMA_EnableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH);
+}
+
+void ILI9341driver::fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
+	while(!isReady());
+	setFrame(x1, y1, x2, y2);
+	LCD_CS_RESET;
+	LL_DMA_SetDataLength(ILI9341_DMA, ILI9341_DMA_TX_CH, 2);
+	LL_DMA_ConfigAddresses(ILI9341_DMA, ILI9341_DMA_TX_CH,
+			(uint32_t)&color, LL_SPI_DMA_GetRegAddr(ILI9341_SPI),
+			LL_DMA_GetDataTransferDirection(ILI9341_DMA, ILI9341_DMA_TX_CH));
+
+	SendCmd(LCD_GRAM);
+	LL_DMA_EnableChannel(ILI9341_DMA, ILI9341_DMA_TX_CH);
 }

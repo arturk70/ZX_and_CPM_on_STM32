@@ -37,6 +37,7 @@ public:
 	void setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 	void SendBuf(uint8_t *buf, uint32_t len);
 	void ReadBuf(uint8_t *buf, uint32_t len);
+	void fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
 
 private:
 	bool _isinit = false;
