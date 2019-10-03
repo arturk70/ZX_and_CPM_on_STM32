@@ -1,2 +1,8 @@
 /Debug
 /Release
+/Drivers
+/.settings
+/Startup
+.cproject
+.mxproject
+STM32F103C8TX_FLASH.ld
