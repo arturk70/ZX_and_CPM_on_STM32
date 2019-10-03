@@ -20,8 +20,9 @@ public:
 private:
 	uint16_t _fgclr = GREEN;
 	uint16_t _bgclr = BLACK;
-	uint8_t* _font8x8table; //2 dim array. 1-st index - symbol number, 2-nd index - line number
+	const uint8_t* _font8x8table; //2 dim array. 1-st index - symbol number, 2-nd index - line number
 	uint16_t _charbuf[8][8];
+	uint16_t _cursorxy[2] = {0,0};
 };
 
 #endif /* CPMDISPLAY_H_ */

@@ -22,7 +22,8 @@
 #define ILI9341_DMA_RX_CH	LL_DMA_CHANNEL_2
 #define ILI9341_DMA_TX_CH	LL_DMA_CHANNEL_3
 #define ILI9341_LED_PWM_TIM	TIM2
-#define ILI9341_LED_PWM_CH	LL_TIM_CHANNEL_CH3
+#define ILI9341_LED_PWM_CH	LL_TIM_CHANNEL_CH2
+#define ILI9341_SETLED_PWM(val)	LL_TIM_OC_SetCompareCH2(ILI9341_LED_PWM_TIM, val)
 
 class ILI9341driver {
 public:
@@ -31,12 +32,12 @@ public:
 	void Init();
 	inline bool isInitiated() {return _isinit;}
 	inline bool isReady() {return LL_GPIO_IsOutputPinSet(ILI9341_CS_GPIO_Port, ILI9341_CS_Pin);}
-	inline void setLEDpwm(uint8_t val) {LL_TIM_OC_SetCompareCH3(ILI9341_LED_PWM_TIM, val);}
-	inline void Send(uint8_t data) {LL_SPI_TransmitData8(ILI9341_SPI, data);}
-	inline void SendCmd(uint8_t data) {LCD_DC_RESET; LL_SPI_TransmitData8(ILI9341_SPI, data); LCD_DC_SET;}
+	inline void setLEDpwm(uint8_t val) {ILI9341_SETLED_PWM(val);}
+	inline void Send(uint8_t data);
+	inline void SendCmd(uint8_t data);
 	void setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
-	void SendBuf(uint8_t *buf, uint32_t len);
-	void ReadBuf(uint8_t *buf, uint32_t len);
+	void SendBuf(uint16_t *buf, uint32_t len);
+	void ReadBuf(uint16_t *buf, uint32_t len);
 	void fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
 
 private:

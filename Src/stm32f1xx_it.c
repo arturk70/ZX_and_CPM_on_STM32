@@ -197,45 +197,6 @@ void SysTick_Handler(void)
 /* please refer to the startup file (startup_stm32f1xx.s).                    */
 /******************************************************************************/
 
-/**
-  * @brief This function handles DMA1 channel2 global interrupt.
-  */
-void DMA1_Channel2_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA1_Channel2_IRQn 0 */
-	if(LL_DMA_IsActiveFlag_TC2(DMA1) == 1) {
-		LL_DMA_ClearFlag_GI2(DMA1);
-	} else if(LL_DMA_IsActiveFlag_TE2(DMA1) == 1) {
-		LL_DMA_ClearFlag_TE2(DMA1);
-	}
-  /* USER CODE END DMA1_Channel2_IRQn 0 */
-  
-  /* USER CODE BEGIN DMA1_Channel2_IRQn 1 */
-	LL_GPIO_SetOutputPin(ILI9341_CS_GPIO_Port, ILI9341_CS_Pin);
-	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
-  /* USER CODE END DMA1_Channel2_IRQn 1 */
-}
-
-/**
-  * @brief This function handles DMA1 channel3 global interrupt.
-  */
-void DMA1_Channel3_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA1_Channel3_IRQn 0 */
-	if(LL_DMA_IsActiveFlag_TC3(DMA1) == 1) {
-		LL_DMA_ClearFlag_GI3(DMA1);
-	} else if(LL_DMA_IsActiveFlag_TE3(DMA1) == 1) {
-		LL_DMA_ClearFlag_TE3(DMA1);
-	}
-  /* USER CODE END DMA1_Channel3_IRQn 0 */
-  
-  /* USER CODE BEGIN DMA1_Channel3_IRQn 1 */
-	LL_GPIO_SetOutputPin(ILI9341_CS_GPIO_Port, ILI9341_CS_Pin);
-	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3);
-	LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_3, LL_DMA_MDATAALIGN_BYTE);
-  /* USER CODE END DMA1_Channel3_IRQn 1 */
-}
-
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */

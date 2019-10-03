@@ -28,7 +28,6 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f1xx_ll_dma.h"
 #include "stm32f1xx_ll_rcc.h"
 #include "stm32f1xx_ll_bus.h"
 #include "stm32f1xx_ll_system.h"
@@ -36,6 +35,7 @@ extern "C" {
 #include "stm32f1xx_ll_cortex.h"
 #include "stm32f1xx_ll_utils.h"
 #include "stm32f1xx_ll_pwr.h"
+#include "stm32f1xx_ll_dma.h"
 #include "stm32f1xx_ll_spi.h"
 #include "stm32f1xx_ll_tim.h"
 #include "stm32f1xx.h"
@@ -74,6 +74,8 @@ void main_loop();
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define LED_Pin LL_GPIO_PIN_13
+#define LED_GPIO_Port GPIOC
 #define ILI9341_DC_Pin LL_GPIO_PIN_3
 #define ILI9341_DC_GPIO_Port GPIOA
 #define ILI9341_CS_Pin LL_GPIO_PIN_4

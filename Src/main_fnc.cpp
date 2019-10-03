@@ -7,7 +7,7 @@
 #include "main.h"
 #include "CPMDisplay.h"
 
-static const uint8_t font[][8] = {
+static const uint8_t font[96][8] = {
 	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},//' '
 	{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},//'!'
 	{0x00,0x04,0x04,0x00,0x00,0x00,0x00,0x00},//'"'
@@ -109,10 +109,17 @@ static const uint8_t font[][8] = {
 CPM_Display disp(&font[0][0]);
 
 void main_init() {
+
 	disp.Init();
+	//LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
+
+
 }
 
 void main_loop() {
-
+//	const char* test = "Hello, World! ";
+//	for(uint8_t i; test[i] != '\0';i++)
+//		disp.putc(test[i]);
+	LL_mDelay(20);
 }
 
