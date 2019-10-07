@@ -1,7 +1,0 @@
-cpm_display.c:154:6:cpmdisp_setcursor	16	static
-cpm_display.c:158:6:cpmdisp_scroll	16	static
-cpm_display.c:162:20:drawsymbol	136	static
-cpm_display.c:182:6:cpmdisp_clear	16	static
-cpm_display.c:186:6:cpmdisp_Init	8	static
-cpm_display.c:193:6:cpmdisp_putc	16	static
-cpm_display.c:221:6:cpmdisp_puts	24	static

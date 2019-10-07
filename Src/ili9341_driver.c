@@ -5,7 +5,7 @@
  *      Author: Artur
  */
 
-#include "ILI9341_driver.h"
+#include "ili9341_driver.h"
 
 uint8_t ILI9341_DMA_busy = 0;
 
