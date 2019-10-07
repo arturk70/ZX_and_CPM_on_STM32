@@ -1,11 +1,27 @@
-/*
- * ILI9341_commands.h
- *
- *  Created on: Oct 3, 2019
- *      Author: artur
- */
-#ifndef ILI9341COMMANDS_H_
-#define ILI9341COMMANDS_H_
+#ifndef ILI9341_COMMANDS_H_
+#define ILI9341_COMMANDS_H_
+
+/* Colors */
+#define BLACK           0x0000      /*   0,   0,   0 */
+#define NAVY            0x000F      /*   0,   0, 128 */
+#define DGREEN          0x03E0      /*   0, 128,   0 */
+#define DCYAN           0x03EF      /*   0, 128, 128 */
+#define MAROON          0x7800      /* 128,   0,   0 */
+#define PURPLE          0x780F      /* 128,   0, 128 */
+#define OLIVE           0x7BE0      /* 128, 128,   0 */
+#define LGRAY           0xC618      /* 192, 192, 192 */
+#define DGRAY           0x7BEF      /* 128, 128, 128 */
+#define BLUE            0x001F      /*   0,   0, 255 */
+#define GREEN           0x07E0      /*   0, 255,   0 */
+#define CYAN            0x07FF      /*   0, 255, 255 */
+#define RED             0xF800      /* 255,   0,   0 */
+#define MAGENTA         0xF81F      /* 255,   0, 255 */
+#define YELLOW          0xFFE0      /* 255, 255,   0 */
+#define WHITE           0xFFFF      /* 255, 255, 255 */
+#define ORANGE          0xFD20      /* 255, 165,   0 */
+#define GREENYELLOW     0xAFE5      /* 173, 255,  47 */
+#define BROWN           0XBC40 //
+#define BRRED           0XFC07 //
 
 /* Level 1 Commands */
 #define ILI9341_SWRESET             0x01   /* Software Reset */
@@ -95,36 +111,13 @@
 #define ILI9341_3GAMMA_EN           0xF2   /* 3 Gamma enable register */
 #define ILI9341_PRC                 0xF7   /* Pump ratio control register */
 
-//Orientation
-
 #define ORIENTATION_PORTRAIT 0x48
 #define ORIENTATION_LANDSCAPE 0x28
 #define ORIENTATION_PORTRAIT_MIRROR 0x88
 #define ORIENTATION_LANDSCAPE_MIRROR 0xE8
 
+#define ILI9341_PWIDTH       320
+#define ILI9341_PHEIGHT      240
+#define ILI9341_PCOUNT    ILI9341_PWIDTH * ILI9341_PHEIGHT
 
-//Dimensions
-#define LCD_PIXEL_WIDTH     320
-#define LCD_PIXEL_HEIGHT    240
-#define LCD_PIXEL_COUNT    	LCD_PIXEL_WIDTH * LCD_PIXEL_HEIGHT
-
-//Colors
-#define BLACK           0x0000      /*   0,   0,   0 */
-#define NAVY            0x000F      /*   0,   0, 128 */
-#define DGREEN          0x03E0      /*   0, 128,   0 */
-#define DCYAN           0x03EF      /*   0, 128, 128 */
-#define MAROON          0x7800      /* 128,   0,   0 */
-#define PURPLE          0x780F      /* 128,   0, 128 */
-#define OLIVE           0x7BE0      /* 128, 128,   0 */
-#define LGRAY           0xC618      /* 192, 192, 192 */
-#define DGRAY           0x7BEF      /* 128, 128, 128 */
-#define BLUE            0x001F      /*   0,   0, 255 */
-#define GREEN           0x07E0      /*   0, 255,   0 */
-#define CYAN            0x07FF      /*   0, 255, 255 */
-#define RED             0xF800      /* 255,   0,   0 */
-#define MAGENTA         0xF81F      /* 255,   0, 255 */
-#define YELLOW          0xFFE0      /* 255, 255,   0 */
-#define WHITE           0xFFFF      /* 255, 255, 255 */
-#define ORANGE          0xFD20      /* 255, 165,   0 */
-
-#endif /* ILI9341COMMANDS_H_ */
+#endif //ILI9341_COMMANDS_H_

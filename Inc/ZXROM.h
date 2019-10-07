@@ -1,13 +1,14 @@
 /*
- * main_fnc.cpp
+ * ZXROM.h
  *
- *  Created on: Oct 3, 2019
- *      Author: artur
+ *  Created on: Oct 5, 2019
+ *      Author: Artur
  */
-#include "main.h"
-#include "CPMDisplay.h"
 
-static const uint8_t font[96][8] = {
+#ifndef ZXROM_H_
+#define ZXROM_H_
+
+static const uint8_t chars[96][8]={
 		{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},//' '
 		{0x00,0x10,0x10,0x10,0x10,0x00,0x10,0x00},//'!'
 		{0x00,0x24,0x24,0x00,0x00,0x00,0x00,0x00},//'"'
@@ -104,22 +105,6 @@ static const uint8_t font[96][8] = {
 		{0x00,0x70,0x10,0x0c,0x10,0x10,0x70,0x00},//'}'
 		{0x00,0x14,0x28,0x00,0x00,0x00,0x00,0x00},//'~'
 		{0x3c,0x42,0x99,0xa1,0xa1,0x99,0x42,0x3c}//''
-	};
+  };
 
-CPM_Display disp(&font[0][0]);
-
-void main_init() {
-
-	disp.Init();
-	//LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
-
-
-}
-
-void main_loop() {
-//	const char* test = "Hello, World! ";
-//	for(uint8_t i; test[i] != '\0';i++)
-//		disp.putc(test[i]);
-	LL_mDelay(20);
-}
-
+#endif /* ZXROM_H_ */
