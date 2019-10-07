@@ -9,7 +9,7 @@
 #define ILI9341DRIVER_H_
 
 #include "main.h"
-#include "ILI9341_commands.h"
+#include "ili9341_commands.h"
 
 //display RESET pin connect to STM32 reset pin
 
