@@ -34,29 +34,22 @@
 		LL_DMA_ClearFlag_TC3(ILI9341_DMA); \
 		LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_8BIT); \
 		ILI9341_CS_SET;	ILI9341_DMA_busy = 0; }
+#define RX_DMA_IRQ_HANDLER() { LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH); \
+		while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_RX_CH)); \
+	    LL_SPI_DisableDMAReq_RX(ILI9341_SPI); \
+	    if(LL_DMA_IsActiveFlag_TE2(ILI9341_DMA)) { \
+	    	LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin); \
+			LL_DMA_ClearFlag_TE2(ILI9341_DMA);} \
+		LL_DMA_ClearFlag_TC2(ILI9341_DMA); \
+		LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_8BIT); \
+		ILI9341_CS_SET;	ILI9341_DMA_busy = 0; }
 
 uint8_t ILI9341_DMA_busy;
 
 void ILI9341_Init();
-void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf, uint16_t len);
-void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf, uint16_t len);
+void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf);
+void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf);
 void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
-
-//inline static void TX_DMA_IRQ_Handler() {
-//	LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_TX_CH);
-//		while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_TX_CH));
-//	LL_SPI_DisableDMAReq_TX(ILI9341_SPI);
-//
-//	if(LL_DMA_IsActiveFlag_TE3(ILI9341_DMA)) {
-//		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
-//		LL_DMA_ClearFlag_TE3(ILI9341_DMA);
-//	}
-//
-//	LL_DMA_ClearFlag_TC3(ILI9341_DMA);
-//	LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_8BIT);
-//	ILI9341_CS_SET;
-//	ILI9341_DMA_busy = 0;
-//}
 
 inline static void ILI9341_setLEDpwm(uint16_t val) {
 	if(val>999) val=999;

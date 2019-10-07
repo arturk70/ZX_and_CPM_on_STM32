@@ -8,6 +8,7 @@
 #include "ili9341_driver.h"
 
 uint8_t ILI9341_DMA_busy = 0;
+static uint16_t fcolor;
 
 inline static void ILI9341_sendCommand(uint8_t com) {
   ILI9341_DC_RESET;
@@ -153,8 +154,11 @@ void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
 	ILI9341_CS_SET;
 }
 
-void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *data, uint16_t len) {
+//note: (x2-x1+1)*(y2-y1+1) must be less then 65536
+void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *data) {
 	while(ILI9341_DMA_busy);
+
+	uint16_t len = (x2-x1+1)*(y2-y1+1);
 
 	ILI9341_setFrame(x1, y1, x2, y2);
 	ILI9341_CS_RESET;
@@ -162,6 +166,8 @@ void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 	LL_SPI_TransmitData8(ILI9341_SPI, ILI9341_GRAM);
 	ILI9341_DC_SET;
 
+	LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_TX_CH);
+	while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_TX_CH));
 	LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_16BIT);
 	LL_DMA_SetMemoryAddress(ILI9341_DMA, ILI9341_DMA_TX_CH, (uint32_t)data);
 	LL_DMA_SetDataLength(ILI9341_DMA, ILI9341_DMA_TX_CH, len);
@@ -175,27 +181,33 @@ void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 	ILI9341_DMA_busy = 1;
 }
 
-void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf, uint16_t len) {
+//note: (x2-x1+1)*(y2-y1+1) must be less then 65536
+void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf) {
 	while(ILI9341_DMA_busy);
-//	ILI9341_setFrame(x1, y1, x2, y2);
-//	ILI9341_sendCommand(ILI9341_RAMRD);
-//TODO --
-}
 
-static uint16_t fcolor;
-
-void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
-	while(ILI9341_DMA_busy);
 	uint16_t len = (x2-x1+1)*(y2-y1+1);
-	fcolor = color;
 
 	ILI9341_setFrame(x1, y1, x2, y2);
 	ILI9341_CS_RESET;
 	ILI9341_DC_RESET;
-	LL_SPI_TransmitData8(ILI9341_SPI, ILI9341_GRAM);
+	LL_SPI_TransmitData8(ILI9341_SPI, ILI9341_RAMRD);
 	ILI9341_DC_SET;
 
+	LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH);
+	while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_RX_CH));
 	LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_16BIT);
+	LL_DMA_SetMemoryAddress(ILI9341_DMA, ILI9341_DMA_RX_CH, (uint32_t)buf);
+	LL_DMA_SetDataLength(ILI9341_DMA, ILI9341_DMA_RX_CH, len);
+	LL_DMA_SetMemoryIncMode(ILI9341_DMA, ILI9341_DMA_RX_CH, LL_DMA_MEMORY_INCREMENT);
+	LL_DMA_DisableIT_HT(ILI9341_DMA, ILI9341_DMA_RX_CH);
+	LL_DMA_EnableIT_TC(ILI9341_DMA, ILI9341_DMA_RX_CH);
+	LL_DMA_EnableIT_TE(ILI9341_DMA, ILI9341_DMA_RX_CH);
+	LL_SPI_EnableDMAReq_RX(ILI9341_SPI);
+	LL_DMA_EnableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH);
+
+	fcolor=0x0000;
+	LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_TX_CH);
+	while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_TX_CH));
 	LL_DMA_SetMemoryAddress(ILI9341_DMA, ILI9341_DMA_TX_CH, (uint32_t)&fcolor);
 	LL_DMA_SetDataLength(ILI9341_DMA, ILI9341_DMA_TX_CH, len);
 	LL_DMA_SetMemoryIncMode(ILI9341_DMA, ILI9341_DMA_TX_CH, LL_DMA_MEMORY_NOINCREMENT);
@@ -208,3 +220,29 @@ void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16
 	ILI9341_DMA_busy = 1;
 }
 
+//note: (x2-x1+1)*(y2-y1+1) must be less then 65536
+void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
+	while(ILI9341_DMA_busy);
+	uint16_t len = (x2-x1+1)*(y2-y1+1);
+	fcolor = color;
+
+	ILI9341_setFrame(x1, y1, x2, y2);
+	ILI9341_CS_RESET;
+	ILI9341_DC_RESET;
+	LL_SPI_TransmitData8(ILI9341_SPI, ILI9341_GRAM);
+	ILI9341_DC_SET;
+
+	LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_TX_CH);
+	while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_TX_CH));
+	LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_16BIT);
+	LL_DMA_SetMemoryAddress(ILI9341_DMA, ILI9341_DMA_TX_CH, (uint32_t)&fcolor);
+	LL_DMA_SetDataLength(ILI9341_DMA, ILI9341_DMA_TX_CH, len);
+	LL_DMA_SetMemoryIncMode(ILI9341_DMA, ILI9341_DMA_TX_CH, LL_DMA_MEMORY_NOINCREMENT);
+	LL_DMA_DisableIT_HT(ILI9341_DMA, ILI9341_DMA_TX_CH);
+	LL_DMA_EnableIT_TC(ILI9341_DMA, ILI9341_DMA_TX_CH);
+	LL_DMA_EnableIT_TE(ILI9341_DMA, ILI9341_DMA_TX_CH);
+	LL_SPI_EnableDMAReq_TX(ILI9341_SPI);
+	LL_DMA_EnableChannel(ILI9341_DMA, ILI9341_DMA_TX_CH);
+
+	ILI9341_DMA_busy = 1;
+}

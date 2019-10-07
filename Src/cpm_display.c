@@ -156,7 +156,14 @@ void cpmdisp_setcursor(uint8_t row, uint8_t col) {
 }
 
 void cpmdisp_scroll(uint8_t lnum) {
-	//TODO scroll
+	uint16_t buf[SCR_WIDTH*FNT_HEIGHT];
+
+	for(uint8_t i=1; i<SCR_HEIGHT;i++) {
+		ILI9341_readBuf(START_POS, i*FNT_HEIGHT+START_LINE, END_POS, i*FNT_HEIGHT+START_LINE+FNT_HEIGHT-1, buf);
+		ILI9341_sendBuf(START_POS, i*FNT_HEIGHT+START_LINE-FNT_HEIGHT, END_POS, i*FNT_HEIGHT+START_LINE-1, buf);
+	}
+
+	ILI9341_fillArea(START_POS, END_LINE-FNT_HEIGHT, END_POS, END_LINE, BG_COLOR);
 }
 
 inline static void drawsymbol(uint8_t s) {
@@ -176,7 +183,7 @@ inline static void drawsymbol(uint8_t s) {
 			START_LINE+cpos[ROW]*FNT_HEIGHT,
 			START_POS+cpos[COL]*FNT_WIDTH+FNT_WIDTH-1,
 			START_LINE+cpos[ROW]*FNT_HEIGHT+FNT_HEIGHT-1,
-			chbuf, FNT_WIDTH*FNT_HEIGHT);
+			chbuf);
 }
 
 void cpmdisp_clear() {
