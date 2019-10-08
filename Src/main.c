@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "cpm_display.h"
+#include "cpm_memory.h"
 #include "stdlib.h"
 /* USER CODE END Includes */
 
@@ -110,6 +111,14 @@ int main(void)
   LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 
   cpmdisp_Init();
+  cpmmem_Init();
+
+  uint8_t tmp;
+  for(uint8_t addr=0; addr<0xff; addr++) {
+	  memwrite(addr, addr);
+	  tmp = memread(addr);
+	  if(tmp != addr) LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
+  }
 
   unsigned int i=0;
 

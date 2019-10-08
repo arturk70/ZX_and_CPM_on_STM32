@@ -119,16 +119,16 @@ void cpmdisp_scroll(uint8_t lnum) {
 	//uint16_t buf[SCR_WIDTH*FNT_WIDTH*FNT_HEIGHT+1];
 	uint16_t endcol,endln;
 
-	for(uint16_t stcol=START_POS; stcol<START_POS+SCR_WIDTH*FNT_WIDTH; stcol+=FNT_WIDTH) {
+	for(uint16_t stcol=CPMD_START_POS; stcol<CPMD_START_POS+SCR_WIDTH*FNT_WIDTH; stcol+=FNT_WIDTH) {
 		endcol = stcol+FNT_WIDTH-1;
-		for(uint16_t stln=START_LINE+FNT_HEIGHT; stln<START_LINE+SCR_HEIGHT*FNT_HEIGHT; stln+=FNT_HEIGHT) {
+		for(uint16_t stln=CPMD_START_LINE+FNT_HEIGHT; stln<CPMD_START_LINE+SCR_HEIGHT*FNT_HEIGHT; stln+=FNT_HEIGHT) {
 			endln = stln+FNT_HEIGHT-1;
 			ILI9341_readBuf(stcol, stln, endcol, endln, chbuf);
 			ILI9341_sendBuf(stcol, stln-FNT_HEIGHT, endcol, endln-FNT_HEIGHT, chbuf);
 		}
 	}
 
-	ILI9341_fillArea(START_POS, END_LINE-FNT_HEIGHT+1, END_POS, END_LINE, BG_COLOR);
+	ILI9341_fillArea(CPMD_START_POS, CPMD_END_LINE-FNT_HEIGHT+1, CPMD_END_POS, CPMD_END_LINE, BG_COLOR);
 }
 
 inline static void drawsymbol(uint8_t s) {
@@ -142,15 +142,15 @@ inline static void drawsymbol(uint8_t s) {
 //		chbuf[l*FNT_WIDTH+FNT_WIDTH-1]=BG_COLOR;
 	}
 	ILI9341_sendBuf(
-			START_POS+cpos[COL]*FNT_WIDTH,
-			START_LINE+cpos[ROW]*FNT_HEIGHT+1,
-			START_POS+cpos[COL]*FNT_WIDTH+FNT_WIDTH-2,
-			START_LINE+cpos[ROW]*FNT_HEIGHT+FNT_HEIGHT-2,
+			CPMD_START_POS+cpos[COL]*FNT_WIDTH,
+			CPMD_START_LINE+cpos[ROW]*FNT_HEIGHT+1,
+			CPMD_START_POS+cpos[COL]*FNT_WIDTH+FNT_WIDTH-2,
+			CPMD_START_LINE+cpos[ROW]*FNT_HEIGHT+FNT_HEIGHT-2,
 			chbuf);
 }
 
 void cpmdisp_clear() {
-	ILI9341_fillArea(START_POS, START_LINE, END_POS, END_LINE, BG_COLOR);
+	ILI9341_fillArea(CPMD_START_POS, CPMD_START_LINE, CPMD_END_POS, CPMD_END_LINE, BG_COLOR);
 }
 
 void cpmdisp_Init() {

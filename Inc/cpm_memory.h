@@ -8,6 +8,8 @@
 #ifndef CPM_MEMORY_H_
 #define CPM_MEMORY_H_
 
+#include "memory.h"
 
+void cpmmem_Init();
 
 #endif /* CPM_MEMORY_H_ */
