@@ -79,7 +79,7 @@ void ILI9341_Init() {
 	ILI9341_sendCommand(ILI9341_MAC);//set orientation
 	ILI9341_sendData(ORIENTATION_LANDSCAPE_MIRROR);
 	ILI9341_sendCommand(ILI9341_PIXEL_FORMAT);
-	ILI9341_sendData(0x55);
+	ILI9341_sendData(0x55);//RGB 565
 	ILI9341_sendCommand(ILI9341_FRMCTR1);
 	ILI9341_sendData(0x00);
 	ILI9341_sendData(0x18);
@@ -194,13 +194,19 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 	ILI9341_DC_SET;
 
 	uint8_t r,g,b;
-	r=LL_SPI_ReceiveData8(ILI9341_SPI);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
+	r=LL_SPI_ReceiveData8(ILI9341_SPI);//read dummy byte
+
 	for(uint16_t i=0; i<len;i++) {
+		LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
 		r=LL_SPI_ReceiveData8(ILI9341_SPI);
+		LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
 		g=LL_SPI_ReceiveData8(ILI9341_SPI);
+		LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
 		b=LL_SPI_ReceiveData8(ILI9341_SPI);
-		buf[i]=((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u);
+		buf[i]=((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u);//RGB565 to uint16
 	}
+//	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI));
 	ILI9341_CS_SET;
 
 //	LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH);

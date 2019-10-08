@@ -10,6 +10,7 @@
 typedef uint8_t symbol [8];
 
 static uint8_t cpos[2] = {0,0};
+static uint16_t chbuf[FNT_WIDTH*FNT_HEIGHT];
 
 static const symbol font[96] = {
 	{0x00, 0x00, 0x00, 0x00, 0x00},
@@ -154,22 +155,23 @@ void cpmdisp_setcursor(uint8_t row, uint8_t col) {
 	cpos[COL] = col; cpos[ROW] = row;
 }
 
-static uint16_t buf[SCR_WIDTH*FNT_WIDTH*FNT_HEIGHT];
-
 void cpmdisp_scroll(uint8_t lnum) {
 	//uint16_t buf[SCR_WIDTH*FNT_WIDTH*FNT_HEIGHT+1];
+	uint16_t endcol,endln;
 
-	for(uint16_t i=1; i<SCR_HEIGHT;i++) {
-		ILI9341_readBuf(START_POS, i*FNT_HEIGHT+START_LINE, END_POS, i*FNT_HEIGHT+START_LINE+FNT_HEIGHT-1, buf);
-		ILI9341_sendBuf(START_POS, i*FNT_HEIGHT+START_LINE-FNT_HEIGHT, END_POS, i*FNT_HEIGHT+START_LINE-1, buf);
+	for(uint16_t stcol=START_POS; stcol<START_POS+SCR_WIDTH*FNT_WIDTH; stcol+=FNT_WIDTH) {
+		endcol = stcol+FNT_WIDTH-1;
+		for(uint16_t stln=START_LINE+FNT_HEIGHT; stln<START_LINE+SCR_HEIGHT*FNT_HEIGHT; stln+=FNT_HEIGHT) {
+			endln = stln+FNT_HEIGHT-1;
+			ILI9341_readBuf(stcol, stln, endcol, endln, chbuf);
+			ILI9341_sendBuf(stcol, stln-FNT_HEIGHT, endcol, endln-FNT_HEIGHT, chbuf);
+		}
 	}
 
 	ILI9341_fillArea(START_POS, END_LINE-FNT_HEIGHT, END_POS, END_LINE, BG_COLOR);
 }
 
 inline static void drawsymbol(uint8_t s) {
-	static uint16_t chbuf[FNT_WIDTH*FNT_HEIGHT];
-
 	for(uint8_t l=0;l<FNT_HEIGHT;l++) {
 		for(uint8_t b=0;b<FNT_WIDTH-1;b++) {
 			if((font[s][b]>>l)&0x01)
