@@ -58,7 +58,6 @@ static const symbol font[96] = {
 	 0b01001010,
 	 0b01001010,
 	 0b00110010},
-
 	{0b00111100,
 	 0b01001010,
 	 0b01001010,
@@ -155,10 +154,12 @@ void cpmdisp_setcursor(uint8_t row, uint8_t col) {
 	cpos[COL] = col; cpos[ROW] = row;
 }
 
-void cpmdisp_scroll(uint8_t lnum) {
-	uint16_t buf[SCR_WIDTH*FNT_HEIGHT];
+static uint16_t buf[SCR_WIDTH*FNT_WIDTH*FNT_HEIGHT];
 
-	for(uint8_t i=1; i<SCR_HEIGHT;i++) {
+void cpmdisp_scroll(uint8_t lnum) {
+	//uint16_t buf[SCR_WIDTH*FNT_WIDTH*FNT_HEIGHT+1];
+
+	for(uint16_t i=1; i<SCR_HEIGHT;i++) {
 		ILI9341_readBuf(START_POS, i*FNT_HEIGHT+START_LINE, END_POS, i*FNT_HEIGHT+START_LINE+FNT_HEIGHT-1, buf);
 		ILI9341_sendBuf(START_POS, i*FNT_HEIGHT+START_LINE-FNT_HEIGHT, END_POS, i*FNT_HEIGHT+START_LINE-1, buf);
 	}
@@ -167,7 +168,7 @@ void cpmdisp_scroll(uint8_t lnum) {
 }
 
 inline static void drawsymbol(uint8_t s) {
-	uint16_t chbuf[FNT_WIDTH*FNT_HEIGHT];
+	static uint16_t chbuf[FNT_WIDTH*FNT_HEIGHT];
 
 	for(uint8_t l=0;l<FNT_HEIGHT;l++) {
 		for(uint8_t b=0;b<FNT_WIDTH-1;b++) {
