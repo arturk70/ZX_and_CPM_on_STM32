@@ -168,7 +168,7 @@ void cpmdisp_scroll(uint8_t lnum) {
 		}
 	}
 
-	ILI9341_fillArea(START_POS, END_LINE-FNT_HEIGHT, END_POS, END_LINE, BG_COLOR);
+	ILI9341_fillArea(START_POS, END_LINE-FNT_HEIGHT+1, END_POS, END_LINE, BG_COLOR);
 }
 
 inline static void drawsymbol(uint8_t s) {
