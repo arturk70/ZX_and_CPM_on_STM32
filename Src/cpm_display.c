@@ -5,12 +5,12 @@
  *      Author: Artur
  */
 
+#include "stdlib.h"
 #include "cpm_display.h"
 
-typedef uint8_t symbol [8];
-
 static uint8_t cpos[2] = {0,0};
-static uint16_t chbuf[FNT_WIDTH*FNT_HEIGHT];
+static uint16_t *chbuf;
+static uint8_t *scrbuf;
 
 static const uint32_t font[] = { //5x6 font
 0x00000000, //' '
@@ -108,29 +108,15 @@ static const uint32_t font[] = { //5x6 font
 0x08421084, //'|'
 0x0e426087, //'}'
 0x000001b6, //'~'
-0x3f18c63f, //''
+0xffffffff //0x3f18c63f //''
 };
 
 void cpmdisp_setcursor(uint8_t row, uint8_t col) {
 	cpos[COL] = col; cpos[ROW] = row;
 }
 
-void cpmdisp_scroll(uint8_t lnum) {
-	uint16_t endcol,endln;
-
-	for(uint16_t stcol=CPMD_START_POS; stcol<CPMD_START_POS+SCR_WIDTH*FNT_WIDTH; stcol+=FNT_WIDTH) {
-		endcol = stcol+FNT_WIDTH-1;
-		for(uint16_t stln=CPMD_START_LINE+FNT_HEIGHT; stln<CPMD_START_LINE+SCR_HEIGHT*FNT_HEIGHT; stln+=FNT_HEIGHT) {
-			endln = stln+FNT_HEIGHT-1;
-			ILI9341_readBuf(stcol, stln, endcol, endln, chbuf);
-			ILI9341_sendBuf(stcol, stln-FNT_HEIGHT, endcol, endln-FNT_HEIGHT, chbuf);
-		}
-	}
-
-	ILI9341_fillArea(CPMD_START_POS, CPMD_END_LINE-FNT_HEIGHT+1, CPMD_END_POS, CPMD_END_LINE, BG_COLOR);
-}
-
-inline static void drawsymbol(uint8_t s) {
+//s - index in font table
+inline static void drawsymbol(uint8_t s, uint8_t row, uint8_t col) {
 	for(uint8_t l=0;l<6;l++) {
 		for(uint8_t b=0;b<5;b++) {
 			if((font[s]>>(l*5+b))&0x00000001)
@@ -145,11 +131,20 @@ inline static void drawsymbol(uint8_t s) {
 		chbuf[FNT_WIDTH*(FNT_HEIGHT-1)+b]=BG_COLOR;
 	}
 	ILI9341_sendBuf(
-			CPMD_START_POS+cpos[COL]*FNT_WIDTH,
-			CPMD_START_LINE+cpos[ROW]*FNT_HEIGHT,
-			CPMD_START_POS+cpos[COL]*FNT_WIDTH+FNT_WIDTH-1,
-			CPMD_START_LINE+cpos[ROW]*FNT_HEIGHT+FNT_HEIGHT-1,
+			CPMD_START_POS+col*FNT_WIDTH,
+			CPMD_START_LINE+row*FNT_HEIGHT,
+			CPMD_START_POS+col*FNT_WIDTH+FNT_WIDTH-1,
+			CPMD_START_LINE+row*FNT_HEIGHT+FNT_HEIGHT-1,
 			chbuf);
+}
+
+void cpmdisp_scroll(uint8_t lnum) {
+	for(uint16_t i=0; i< SCR_WIDTH*SCR_HEIGHT-SCR_WIDTH*lnum; i++) {
+				scrbuf[i] = scrbuf[i+SCR_WIDTH*lnum];
+				drawsymbol(scrbuf[i], i/SCR_WIDTH, i%SCR_WIDTH);
+	}
+
+	ILI9341_fillArea(CPMD_START_POS, CPMD_END_LINE-FNT_HEIGHT*lnum+1, CPMD_END_POS, CPMD_END_LINE, BG_COLOR);
 }
 
 void cpmdisp_clear() {
@@ -160,15 +155,20 @@ void cpmdisp_Init() {
 	ILI9341_Init();
 	cpmdisp_clear();
 	cpos[ROW] = 0; cpos[COL] = 0;
-	drawsymbol(CURSOR_CHAR);
+	chbuf=malloc(FNT_WIDTH*FNT_HEIGHT);
+	scrbuf=malloc(SCR_WIDTH*SCR_HEIGHT);
+	for(uint16_t i=0;i<SCR_WIDTH*SCR_HEIGHT;i++) scrbuf[i]=0x00;
+	drawsymbol(CURSOR_CHAR, cpos[ROW], cpos[COL]);
 }
 
 void cpmdisp_putc(char c) {
 	if(c == '\n') {
-		drawsymbol(0x00);
+		for(uint8_t i=cpos[COL]; i< SCR_WIDTH; i++)
+			scrbuf[cpos[ROW]*SCR_WIDTH+i] = 0x00;
+		drawsymbol(0x00, cpos[ROW], cpos[COL]);
 		cpos[COL]=0;
 		if(++cpos[ROW] == SCR_HEIGHT) {
-//			cpmdisp_scroll(1);
+			cpmdisp_scroll(1);
 			cpos[ROW] = SCR_HEIGHT-1;
 		}
 	} else {
@@ -178,17 +178,18 @@ void cpmdisp_putc(char c) {
 		else
 			c -= 0x20;
 
-		drawsymbol((uint8_t)c);
+		scrbuf[cpos[ROW]*SCR_WIDTH+cpos[COL]] = (uint8_t)c;
+		drawsymbol((uint8_t)c, cpos[ROW], cpos[COL]);
 
 		if(++cpos[COL] == SCR_WIDTH) {
 			cpos[COL] = 0;
 			if(++cpos[ROW] == SCR_HEIGHT) {
-//				cpmdisp_scroll(1);
+				cpmdisp_scroll(1);
 				cpos[ROW] = SCR_HEIGHT-1;
 			}
 		}
 	}
-	drawsymbol(CURSOR_CHAR);
+	drawsymbol(CURSOR_CHAR, cpos[ROW], cpos[COL]);
 }
 
 void cpmdisp_puts(char *s) {

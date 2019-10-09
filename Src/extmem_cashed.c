@@ -19,7 +19,7 @@ void calcblock(uint16_t addr, uint16_t* blp, uint16_t* brp, uint16_t* btp, uint1
 	uint8_t bnum=4;
 
 	for(uint8_t i=0;i<4;i++)
-		if(addr < bl_topaddr[i]) {
+		if(addr <= bl_topaddr[i]) {
 			bnum = i;
 			break;
 		}
@@ -59,26 +59,21 @@ uint8_t updateCache(uint16_t addr) {
 }
 
 inline static void read_write(uint16_t addr, uint8_t *data, uint8_t op) {
-	uint8_t found = 0;
+	uint8_t cachenum = 0xff;
 
 	agecounter++;
 
 	for(uint8_t i=0;i<CASH_BLOCK_COUNT;i++)
 		if(addr >= start_addr[i] && addr<start_addr[i]+CASH_BLOCK_SIZE) {
-			found = 1;
-			if(op == 0)
-				*data = cache[i][addr-start_addr[i]];
-			else
-				cache[i][addr-start_addr[i]] = *data;
+			cachenum = i;
 			break;
 		}
-	if(!found) {
-		uint8_t newcache = updateCache(addr);
-		if(op == 0)
-			*data = cache[newcache][addr-start_addr[newcache]];
-		else
-			cache[newcache][addr-start_addr[newcache]] = *data;
-	}
+	if(cachenum == 0xff)
+		cachenum = updateCache(addr);
+	if(op == 0)
+		*data = cache[cachenum][addr-start_addr[cachenum]];
+	else
+		cache[cachenum][addr-start_addr[cachenum]] = *data;
 }
 
 uint8_t extmem_read(uint16_t addr) {

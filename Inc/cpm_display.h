@@ -10,8 +10,8 @@
 
 #include "ili9341_driver.h"
 
-#define SCR_WIDTH	52
-#define SCR_HEIGHT	25
+#define SCR_WIDTH	50
+#define SCR_HEIGHT	24
 
 #define FNT_WIDTH	6
 #define FNT_HEIGHT	8

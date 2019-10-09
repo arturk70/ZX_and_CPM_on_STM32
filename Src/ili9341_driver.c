@@ -182,24 +182,24 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 	ILI9341_sendCommand(ILI9341_RAMRD);
 
 	uint8_t r,g,b;
+	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
 	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0) LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
-	LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
+	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 	r=LL_SPI_ReceiveData8(ILI9341_SPI);//read dummy byte
 
 
 	for(uint16_t i=0; i<len;i++) {
+		while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
 		LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-		while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0) LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
-		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
+		while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 		r=LL_SPI_ReceiveData8(ILI9341_SPI);
+		while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
 		LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-		while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0) LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
-		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
+		while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 		g=LL_SPI_ReceiveData8(ILI9341_SPI);
+		while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
 		LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-		while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0) LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
-		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
+		while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 		b=LL_SPI_ReceiveData8(ILI9341_SPI);
 		buf[i]=(((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u))&0xffff;//RGB565 to uint16
 	}
