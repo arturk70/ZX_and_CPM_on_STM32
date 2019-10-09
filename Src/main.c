@@ -108,17 +108,49 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 
   cpmdisp_Init();
-  cpmmem_Init();
+  //cpmmem_Init();
 
-  uint8_t tmp;
-  for(uint8_t addr=0; addr<0xff; addr++) {
-	  memwrite(addr, addr);
-	  tmp = memread(addr);
-	  if(tmp != addr) LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
+//  uint8_t tmp;
+//  for(uint16_t addr=0; addr<0xefff; addr++) {
+//	  memwrite(addr, (uint8_t)(addr&0xff));
+//	  tmp = memread(addr);
+//	  if(tmp != (uint8_t)(addr&0xff)) LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
+//  }
+
+  cpmdisp_putc('!');
+  cpmdisp_putc('\n');
+  char buf[20];
+  static uint16_t pbuf[5*6];
+  ILI9341_readBuf(CPMD_START_POS, CPMD_START_LINE+1, CPMD_START_POS+4, CPMD_START_LINE+6, pbuf);
+  for(uint8_t j=0;j<5*6;j++) {
+	  utoa(pbuf[j], buf, 16);
+	  cpmdisp_puts(buf);
+	  cpmdisp_putc(' ');
   }
+  cpmdisp_puts("\n\n");
+
+  cpmdisp_puts("while(ILI9341_DMA_busy);\n \
+uint16_t len = (x2-x1+1)*(y2-y1+1);\n\n \
+ILI9341_setFrame(x1, y1, x2, y2);\n \
+ILI9341_CS_RESET;\n \
+ILI9341_DC_RESET;\n \
+LL_SPI_TransmitData8(ILI9341_SPI, ILI9341_RAMRD);\n \
+ILI9341_DC_SET;\n\n \
+uint8_t r,g,b;\n \
+LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);\n \
+r=LL_SPI_ReceiveData8(ILI9341_SPI);//read dummy byte\n\n \
+for(uint16_t i=0; i<len;i++) {\n \
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);\n \
+	r=LL_SPI_ReceiveData8(ILI9341_SPI);\n \
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);\n \
+	g=LL_SPI_ReceiveData8(ILI9341_SPI);\n \
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);\n \
+	b=LL_SPI_ReceiveData8(ILI9341_SPI);\n \
+	buf[i]=((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u);//RGB565 to uint16\n \
+}\n\n \
+ILI9341_CS_SET;\n");
 
   unsigned int i=0;
 
@@ -131,18 +163,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  char buf[20];
+//	  char buf[20];
 
-	  utoa(i++, buf, 10);
-//	  cpmdisp_puts("Hello number ");
-	  cpmdisp_puts(buf);
-//	  cpmdisp_puts(". ");
-//	  cpmdisp_putc('0');
-//	  cpmdisp_putc('1');
-//	  cpmdisp_putc('2');
-//	  cpmdisp_putc('0');
-//	  cpmdisp_putc('2');
-	  cpmdisp_putc(' ');
+//	  utoa(i++, buf, 10);
+////	  cpmdisp_puts("Hello number ");
+//	  cpmdisp_puts(buf);
+//	  cpmdisp_putc(' ');
 
 //	  LL_mDelay(500);
 
@@ -169,7 +195,7 @@ void SystemClock_Config(void)
   {
     
   }
-  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE_DIV_1, LL_RCC_PLL_MUL_12);
+  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE_DIV_1, LL_RCC_PLL_MUL_9);
   LL_RCC_PLL_Enable();
 
    /* Wait till PLL is ready */
@@ -187,9 +213,9 @@ void SystemClock_Config(void)
   {
   
   }
-  LL_Init1msTick(96000000);
+  LL_Init1msTick(72000000);
   LL_SYSTICK_SetClkSource(LL_SYSTICK_CLKSOURCE_HCLK);
-  LL_SetSystemCoreClock(96000000);
+  LL_SetSystemCoreClock(72000000);
 }
 
 /**
@@ -270,7 +296,7 @@ static void MX_SPI1_Init(void)
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
   SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
   SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;
+  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV4;
   SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
   SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
   SPI_InitStruct.CRCPoly = 10;

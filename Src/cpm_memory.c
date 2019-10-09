@@ -9,22 +9,22 @@
 #include "cpm_memory.h"
 #include "cpm_display.h"
 
-static uint8_t mem[16384];
+static uint8_t mem[8192];
 
 static uint8_t cpmmem_read(uint16_t addr) {
-	if(addr<16384)
+	if(addr<8192)
 		return mem[addr];
-	else if(addr-16384<28800)
-		return extmem_read(addr-16384);
+	else if(addr-8192<28800)
+		return extmem_read(addr-8192);
 	else
 		return 0;
 }
 
 static void cpmmem_write(uint16_t addr, uint8_t data) {
-	if(addr<16384)
+	if(addr<8192)
 		mem[addr] = data;
-	else if(addr<(16384+ILI9341_PWIDTH*(ILI9341_PHEIGHT-CPMD_END_LINE+CPMD_START_LINE)*2+CPMD_START_POS*16*12*2))
-		extmem_write(addr-16384, data);
+	else if(addr<(8192+ILI9341_PWIDTH*(ILI9341_PHEIGHT-CPMD_END_LINE+CPMD_START_LINE)*2+CPMD_START_POS*16*12*2))
+		extmem_write(addr-8192, data);
 }
 
 void cpmmem_Init() {

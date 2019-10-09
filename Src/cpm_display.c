@@ -10,7 +10,7 @@
 typedef uint8_t symbol [8];
 
 static uint8_t cpos[2] = {0,0};
-static uint16_t chbuf[(FNT_WIDTH-1)*(FNT_HEIGHT-2)];
+static uint16_t chbuf[FNT_WIDTH*FNT_HEIGHT];
 
 static const uint32_t font[] = { //5x6 font
 0x00000000, //' '
@@ -107,7 +107,7 @@ static const uint32_t font[] = { //5x6 font
 0x38420c9c, //'{'
 0x08421084, //'|'
 0x0e426087, //'}'
-0x00000154, //'~'
+0x000001b6, //'~'
 0x3f18c63f, //''
 };
 
@@ -116,7 +116,6 @@ void cpmdisp_setcursor(uint8_t row, uint8_t col) {
 }
 
 void cpmdisp_scroll(uint8_t lnum) {
-	//uint16_t buf[SCR_WIDTH*FNT_WIDTH*FNT_HEIGHT+1];
 	uint16_t endcol,endln;
 
 	for(uint16_t stcol=CPMD_START_POS; stcol<CPMD_START_POS+SCR_WIDTH*FNT_WIDTH; stcol+=FNT_WIDTH) {
@@ -132,20 +131,24 @@ void cpmdisp_scroll(uint8_t lnum) {
 }
 
 inline static void drawsymbol(uint8_t s) {
-	for(uint8_t l=0;l<FNT_HEIGHT-2;l++) {
-		for(uint8_t b=0;b<FNT_WIDTH-1;b++) {
-			if((font[s]>>(l*(FNT_WIDTH-1)+b))&0x00000001)
-				chbuf[l*FNT_WIDTH+b]=FG_COLOR;
+	for(uint8_t l=0;l<6;l++) {
+		for(uint8_t b=0;b<5;b++) {
+			if((font[s]>>(l*5+b))&0x00000001)
+				chbuf[l*6+b]=FG_COLOR;
 			  else
-				chbuf[l*FNT_WIDTH+b]=BG_COLOR;
+				chbuf[l*6+b]=BG_COLOR;
 		}
-//		chbuf[l*FNT_WIDTH+FNT_WIDTH-1]=BG_COLOR;
+		chbuf[l*6+5]=BG_COLOR;
+	}
+	for(uint8_t b=0;b<6;b++) {
+		chbuf[FNT_WIDTH*(FNT_HEIGHT-2)+b]=BG_COLOR;
+		chbuf[FNT_WIDTH*(FNT_HEIGHT-1)+b]=BG_COLOR;
 	}
 	ILI9341_sendBuf(
 			CPMD_START_POS+cpos[COL]*FNT_WIDTH,
-			CPMD_START_LINE+cpos[ROW]*FNT_HEIGHT+1,
-			CPMD_START_POS+cpos[COL]*FNT_WIDTH+FNT_WIDTH-2,
-			CPMD_START_LINE+cpos[ROW]*FNT_HEIGHT+FNT_HEIGHT-2,
+			CPMD_START_LINE+cpos[ROW]*FNT_HEIGHT,
+			CPMD_START_POS+cpos[COL]*FNT_WIDTH+FNT_WIDTH-1,
+			CPMD_START_LINE+cpos[ROW]*FNT_HEIGHT+FNT_HEIGHT-1,
 			chbuf);
 }
 
@@ -164,8 +167,8 @@ void cpmdisp_putc(char c) {
 	if(c == '\n') {
 		drawsymbol(0x00);
 		cpos[COL]=0;
-		if(++cpos[ROW] >= SCR_HEIGHT) {
-			cpmdisp_scroll(1);
+		if(++cpos[ROW] == SCR_HEIGHT) {
+//			cpmdisp_scroll(1);
 			cpos[ROW] = SCR_HEIGHT-1;
 		}
 	} else {
@@ -180,7 +183,7 @@ void cpmdisp_putc(char c) {
 		if(++cpos[COL] == SCR_WIDTH) {
 			cpos[COL] = 0;
 			if(++cpos[ROW] == SCR_HEIGHT) {
-				cpmdisp_scroll(1);
+//				cpmdisp_scroll(1);
 				cpos[ROW] = SCR_HEIGHT-1;
 			}
 		}
@@ -189,6 +192,6 @@ void cpmdisp_putc(char c) {
 }
 
 void cpmdisp_puts(char *s) {
-	for(uint32_t i;s[i]!='\0';i++)
+	for(uint16_t i=0;s[i]!='\0';i++)
 		cpmdisp_putc(s[i]);
 }

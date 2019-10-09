@@ -11,17 +11,18 @@ uint8_t ILI9341_DMA_busy = 0;
 static uint16_t fcolor;
 
 inline static void ILI9341_sendCommand(uint8_t com) {
-  ILI9341_DC_RESET;
-  ILI9341_CS_RESET;
-  LL_SPI_TransmitData8(ILI9341_SPI, com);
-  ILI9341_CS_SET;
+//  ILI9341_CS_RESET;
+	ILI9341_DC_RESET;
+	LL_SPI_TransmitData8(ILI9341_SPI, com);
+	ILI9341_DC_SET;
+//  ILI9341_CS_SET;
 }
 
 inline static void ILI9341_sendData(uint8_t data) {
-  ILI9341_DC_SET;
-  ILI9341_CS_RESET;
+//  ILI9341_DC_SET;
+//  ILI9341_CS_RESET;
   LL_SPI_TransmitData8(ILI9341_SPI, data);
-  ILI9341_CS_SET;
+//  ILI9341_CS_SET;
 }
 
 void ILI9341_Init() {
@@ -42,6 +43,7 @@ void ILI9341_Init() {
 	LL_mDelay(100);
 	while(ILI9341_DMA_busy);
 
+	ILI9341_CS_RESET;
 	/// настраиваем дисплей
 	ILI9341_sendCommand(ILI9341_POWERA);
 	ILI9341_sendData(0x39);
@@ -135,23 +137,25 @@ void ILI9341_Init() {
 
 void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
 	while(ILI9341_DMA_busy);
+	ILI9341_DC_RESET;
 	ILI9341_sendCommand(ILI9341_COLUMN_ADDR);
 	ILI9341_DC_SET;
-	ILI9341_CS_RESET;
+//	ILI9341_CS_RESET;
 	LL_SPI_TransmitData8(ILI9341_SPI, x1 >> 8);
 	LL_SPI_TransmitData8(ILI9341_SPI, x1 & 0xFF);
 	LL_SPI_TransmitData8(ILI9341_SPI, x2 >> 8);
 	LL_SPI_TransmitData8(ILI9341_SPI, x2 & 0xFF);
-	ILI9341_CS_SET;
+//	ILI9341_CS_SET;
 
+	ILI9341_DC_RESET;
 	ILI9341_sendCommand(ILI9341_PAGE_ADDR);
 	ILI9341_DC_SET;
-	ILI9341_CS_RESET;
+//	ILI9341_CS_RESET;
 	LL_SPI_TransmitData8(ILI9341_SPI, y1 >> 8);
 	LL_SPI_TransmitData8(ILI9341_SPI, y1 & 0xFF);
 	LL_SPI_TransmitData8(ILI9341_SPI, y2 >> 8);
 	LL_SPI_TransmitData8(ILI9341_SPI, y2 & 0xFF);
-	ILI9341_CS_SET;
+//	ILI9341_CS_SET;
 }
 
 //note: (x2-x1+1)*(y2-y1+1) must be less then 65536
@@ -161,7 +165,7 @@ void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 	uint16_t len = (x2-x1+1)*(y2-y1+1);
 
 	ILI9341_setFrame(x1, y1, x2, y2);
-	ILI9341_CS_RESET;
+//	ILI9341_CS_RESET;
 	ILI9341_DC_RESET;
 	LL_SPI_TransmitData8(ILI9341_SPI, ILI9341_GRAM);
 	ILI9341_DC_SET;
@@ -188,26 +192,32 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 	uint16_t len = (x2-x1+1)*(y2-y1+1);
 
 	ILI9341_setFrame(x1, y1, x2, y2);
-	ILI9341_CS_RESET;
+//	ILI9341_CS_RESET;
 	ILI9341_DC_RESET;
 	LL_SPI_TransmitData8(ILI9341_SPI, ILI9341_RAMRD);
 	ILI9341_DC_SET;
 
 	uint8_t r,g,b;
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
 	r=LL_SPI_ReceiveData8(ILI9341_SPI);//read dummy byte
 
+
 	for(uint16_t i=0; i<len;i++) {
-		LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
+		LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
 		r=LL_SPI_ReceiveData8(ILI9341_SPI);
-		LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
+		LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
 		g=LL_SPI_ReceiveData8(ILI9341_SPI);
-		LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
+		LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
 		b=LL_SPI_ReceiveData8(ILI9341_SPI);
-		buf[i]=((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u);//RGB565 to uint16
+		buf[i]=(((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u))&0xffff;//RGB565 to uint16
+		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
+		LL_mDelay(100);
+		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
+		LL_mDelay(100);
 	}
 //	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI));
 	ILI9341_CS_SET;
+	ILI9341_CS_RESET;
 
 //	LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH);
 //	while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_RX_CH));
@@ -243,7 +253,7 @@ void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16
 	fcolor = color;
 
 	ILI9341_setFrame(x1, y1, x2, y2);
-	ILI9341_CS_RESET;
+//	ILI9341_CS_RESET;
 	ILI9341_DC_RESET;
 	LL_SPI_TransmitData8(ILI9341_SPI, ILI9341_GRAM);
 	ILI9341_DC_SET;
