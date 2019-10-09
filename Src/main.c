@@ -110,7 +110,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   cpmdisp_Init();
-  //cpmmem_Init();
+  cpmmem_Init();
 
 //  uint8_t tmp;
 //  for(uint16_t addr=0; addr<0xefff; addr++) {

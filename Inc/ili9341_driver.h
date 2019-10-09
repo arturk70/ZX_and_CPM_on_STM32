@@ -25,25 +25,26 @@
 #define ILI9341_LED_PWM_TIM	TIM2
 #define ILI9341_LED_PWM_CH	LL_TIM_CHANNEL_CH2
 #define ILI9341_SETLED_PWM(val)	LL_TIM_OC_SetCompareCH2(ILI9341_LED_PWM_TIM, val)
-#define TX_DMA_IRQ_HANDLER() { LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_TX_CH); \
+#define TX_DMA_IRQ_HANDLER() { LL_SPI_DisableDMAReq_TX(ILI9341_SPI); \
+	    LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_TX_CH); \
 		while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_TX_CH)); \
-	    LL_SPI_DisableDMAReq_TX(ILI9341_SPI); \
 	    if(LL_DMA_IsActiveFlag_TE3(ILI9341_DMA)) { \
 	    	LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin); \
 			LL_DMA_ClearFlag_TE3(ILI9341_DMA);} \
 		LL_DMA_ClearFlag_TC3(ILI9341_DMA); \
+		while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0); \
 		LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_8BIT); \
-		/* ILI9341_CS_SET;*/	ILI9341_DMA_busy = 0; }
-#define RX_DMA_IRQ_HANDLER() { LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH); \
+		ILI9341_DMA_busy = 0; }
+#define RX_DMA_IRQ_HANDLER() { LL_SPI_DisableDMAReq_RX(ILI9341_SPI); \
+	    LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH); \
 		while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_RX_CH)); \
-	    LL_SPI_DisableDMAReq_RX(ILI9341_SPI); \
 	    if(LL_DMA_IsActiveFlag_TE2(ILI9341_DMA)) { \
 	    	LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin); \
 			LL_DMA_ClearFlag_TE2(ILI9341_DMA);} \
 		LL_DMA_ClearFlag_TC2(ILI9341_DMA); \
+		while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0); \
 		LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_8BIT); \
-		TX_DMA_IRQ_HANDLER(); \
-		/*ILI9341_CS_SET;*/	ILI9341_DMA_busy = 0; }
+		ILI9341_DMA_busy = 0; }
 
 uint8_t ILI9341_DMA_busy;
 
