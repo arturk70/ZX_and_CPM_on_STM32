@@ -112,49 +112,14 @@ int main(void)
   cpmdisp_Init();
   cpmmem_Init();
 
-//  uint8_t tmp;
-//  for(uint16_t addr=0; addr<0xbfff; addr++) {
-//	  cpmmem_write(addr, (uint8_t)(addr&0xff));
-//	  tmp = cpmmem_read(addr);
-//	  if(tmp != (uint8_t)(addr&0xff)) LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
-//  }
-
-
-  cpmdisp_puts("while(ILI9341_DMA_busy);\n \
-uint16_t len = (x2-x1+1)*(y2-y1+1);\n\n \
-ILI9341_setFrame(x1, y1, x2, y2);\n \
-ILI9341_CS_RESET;\n \
-ILI9341_DC_RESET;\n \
-LL_SPI_TransmitData8(ILI9341_SPI, ILI9341_RAMRD);\n \
-ILI9341_DC_SET;\n\n \
-uint8_t r,g,b;\n \
-LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);\n \
-r=LL_SPI_ReceiveData8(ILI9341_SPI);//read dummy byte\n\n \
-for(uint16_t i=0; i<len;i++) {\n \
-while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);\n \
-LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);\n \
-while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);\n \
-r=LL_SPI_ReceiveData8(ILI9341_SPI);\n \
-while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);\n \
-LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);\n \
-while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);\n \
-g=LL_SPI_ReceiveData8(ILI9341_SPI);\n \
-while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);\n \
-LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);\n \
-while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);\n \
-b=LL_SPI_ReceiveData8(ILI9341_SPI);\n \
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);\n \
-	r=LL_SPI_ReceiveData8(ILI9341_SPI);\n \
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);\n \
-	g=LL_SPI_ReceiveData8(ILI9341_SPI);\n \
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);\n \
-	b=LL_SPI_ReceiveData8(ILI9341_SPI);\n \
-	buf[i]=((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u);//RGB565 to uint16\n \
-}\n\n \
-ILI9341_CS_SET;\n");
+  char buf[10];
+  uint16_t errors = cpmmem_test();
+  cpmdisp_puts("Memory test finished ");
+  if(0 == errors) cpmdisp_puts("successfully");
+  else { cpmdisp_puts("with ");cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
+  cpmdisp_puts("!\n");
 
   unsigned int i=0;
-  char buf[20];
 
   /* USER CODE END 2 */
 
@@ -166,10 +131,10 @@ ILI9341_CS_SET;\n");
 
     /* USER CODE BEGIN 3 */
 
-	  utoa(i++, buf, 10);
-	  cpmdisp_puts("Hello number ");
-	  cpmdisp_puts(buf);
-	  cpmdisp_puts("!\n");
+//	  utoa(i++, buf, 10);
+//	  cpmdisp_puts("Hello number ");
+//	  cpmdisp_puts(buf);
+//	  cpmdisp_puts("!\n");
 
   }
   /* USER CODE END 3 */
@@ -194,7 +159,7 @@ void SystemClock_Config(void)
   {
     
   }
-  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE_DIV_1, LL_RCC_PLL_MUL_12);
+  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE_DIV_1, LL_RCC_PLL_MUL_16);
   LL_RCC_PLL_Enable();
 
    /* Wait till PLL is ready */
@@ -202,7 +167,7 @@ void SystemClock_Config(void)
   {
     
   }
-  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
+  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_2);
   LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_2);
   LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
   LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
@@ -212,9 +177,9 @@ void SystemClock_Config(void)
   {
   
   }
-  LL_Init1msTick(96000000);
+  LL_Init1msTick(64000000);
   LL_SYSTICK_SetClkSource(LL_SYSTICK_CLKSOURCE_HCLK);
-  LL_SetSystemCoreClock(96000000);
+  LL_SetSystemCoreClock(64000000);
 }
 
 /**
@@ -295,7 +260,7 @@ static void MX_SPI1_Init(void)
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
   SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
   SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;
+  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV4;
   SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
   SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
   SPI_InitStruct.CRCPoly = 10;

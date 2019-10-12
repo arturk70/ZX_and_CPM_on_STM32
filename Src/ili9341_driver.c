@@ -8,9 +8,19 @@
 #include "ili9341_driver.h"
 
 uint8_t ILI9341_DMA_busy = 0;
+static uint8_t is_inited = 0;
 static uint16_t fcolor;
 
-inline static void ILI9341_sendCommand(uint8_t com) {
+void ILI9341_wait_DMA() {
+	while(ILI9341_DMA_busy);
+}
+
+void ILI9341_setLEDpwm(uint16_t val) {
+	if(val>999) val=999;
+	ILI9341_SETLED_PWM(val);
+}
+
+void ILI9341_sendCommand(uint8_t com) {
 	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
 	ILI9341_DC_RESET;
 	LL_SPI_TransmitData8(ILI9341_SPI, com);
@@ -18,12 +28,14 @@ inline static void ILI9341_sendCommand(uint8_t com) {
 	ILI9341_DC_SET;
 }
 
-inline static void ILI9341_sendData(uint8_t data) {
+void ILI9341_sendData(uint8_t data) {
 	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
 	LL_SPI_TransmitData8(ILI9341_SPI, data);
 }
 
 void ILI9341_Init() {
+	if(is_inited) return;
+
 	//turn on periphery used by driver
 	LL_TIM_CC_EnableChannel(TIM2, LL_TIM_CHANNEL_CH2);
 	LL_TIM_EnableCounter(TIM2);
@@ -130,6 +142,8 @@ void ILI9341_Init() {
 
 	ILI9341_fillArea(0,0,ILI9341_PWIDTH-1,ILI9341_PHEIGHT/2-1,BLACK);
 	ILI9341_fillArea(0,ILI9341_PHEIGHT/2,ILI9341_PWIDTH-1,ILI9341_PHEIGHT-1,BLACK);
+
+	is_inited = 1;
 }
 
 void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
@@ -201,7 +215,7 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 		LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
 		while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 		b=LL_SPI_ReceiveData8(ILI9341_SPI);
-		buf[i]=(((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u))&0xffff;//RGB565 to uint16
+		buf[i]=(((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u));//RGB565 to uint16
 	}
 	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
 	ILI9341_CS_SET;

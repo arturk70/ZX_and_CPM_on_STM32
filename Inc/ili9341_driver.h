@@ -49,13 +49,15 @@
 uint8_t ILI9341_DMA_busy;
 
 void ILI9341_Init();
+void ILI9341_sendCommand(uint8_t com);
+void ILI9341_sendData(uint8_t data);
+void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf);
 void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf);
 void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
 
-inline static void ILI9341_setLEDpwm(uint16_t val) {
-	if(val>999) val=999;
-	ILI9341_SETLED_PWM(val);
-}
+void ILI9341_wait_DMA();
+
+void ILI9341_setLEDpwm(uint16_t val);
 
 #endif /* ILI9341DRIVER_H_ */

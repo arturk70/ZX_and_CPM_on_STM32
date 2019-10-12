@@ -5,20 +5,17 @@
  *      Author: artur
  */
 
-#include "extmem_cashed.h"
 #include "cpm_memory.h"
-#include "cpm_display.h"
 
-#define INTMEMSIZE	12288
-#define EXMEMSIZE	ILI9341_PWIDTH*(ILI9341_PHEIGHT-SCR_HEIGHT*FNT_HEIGHT)*2+(((ILI9341_PWIDTH-SCR_WIDTH*FNT_WIDTH-4)*SCR_HEIGHT*FNT_HEIGHT)/64)*128)
-#define SBHEIGHT (((ILI9341_PWIDTH-SCR_WIDTH*FNT_WIDTH-4)*SCR_HEIGHT*FNT_HEIGHT)/64)*32/CPMD_START_LINE-1
+#define EXTMEMSIZE	(ILI9341_PWIDTH*24*2+(ILI9341_PHEIGHT-24*2)*8*2)*2
+#define INTMEMSIZE	(49152-EXTMEMSIZE)
 
 static uint8_t mem[INTMEMSIZE];
 
 uint8_t cpmmem_read(uint16_t addr) {
 	if(addr<INTMEMSIZE)
 		return mem[addr];
-	else if(addr<(INTMEMSIZE+EXMEMSIZE)
+	else if(addr<(INTMEMSIZE+EXTMEMSIZE))
 		return extmem_read(addr-INTMEMSIZE);
 	else
 		return 0;
@@ -27,15 +24,26 @@ uint8_t cpmmem_read(uint16_t addr) {
 void cpmmem_write(uint16_t addr, uint8_t data) {
 	if(addr<INTMEMSIZE)
 		mem[addr] = data;
-	else if(addr<(INTMEMSIZE+EXMEMSIZE)
+	else if(addr<(INTMEMSIZE+EXTMEMSIZE))
 		extmem_write(addr-INTMEMSIZE, data);
 }
 
 void cpmmem_Init() {
-
-	extmem_Init(0, ILI9341_PWIDTH-1, 0, CPMD_START_LINE-1,
-			0, ILI9341_PWIDTH-1, CPMD_END_LINE+1, ILI9341_PHEIGHT-1,
-			0, CPMD_START_POS-3, CPMD_START_LINE, (((ILI9341_PWIDTH-SCR_WIDTH*FNT_WIDTH-4)*SCR_HEIGHT*FNT_HEIGHT)/64)*32/CPMD_START_LINE-1,
-			CPMD_END_POS+3, ILI9341_PWIDTH-1, CPMD_START_LINE, (((ILI9341_PWIDTH-SCR_WIDTH*FNT_WIDTH-4)*SCR_HEIGHT*FNT_HEIGHT)/64)*32/CPMD_START_LINE-1
+	extmem_Init(0, ILI9341_PWIDTH-1, 0, 23,
+			0, ILI9341_PWIDTH-1, 216, ILI9341_PHEIGHT-1,
+			0, 7, 24, 215,
+			312, ILI9341_PWIDTH-1, 24, 215
 	);
+}
+
+uint16_t cpmmem_test() {
+	uint8_t tmp;
+	uint16_t errcount = 0;
+	for(uint16_t addr=0; addr<0xbfff; addr++) {
+	  cpmmem_write(addr, (uint8_t)(addr&0xff));
+	  tmp = cpmmem_read(addr);
+	  if(tmp != (uint8_t)(addr&0xff)) errcount++;
+	}
+
+	return errcount;
 }
