@@ -149,16 +149,21 @@ void cpmdisp_scroll(uint8_t lnum) {
 
 void cpmdisp_clear() {
 	ILI9341_fillArea(CPMD_START_POS, CPMD_START_LINE, CPMD_END_POS, CPMD_END_LINE, BG_COLOR);
+	cpos[ROW] = 0; cpos[COL] = 0;
 }
 
 void cpmdisp_Init() {
 	ILI9341_Init();
 	cpmdisp_clear();
-	cpos[ROW] = 0; cpos[COL] = 0;
 	chbuf=malloc(FNT_WIDTH*FNT_HEIGHT);
 	scrbuf=malloc(SCR_WIDTH*SCR_HEIGHT);
 	for(uint16_t i=0;i<SCR_WIDTH*SCR_HEIGHT;i++) scrbuf[i]=0x00;
 	drawsymbol(CURSOR_CHAR, cpos[ROW], cpos[COL]);
+}
+
+void cpmdisp_deInit() {
+	free(scrbuf);
+	free(chbuf);
 }
 
 void cpmdisp_putc(char c) {

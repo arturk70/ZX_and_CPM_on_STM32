@@ -75,10 +75,36 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define LED_Pin LL_GPIO_PIN_13
 #define LED_GPIO_Port GPIOC
+#define KBD_4_Pin LL_GPIO_PIN_14
+#define KBD_4_GPIO_Port GPIOC
+#define KBD_3_Pin LL_GPIO_PIN_15
+#define KBD_3_GPIO_Port GPIOC
+#define KBD_2_Pin LL_GPIO_PIN_0
+#define KBD_2_GPIO_Port GPIOA
+#define KBD_1_Pin LL_GPIO_PIN_2
+#define KBD_1_GPIO_Port GPIOA
 #define ILI9341_DC_Pin LL_GPIO_PIN_3
 #define ILI9341_DC_GPIO_Port GPIOA
 #define ILI9341_CS_Pin LL_GPIO_PIN_4
 #define ILI9341_CS_GPIO_Port GPIOA
+#define KBD_0_Pin LL_GPIO_PIN_0
+#define KBD_0_GPIO_Port GPIOB
+#define KBDA_8_Pin LL_GPIO_PIN_1
+#define KBDA_8_GPIO_Port GPIOB
+#define KBDA_9_Pin LL_GPIO_PIN_2
+#define KBDA_9_GPIO_Port GPIOB
+#define KBDA_10_Pin LL_GPIO_PIN_10
+#define KBDA_10_GPIO_Port GPIOB
+#define KBDA_11_Pin LL_GPIO_PIN_11
+#define KBDA_11_GPIO_Port GPIOB
+#define KBDA_15_Pin LL_GPIO_PIN_6
+#define KBDA_15_GPIO_Port GPIOB
+#define KBDA_14_Pin LL_GPIO_PIN_7
+#define KBDA_14_GPIO_Port GPIOB
+#define KBDA_13_Pin LL_GPIO_PIN_8
+#define KBDA_13_GPIO_Port GPIOB
+#define KBDA_12_Pin LL_GPIO_PIN_9
+#define KBDA_12_GPIO_Port GPIOB
 #ifndef NVIC_PRIORITYGROUP_0
 #define NVIC_PRIORITYGROUP_0         ((uint32_t)0x00000007) /*!< 0 bit  for pre-emption priority,
                                                                  4 bits for subpriority */

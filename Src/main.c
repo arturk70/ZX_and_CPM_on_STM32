@@ -23,9 +23,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "cpm_display.h"
-#include "cpm_memory.h"
 #include "stdlib.h"
+#include "cpm_display.h"
+#include "memory.h"
+#include "kbd_driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -108,18 +109,8 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-
   cpmdisp_Init();
-  cpmmem_Init();
 
-  char buf[10];
-  uint16_t errors = cpmmem_test();
-  cpmdisp_puts("Memory test finished ");
-  if(0 == errors) cpmdisp_puts("successfully");
-  else { cpmdisp_puts("with ");cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
-  cpmdisp_puts("!\n");
-
-  unsigned int i=0;
 
   /* USER CODE END 2 */
 
@@ -127,14 +118,48 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+//	  char buf[10];
+//	  uint8_t addr;
+//	  uint8_t scan = 0;
+//	  for(uint8_t i=0; i<8; i++) {
+//		  addr = ~(0x01<<i);
+//		  scan = zxkbd_scan(addr);
+//		  cpmdisp_puts("addr ");
+//		  cpmdisp_puts(utoa(addr, buf, 2));
+//		  cpmdisp_puts(" scan ");
+//		  cpmdisp_puts(utoa(scan, buf, 2));
+//		  cpmdisp_putc('\n');
+//		  LL_mDelay(20);
+//	  }
+
+	  cpmdisp_clear();
+	  char sym = '\0';
+	  cpmdisp_puts("\n\n    Press <6> for ZX Spectrum\n");
+	  cpmdisp_puts("    Press <7> for CP/M\n");
+	  cpmdisp_puts("    Press <8> for memory test\n\n");
+	  cpmdisp_puts("    >");
+
+	  while('\0' == sym) sym = cpmkbd_read();
+	  cpmdisp_putc(sym);
+	  if(sym == '8') {
+		mem_Init(MEMTYPE_CPM);
+		char buf[10];
+		uint16_t errors = mem_test();
+		cpmdisp_puts("\n\n\n\n\n    Memory test finished ");
+		if(0 == errors) cpmdisp_puts("successfully");
+		else { cpmdisp_puts("with ");cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
+		cpmdisp_puts("!\n\n");
+	  }
+	  else if(sym == '6') {
+		  cpmdisp_puts("\n\nRunning ZX\n");
+	  }
+	  else if(sym == '7') {
+		  cpmdisp_puts("\n\nRunning CP/M\n");
+	  }
+	  LL_mDelay(2000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-//	  utoa(i++, buf, 10);
-//	  cpmdisp_puts("Hello number ");
-//	  cpmdisp_puts(buf);
-//	  cpmdisp_puts("!\n");
 
   }
   /* USER CODE END 3 */
@@ -358,12 +383,17 @@ static void MX_GPIO_Init(void)
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOC);
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOD);
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOA);
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOB);
 
   /**/
   LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 
   /**/
   LL_GPIO_SetOutputPin(GPIOA, ILI9341_DC_Pin|ILI9341_CS_Pin);
+
+  /**/
+  LL_GPIO_SetOutputPin(GPIOB, KBDA_8_Pin|KBDA_9_Pin|KBDA_10_Pin|KBDA_11_Pin 
+                          |KBDA_15_Pin|KBDA_14_Pin|KBDA_13_Pin|KBDA_12_Pin);
 
   /**/
   GPIO_InitStruct.Pin = LED_Pin;
@@ -374,12 +404,39 @@ static void MX_GPIO_Init(void)
   LL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
 
   /**/
+  GPIO_InitStruct.Pin = KBD_4_Pin|KBD_3_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
+  LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /**/
+  GPIO_InitStruct.Pin = KBD_2_Pin|KBD_1_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
+  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /**/
   GPIO_InitStruct.Pin = ILI9341_DC_Pin|ILI9341_CS_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
   LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /**/
+  GPIO_InitStruct.Pin = KBD_0_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
+  LL_GPIO_Init(KBD_0_GPIO_Port, &GPIO_InitStruct);
+
+  /**/
+  GPIO_InitStruct.Pin = KBDA_8_Pin|KBDA_9_Pin|KBDA_10_Pin|KBDA_11_Pin 
+                          |KBDA_15_Pin|KBDA_14_Pin|KBDA_13_Pin|KBDA_12_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
+  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 

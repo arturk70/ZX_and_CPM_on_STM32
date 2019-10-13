@@ -11,8 +11,6 @@
 #include "main.h"
 #include "ili9341_driver.h"
 
-uint8_t wr,wg,wb,wpixh,wpixl,rr,rg,rb,rres;
-
 uint8_t extmem_read(uint16_t addr);
 void extmem_write(uint16_t addr, uint8_t data);
 void extmem_Init(uint16_t b1l, uint16_t b1r, uint16_t b1t, uint16_t b1b,

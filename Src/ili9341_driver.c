@@ -11,10 +11,6 @@ uint8_t ILI9341_DMA_busy = 0;
 static uint8_t is_inited = 0;
 static uint16_t fcolor;
 
-void ILI9341_wait_DMA() {
-	while(ILI9341_DMA_busy);
-}
-
 void ILI9341_setLEDpwm(uint16_t val) {
 	if(val>999) val=999;
 	ILI9341_SETLED_PWM(val);
@@ -51,7 +47,7 @@ void ILI9341_Init() {
 
 	// сброс дисплея
 	LL_mDelay(100);
-	while(ILI9341_DMA_busy);
+	ILI9341_WAIT_DMA();
 
 	ILI9341_CS_RESET;
 	/// настраиваем дисплей
@@ -147,7 +143,7 @@ void ILI9341_Init() {
 }
 
 void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
-	while(ILI9341_DMA_busy);
+	ILI9341_WAIT_DMA();
 	ILI9341_sendCommand(ILI9341_COLUMN_ADDR);
 	ILI9341_sendData(x1 >> 8);
 	ILI9341_sendData(x1 & 0xFF);
@@ -163,7 +159,7 @@ void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
 
 //note: (x2-x1+1)*(y2-y1+1) must be less then 65536
 void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *data) {
-	while(ILI9341_DMA_busy);
+	ILI9341_WAIT_DMA();
 
 	uint16_t len = (x2-x1+1)*(y2-y1+1);
 
@@ -188,7 +184,7 @@ void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 
 //note: (x2-x1+1)*(y2-y1+1) must be less then 65536
 void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf) {
-	while(ILI9341_DMA_busy);
+	ILI9341_WAIT_DMA();
 
 	uint16_t len = (x2-x1+1)*(y2-y1+1);
 
@@ -250,7 +246,7 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 
 //note: (x2-x1+1)*(y2-y1+1) must be less then 65536
 void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
-	while(ILI9341_DMA_busy);
+	ILI9341_WAIT_DMA();
 	uint16_t len = (x2-x1+1)*(y2-y1+1);
 	fcolor = color;
 

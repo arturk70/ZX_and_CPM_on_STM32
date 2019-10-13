@@ -23,7 +23,7 @@ uint8_t extmem_read(uint16_t addr) {
 	uint8_t res;
 	uint16_t x, y;
 	calc_pix(addr, &x, &y);
-	ILI9341_wait_DMA();
+	ILI9341_WAIT_DMA();
 
 	ILI9341_setFrame(x, y, x, y);
 	ILI9341_sendCommand(ILI9341_RAMRD);
@@ -54,8 +54,6 @@ uint8_t extmem_read(uint16_t addr) {
 	else
 		res=((r & 0xF8) | (g >> 5u)); //get H byte
 
-	rr=r; rg=g; rb=b; rres=res;
-
 	return res;
 
 }
@@ -63,7 +61,7 @@ uint8_t extmem_read(uint16_t addr) {
 void extmem_write(uint16_t addr, uint8_t data) {
 	uint16_t x, y;
 	calc_pix(addr, &x, &y);
-	ILI9341_wait_DMA();
+	ILI9341_WAIT_DMA();
 
 	ILI9341_setFrame(x, y, x, y);
 	ILI9341_sendCommand(ILI9341_RAMRD);
@@ -89,12 +87,6 @@ void extmem_write(uint16_t addr, uint8_t data) {
 	ILI9341_CS_SET;
 	ILI9341_CS_RESET;
 
-//	uint16_t pix;
-//	pix = ((((uint16_t)r & 0x00F8) << 8u) | (((uint16_t)g & 0x00FC) << 3u) | ((uint16_t)b >> 3u));
-//	if(0 == (addr % 2))
-//		pix = (pix & 0xff00) | data; //to L byte
-//	else
-//		pix = (pix & 0x00ff) | ((uint16_t)data << 8u); //to H byte
 
 	uint8_t pixh, pixl;
 	pixh = (r & 0xF8) | (g >> 5u);
@@ -103,8 +95,6 @@ void extmem_write(uint16_t addr, uint8_t data) {
 		pixl = data; //to L byte
 	else
 		pixh = data; //to H byte
-
-	wr=r; wg=g; wb=b; wpixl=pixl; wpixh=pixh;
 
 	ILI9341_sendCommand(ILI9341_GRAM);
 	ILI9341_sendData(pixh);
