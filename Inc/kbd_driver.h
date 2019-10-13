@@ -16,113 +16,17 @@
 
 uint8_t zxkbd_scan(uint8_t addr) {
 	uint8_t scan = 0;
+	uint32_t pA, pB;
 
-	if(!(addr & 0b00000001)) {
-		LL_GPIO_ResetOutputPin(KBDA_8_GPIO_Port, KBDA_8_Pin);
-		if(LL_GPIO_IsInputPinSet(KBD_4_GPIO_Port, KBD_4_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_3_GPIO_Port, KBD_3_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_2_GPIO_Port, KBD_2_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_1_GPIO_Port, KBD_1_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_0_GPIO_Port, KBD_0_Pin)) scan |= 0x01;
-		LL_GPIO_SetOutputPin(KBDA_8_GPIO_Port, KBDA_8_Pin);
-	}
-	if(!(addr & 0b000000010)) {
-		LL_GPIO_ResetOutputPin(KBDA_9_GPIO_Port, KBDA_9_Pin);
-		if(LL_GPIO_IsInputPinSet(KBD_4_GPIO_Port, KBD_4_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_3_GPIO_Port, KBD_3_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_2_GPIO_Port, KBD_2_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_1_GPIO_Port, KBD_1_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_0_GPIO_Port, KBD_0_Pin)) scan |= 0x01;
-		LL_GPIO_SetOutputPin(KBDA_9_GPIO_Port, KBDA_9_Pin);
-	}
-	if(!(addr & 0b00000100)) {
-		LL_GPIO_ResetOutputPin(KBDA_10_GPIO_Port, KBDA_10_Pin);
-		if(LL_GPIO_IsInputPinSet(KBD_4_GPIO_Port, KBD_4_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_3_GPIO_Port, KBD_3_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_2_GPIO_Port, KBD_2_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_1_GPIO_Port, KBD_1_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_0_GPIO_Port, KBD_0_Pin)) scan |= 0x01;
-		LL_GPIO_SetOutputPin(KBDA_10_GPIO_Port, KBDA_10_Pin);
-	}
-	if(!(addr & 0b00001000)) {
-		LL_GPIO_ResetOutputPin(KBDA_11_GPIO_Port, KBDA_11_Pin);
-		if(LL_GPIO_IsInputPinSet(KBD_4_GPIO_Port, KBD_4_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_3_GPIO_Port, KBD_3_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_2_GPIO_Port, KBD_2_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_1_GPIO_Port, KBD_1_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_0_GPIO_Port, KBD_0_Pin)) scan |= 0x01;
-		LL_GPIO_SetOutputPin(KBDA_11_GPIO_Port, KBDA_11_Pin);
-	}
-	if(!(addr & 0b00010000)) {
-		LL_GPIO_ResetOutputPin(KBDA_12_GPIO_Port, KBDA_12_Pin);
-		if(LL_GPIO_IsInputPinSet(KBD_4_GPIO_Port, KBD_4_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_3_GPIO_Port, KBD_3_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_2_GPIO_Port, KBD_2_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_1_GPIO_Port, KBD_1_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_0_GPIO_Port, KBD_0_Pin)) scan |= 0x01;
-		LL_GPIO_SetOutputPin(KBDA_12_GPIO_Port, KBDA_12_Pin);
-	}
-	if(!(addr & 0b00100000)) {
-		LL_GPIO_ResetOutputPin(KBDA_13_GPIO_Port, KBDA_13_Pin);
-		if(LL_GPIO_IsInputPinSet(KBD_4_GPIO_Port, KBD_4_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_3_GPIO_Port, KBD_3_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_2_GPIO_Port, KBD_2_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_1_GPIO_Port, KBD_1_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_0_GPIO_Port, KBD_0_Pin)) scan |= 0x01;
-		LL_GPIO_SetOutputPin(KBDA_13_GPIO_Port, KBDA_13_Pin);
-	}
-	if(!(addr & 0b01000000)) {
-		LL_GPIO_ResetOutputPin(KBDA_14_GPIO_Port, KBDA_14_Pin);
-		if(LL_GPIO_IsInputPinSet(KBD_4_GPIO_Port, KBD_4_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_3_GPIO_Port, KBD_3_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_2_GPIO_Port, KBD_2_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_1_GPIO_Port, KBD_1_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_0_GPIO_Port, KBD_0_Pin)) scan |= 0x01;
-		LL_GPIO_SetOutputPin(KBDA_14_GPIO_Port, KBDA_14_Pin);
-	}
-	if(!(addr & 0b10000000)) {
-		LL_GPIO_ResetOutputPin(KBDA_15_GPIO_Port, KBDA_15_Pin);
-		if(LL_GPIO_IsInputPinSet(KBD_4_GPIO_Port, KBD_4_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_3_GPIO_Port, KBD_3_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_2_GPIO_Port, KBD_2_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_1_GPIO_Port, KBD_1_Pin)) scan |= 0x01;
-		scan = scan << 1;
-		if(LL_GPIO_IsInputPinSet(KBD_0_GPIO_Port, KBD_0_Pin)) scan |= 0x01;
-		LL_GPIO_SetOutputPin(KBDA_15_GPIO_Port, KBDA_15_Pin);
-	}
+	pB = LL_GPIO_ReadOutputPort(KBDA_8_GPIO_Port);
+	LL_GPIO_WriteOutputPort(KBDA_8_GPIO_Port, (pB & 0xfffff807) | ((uint32_t)addr)<<3);
+	pA = LL_GPIO_ReadInputPort(KBD_2_GPIO_Port);
+	pB = LL_GPIO_ReadInputPort(KBD_0_GPIO_Port);
+	scan = 0x1f & (pB | 0xfffffffc) & ((pB | 0xfffff7ff) >> 7) & (((pA | 0xfffffffe) << 2) | 0xfffffffb) & (((pA | 0xfffffffb) << 1) | 0xfffffff7);
+	pB = LL_GPIO_ReadOutputPort(KBDA_8_GPIO_Port);
+	LL_GPIO_WriteOutputPort(KBDA_8_GPIO_Port, (pB & 0xfffff807) | (0x000000ff<<3));
 
-	return scan & 0x1f;
+	return scan;
 }
 
 char cpmkbd_read() {

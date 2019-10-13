@@ -118,7 +118,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-//	  char buf[10];
+//	  char buf[20];
 //	  uint8_t addr;
 //	  uint8_t scan = 0;
 //	  for(uint8_t i=0; i<8; i++) {
@@ -392,8 +392,8 @@ static void MX_GPIO_Init(void)
   LL_GPIO_SetOutputPin(GPIOA, ILI9341_DC_Pin|ILI9341_CS_Pin);
 
   /**/
-  LL_GPIO_SetOutputPin(GPIOB, KBDA_8_Pin|KBDA_9_Pin|KBDA_10_Pin|KBDA_11_Pin 
-                          |KBDA_15_Pin|KBDA_14_Pin|KBDA_13_Pin|KBDA_12_Pin);
+  LL_GPIO_SetOutputPin(GPIOB, KBDA_15_Pin|KBDA_8_Pin|KBDA_9_Pin|KBDA_10_Pin 
+                          |KBDA_11_Pin|KBDA_12_Pin|KBDA_13_Pin|KBDA_14_Pin);
 
   /**/
   GPIO_InitStruct.Pin = LED_Pin;
@@ -404,13 +404,7 @@ static void MX_GPIO_Init(void)
   LL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
 
   /**/
-  GPIO_InitStruct.Pin = KBD_4_Pin|KBD_3_Pin;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
-  LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /**/
-  GPIO_InitStruct.Pin = KBD_2_Pin|KBD_1_Pin;
+  GPIO_InitStruct.Pin = KBD_2_Pin|KBD_3_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
   LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -424,14 +418,14 @@ static void MX_GPIO_Init(void)
   LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /**/
-  GPIO_InitStruct.Pin = KBD_0_Pin;
+  GPIO_InitStruct.Pin = KBD_0_Pin|KBD_1_Pin|KBD_4_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
-  LL_GPIO_Init(KBD_0_GPIO_Port, &GPIO_InitStruct);
+  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /**/
-  GPIO_InitStruct.Pin = KBDA_8_Pin|KBDA_9_Pin|KBDA_10_Pin|KBDA_11_Pin 
-                          |KBDA_15_Pin|KBDA_14_Pin|KBDA_13_Pin|KBDA_12_Pin;
+  GPIO_InitStruct.Pin = KBDA_15_Pin|KBDA_8_Pin|KBDA_9_Pin|KBDA_10_Pin 
+                          |KBDA_11_Pin|KBDA_12_Pin|KBDA_13_Pin|KBDA_14_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
