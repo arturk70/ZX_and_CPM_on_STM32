@@ -18,5 +18,13 @@ void ZXsys_Run() {
 	Z80_Init();
 
 	is_zx_running = 1;
+
+	uint32_t nxttact = SysTick->VAL / 37;
+
+	while(1) {
+		if((SysTick->VAL / 37) >= nxttact) {
+			nxttact += Z80_Step();
+		}
+	}
 }
 

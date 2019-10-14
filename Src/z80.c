@@ -10,3 +10,8 @@
 void Z80_Init() {
 
 }
+
+uint8_t Z80_Step() {
+
+	return 4;
+}

@@ -11,6 +11,7 @@
 #include "main.h"
 
 void Z80_Init();
+uint8_t Z80_Step();
 
 
 #endif /* Z80_H_ */
