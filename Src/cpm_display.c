@@ -162,6 +162,7 @@ void cpmdisp_Init() {
 }
 
 void cpmdisp_deInit() {
+	cpmdisp_clear();
 	free(scrbuf);
 	free(chbuf);
 }

@@ -19,6 +19,8 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include <cpm_system.h>
+#include <zx_system.h>
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -54,8 +56,9 @@
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_SPI1_Init(void);
-static void MX_TIM2_Init(void);
+void MX_SPI1_Init(void);
+void MX_TIM2_Init(void);
+void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -108,6 +111,7 @@ int main(void)
   MX_DMA_Init();
   MX_SPI1_Init();
   MX_TIM2_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   cpmdisp_Init();
 
@@ -118,25 +122,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-//	  char buf[20];
-//	  uint8_t addr;
-//	  uint8_t scan = 0;
-//	  for(uint8_t i=0; i<8; i++) {
-//		  addr = ~(0x01<<i);
-//		  scan = zxkbd_scan(addr);
-//		  cpmdisp_puts("addr ");
-//		  cpmdisp_puts(utoa(addr, buf, 2));
-//		  cpmdisp_puts(" scan ");
-//		  cpmdisp_puts(utoa(scan, buf, 2));
-//		  cpmdisp_putc('\n');
-//		  LL_mDelay(20);
-//	  }
-
-	  cpmdisp_clear();
 	  char sym = '\0';
 	  cpmdisp_puts("\n\n    Press <6> for ZX Spectrum\n");
 	  cpmdisp_puts("    Press <7> for CP/M\n");
-	  cpmdisp_puts("    Press <8> for memory test\n\n");
+	  cpmdisp_puts("    Press <8> for memory test\n");
+	  cpmdisp_puts("    Press <9> for brightness\n");
 	  cpmdisp_puts("    >");
 
 	  while('\0' == sym) sym = cpmkbd_read();
@@ -151,12 +141,24 @@ int main(void)
 		cpmdisp_puts("!\n\n");
 	  }
 	  else if(sym == '6') {
-		  cpmdisp_puts("\n\nRunning ZX\n");
+		  cpmdisp_deInit();
+		  ZXsys_Run();
 	  }
 	  else if(sym == '7') {
-		  cpmdisp_puts("\n\nRunning CP/M\n");
+		  cpmdisp_deInit();
+		  CPMsys_Run();
+	  }
+	  else if(sym == '9') {
+		  cpmdisp_puts("\n\nEnter brightness[6-0]=[20%-100%]>");
+		  while('\0' == sym) sym = cpmkbd_read();
+		  cpmdisp_putc(sym);
+		  if('0' == sym)
+			  ILI9341_setLEDpwm(1000);
+		  else if((sym >= '6') &(sym <= '9'))
+			  ILI9341_setLEDpwm((sym-'6')*200+200);
 	  }
 	  LL_mDelay(2000);
+	  cpmdisp_puts("\n\n");
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -192,9 +194,9 @@ void SystemClock_Config(void)
   {
     
   }
-  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_2);
-  LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_2);
-  LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
+  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
+  LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_4);
+  LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_2);
   LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
 
    /* Wait till System clock is ready */
@@ -202,9 +204,9 @@ void SystemClock_Config(void)
   {
   
   }
-  LL_Init1msTick(64000000);
+  LL_Init1msTick(128000000);
   LL_SYSTICK_SetClkSource(LL_SYSTICK_CLKSOURCE_HCLK);
-  LL_SetSystemCoreClock(64000000);
+  LL_SetSystemCoreClock(128000000);
 }
 
 /**
@@ -212,7 +214,7 @@ void SystemClock_Config(void)
   * @param None
   * @retval None
   */
-static void MX_SPI1_Init(void)
+void MX_SPI1_Init(void)
 {
 
   /* USER CODE BEGIN SPI1_Init 0 */
@@ -301,7 +303,7 @@ static void MX_SPI1_Init(void)
   * @param None
   * @retval None
   */
-static void MX_TIM2_Init(void)
+void MX_TIM2_Init(void)
 {
 
   /* USER CODE BEGIN TIM2_Init 0 */
@@ -319,12 +321,13 @@ static void MX_TIM2_Init(void)
   /* USER CODE BEGIN TIM2_Init 1 */
 
   /* USER CODE END TIM2_Init 1 */
-  TIM_InitStruct.Prescaler = 71;
+  TIM_InitStruct.Prescaler = 63;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
   TIM_InitStruct.Autoreload = 999;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
   LL_TIM_Init(TIM2, &TIM_InitStruct);
   LL_TIM_DisableARRPreload(TIM2);
+  LL_TIM_SetClockSource(TIM2, LL_TIM_CLOCKSOURCE_INTERNAL);
   LL_TIM_OC_EnablePreload(TIM2, LL_TIM_CHANNEL_CH2);
   TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_PWM1;
   TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
@@ -347,6 +350,53 @@ static void MX_TIM2_Init(void)
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+}
+
+/**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  LL_TIM_InitTypeDef TIM_InitStruct = {0};
+  LL_TIM_OC_InitTypeDef TIM_OC_InitStruct = {0};
+
+  /* Peripheral clock enable */
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM3);
+
+  /* TIM3 interrupt Init */
+  NVIC_SetPriority(TIM3_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(TIM3_IRQn);
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  TIM_InitStruct.Prescaler = 63999;
+  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
+  TIM_InitStruct.Autoreload = 19;
+  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+  LL_TIM_Init(TIM3, &TIM_InitStruct);
+  LL_TIM_DisableARRPreload(TIM3);
+  LL_TIM_SetClockSource(TIM3, LL_TIM_CLOCKSOURCE_INTERNAL);
+  TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_FROZEN;
+  TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
+  TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
+  TIM_OC_InitStruct.CompareValue = 0;
+  TIM_OC_InitStruct.OCPolarity = LL_TIM_OCPOLARITY_HIGH;
+  LL_TIM_OC_Init(TIM3, LL_TIM_CHANNEL_CH1, &TIM_OC_InitStruct);
+  LL_TIM_OC_DisableFast(TIM3, LL_TIM_CHANNEL_CH1);
+  LL_TIM_SetTriggerOutput(TIM3, LL_TIM_TRGO_RESET);
+  LL_TIM_DisableMasterSlaveMode(TIM3);
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
 
 }
 

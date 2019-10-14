@@ -16,6 +16,8 @@ static uint16_t RAM_ROM_splitaddr;
 static uint8_t mem_type;
 static uint8_t mem[INTRAMSIZE];
 
+uint8_t *get_ZX_videomem() { if(mem_type == MEMTYPE_ZX) return mem; else return 0x00000000; }
+
 uint8_t mem_read(uint16_t addr) {
 	if(mem_type == MEMTYPE_ZX) {
 		if(addr < RAM_ROM_splitaddr)
@@ -25,7 +27,7 @@ uint8_t mem_read(uint16_t addr) {
 	}
 	else {
 		if(addr >= RAM_ROM_splitaddr)
-			return CPMROM[addr];
+			return CPMROM[addr-RAM_ROM_splitaddr];
 	}
 
 	if(addr<INTRAMSIZE)
