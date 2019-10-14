@@ -10,8 +10,8 @@
 
 #include "main.h"
 
-#define IS_SHIFT	(scan[0] == 0x1e)
-#define IS_CONTROL	(scan[7] == 0x1d)
+#define IS_SHIFT	(scan[0] & 0x01)
+#define IS_CONTROL	(scan[7] & 0x02)
 
 
 uint8_t zxkbd_scan(uint8_t addr) {
@@ -34,21 +34,111 @@ char cpmkbd_read() {
 	uint8_t scan[8];
 
 	for(uint8_t i=0; i<8; i++)
-		scan[i] = zxkbd_scan(~(0x01<<i));
+		scan[i] = ~zxkbd_scan(~(0x01<<i));
 
-	if(scan[6] == 0x1e) return '\n';
-	if(scan[7] == 0x1e) return ' ';
+	if(scan[6] & 0x01) return '\n';//Enter
+	if(scan[7] & 0x01) {
+		if(IS_CONTROL)
+			return (char)0x18;//Ctrl-C
+		else
+			return ' ';
+	}
 
-	res = (scan[0] == 0x1d) ? 'z' : (scan[0] == 0x1b) ? 'x' : (scan[0] == 0x17) ? 'c' : (scan[0] == 0x0f) ? 'v' : res;
-	res = (scan[1] == 0x1e) ? 'a' : (scan[1] == 0x1d) ? 's' : (scan[1] == 0x1b) ? 'd' : (scan[1] == 0x17) ? 'f' : (scan[1] == 0x0f) ? 'g' : res;
-	res = (scan[2] == 0x1e) ? 'q' : (scan[2] == 0x1d) ? 'w' : (scan[2] == 0x1b) ? 'e' : (scan[2] == 0x17) ? 'r' : (scan[2] == 0x0f) ? 't' : res;
-	res = (scan[5] == 0x1e) ? 'p' : (scan[5] == 0x1d) ? 'o' : (scan[5] == 0x1b) ? 'i' : (scan[5] == 0x17) ? 'u' : (scan[5] == 0x0f) ? 'y' : res;
-	res = (scan[6] == 0x1d) ? 'l' : (scan[6] == 0x1b) ? 'k' : (scan[6] == 0x17) ? 'j' : (scan[6] == 0x0f) ? 'h' : res;
-	res = (scan[7] == 0x1b) ? 'm' : (scan[7] == 0x17) ? 'n' : (scan[7] == 0x0f) ? 'b' : res;
-	if(IS_SHIFT && (res >= 'a') && (res<='z')) res -= 0x20;
+	res = (scan[3] & 0x01) ? '1' : ((scan[3] & 0x02) ? '2' : ((scan[3] & 0x04) ? '3' : ((scan[3] & 0x08) ? '4' : ((scan[3] & 0x10) ? '5' : res))));
+	res = (scan[4] & 0x01) ? '0' : ((scan[4] & 0x02) ? '9' : ((scan[4] & 0x04) ? '8' : ((scan[4] & 0x08) ? '7' : ((scan[4] & 0x10) ? '6' : res))));
+	if(res != 0x00) {
+		if(IS_SHIFT) {
+			switch (res) {
+				case '1': res = '!'; break;
+				case '2': res = '@'; break;
+				case '3': res = '#'; break;
+				case '4': res = '$'; break;
+				case '5': res = '%'; break;
+				case '6': res = '&'; break;
+				case '7': res = '\''; break;
+				case '8': res = '('; break;
+				case '9': res = ')'; break;
+				case '0': res = '_'; break;
+			}
 
-	res = (scan[3] == 0x1e) ? '1' : (scan[3] == 0x1d) ? '2' : (scan[3] == 0x1b) ? '3' : (scan[3] == 0x17) ? '4' : (scan[3] == 0x0f) ? '5' : res;
-	res = (scan[4] == 0x1e) ? '0' : (scan[4] == 0x1d) ? '9' : (scan[4] == 0x1b) ? '8' : (scan[4] == 0x17) ? '7' : (scan[4] == 0x0f) ? '6' : res;
+			return res;
+		}
+		else {
+			if(IS_CONTROL) {
+				if(res == '0') return (char)0x08;//backspace
+				if(res == '1') return (char)0x1b;//ESC
+				return 0x00;
+			}
+			else
+				return res;
+		}
+	}
+
+
+	res =                           (scan[0] & 0x02) ? 'z' : ((scan[0] & 0x04) ? 'x' : ((scan[0] & 0x08) ? 'c' : ((scan[0] & 0x10) ? 'v' : res)));
+	res = (scan[1] & 0x01) ? 'a' : ((scan[1] & 0x02) ? 's' : ((scan[1] & 0x04) ? 'd' : ((scan[1] & 0x08) ? 'f' : ((scan[1] & 0x10) ? 'g' : res))));
+	res = (scan[2] & 0x01) ? 'q' : ((scan[2] & 0x02) ? 'w' : ((scan[2] & 0x04) ? 'e' : ((scan[2] & 0x08) ? 'r' : ((scan[2] & 0x10) ? 't' : res))));
+	res = (scan[5] & 0x01) ? 'p' : ((scan[5] & 0x02) ? 'o' : ((scan[5] & 0x04) ? 'i' : ((scan[5] & 0x08) ? 'u' : ((scan[5] & 0x10) ? 'y' : res))));
+	res =                           (scan[6] & 0x02) ? 'l' : ((scan[6] & 0x04) ? 'k' : ((scan[6] & 0x08) ? 'j' : ((scan[6] & 0x10) ? 'h' : res)));
+	res =                                                     (scan[7] & 0x04) ? 'm' : ((scan[7] & 0x08) ? 'n' : ((scan[7] & 0x10) ? 'b' : res));
+	if(res != 0x00) {
+		if(IS_CONTROL) {
+			if(IS_SHIFT) {
+				switch (res) {
+					case '1': res = '!'; break;
+					case '2': res = '@'; break;
+					case '3': res = '#'; break;
+					case '4': res = '$'; break;
+					case '5': res = '%'; break;
+					case '6': res = '&'; break;
+					case '7': res = '\''; break;
+					case '8': res = '('; break;
+					case '9': res = ')'; break;
+					case '0': res = '_'; break;
+
+					case 'r': res = '<'; break;
+					case 't': res = '>'; break;
+					case 'y': res = '['; break;
+					case 'u': res = ']'; break;
+					case 'o': res = ';'; break;
+					case 'p': res = '"'; break;
+
+					case 'a': res = '~'; break;
+					case 's': res = '|'; break;
+					case 'd': res = '\\'; break;
+					case 'f': res = '{'; break;
+					case 'g': res = '}'; break;
+					case 'h': res = '^'; break;
+					case 'j': res = '-'; break;
+					case 'k': res = '+'; break;
+					case 'l': res = '='; break;
+
+					case 'z': res = ':'; break;
+					case 'x': res = '`'; break;
+					case 'c': res = '?'; break;
+					case 'v': res = '/'; break;
+					case 'b': res = '*'; break;
+					case 'n': res = ','; break;
+					case 'm': res = '.'; break;
+				}
+
+				return res;
+			}
+			else {
+				if((res >='a') && (res <='z'))
+					return res - 0x60; //CTRL codes
+				else {
+
+				}
+			}
+		}
+		else {
+			if(IS_SHIFT)
+				return res - 0x20; //Upper case
+			else
+				return res;
+		}
+	}
 
 	return res;
 }
