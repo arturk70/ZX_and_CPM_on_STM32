@@ -9,14 +9,14 @@
 
 uint8_t is_zx_running = 0;
 
-void ZXsys_Run() {
-	LL_TIM_EnableCounter(TIM3);
+void zxsys_Run() {
 	LL_TIM_EnableUpdateEvent(TIM3);
+	LL_TIM_EnableCounter(TIM3);
 	LL_TIM_EnableIT_UPDATE(TIM3);
 
 	mem_Init(MEMTYPE_ZX);
 	ZXdisp_Init();
-	Z80_Init();
+	Z80_Init(zxports_out, zxports_in);
 
 	is_zx_running = 1;
 
@@ -27,5 +27,13 @@ void ZXsys_Run() {
 			nxttact += Z80_Step();
 		}
 	}
+}
+
+void zxports_out(uint16_t addr, uint8_t data) {
+
+}
+
+uint8_t zxports_in(uint16_t addr) {
+	return 0xff;
 }
 

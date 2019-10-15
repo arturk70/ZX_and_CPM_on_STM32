@@ -45,7 +45,7 @@
 		LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_8BIT); \
 		ILI9341_DMA_busy = 0; }
 
-uint8_t ILI9341_DMA_busy;
+extern uint8_t ILI9341_DMA_busy;
 
 void ILI9341_Init();
 void ILI9341_sendCommand(uint8_t com);
