@@ -11,7 +11,9 @@
 
 static uint8_t *ZXvideomem;
 static uint16_t *linebuf;
-static uint8_t flash;
+static uint8_t lnum;
+static uint8_t frnum;
+uint8_t zx_newline_flag;
 
 void ZXdisp_clear() {
 	ILI9341_fillArea(ZXD_START_POS, ZXD_START_LINE, ZXD_END_POS, ZXD_END_LINE, BLACK);
@@ -22,16 +24,22 @@ void ZXdisp_Init() {
 	ZXvideomem = get_ZX_videomem();
 	ILI9341_Init();
 	ZXdisp_clear();
-	linebuf = malloc(ZX_PIXELS*2);
-	flash = 0;
+	linebuf = malloc(ZX_PIXELS*8*2);
+	lnum = 0;
+	frnum = 0;
+
+	LL_TIM_EnableUpdateEvent(TIM3);
+	LL_TIM_EnableCounter(TIM3);
+	LL_TIM_EnableIT_UPDATE(TIM3);
 }
 void ZXdisp_deInit() {
+	LL_TIM_DisableIT_UPDATE(TIM3);
+	LL_TIM_DisableCounter(TIM3);
 	free(linebuf);
 }
 
-void ZXdisp_drawline(uint8_t lnum) {
-	uint8_t *lineaddr = ZXvideomem+((lnum & 0xc0) | ((lnum & 0x07)<<3) | ((lnum & 0x38)>>3))*32;
-	uint8_t *attraddr = ZXvideomem+0x1800+(lnum/8)*32;
+void ZXdisp_drawnextline() {
+	uint8_t *attraddr = ZXvideomem+0x1800+lnum*32;
 
 	uint8_t attr;
 	uint16_t fgcolor;
@@ -40,27 +48,43 @@ void ZXdisp_drawline(uint8_t lnum) {
 
 	for(uint8_t bnum=0; bnum<32; bnum++) {
 		attr = *(attraddr+bnum);
-		fgcolor=((attr & 0x02) << 13) | ((attr & 0x04) << 7) | ((attr & 0x01) << 3);
-		bgcolor=((attr & 0x10) << 10) | ((attr & 0x20) << 4) | ((attr & 0x08));
-		if(attr & 0x40) {
-			fgcolor |= fgcolor << 1;
-			bgcolor |= bgcolor << 1;
+		fgcolor  = (attr & 0x02) ? 0xf800 : 0;
+		fgcolor |= (attr & 0x04) ? 0x07e0 : 0;
+		fgcolor |= (attr & 0x01) ? 0x001f : 0;
+		bgcolor  = (attr & 0x10) ? 0xf800 : 0;
+		bgcolor |= (attr & 0x20) ? 0x07e0 : 0;
+		bgcolor |= (attr & 0x08) ? 0x001f : 0;
+		if(!(attr & 0x40)) {
+			fgcolor &= 0xb618;
+			bgcolor &= 0xb618;
 		}
-		if((attr & 0x80) && flash) {
+		if((attr & 0x80) && (frnum >25)) {
 			tmp = fgcolor;
 			fgcolor = bgcolor;
 			bgcolor = tmp;
 		}
 
-		for(uint8_t pnum=0; pnum<8; pnum++) {
-			if((*(lineaddr+bnum)) & (0x01 << (7-pnum)))
-				linebuf[bnum*8+pnum] = fgcolor;
-			else
-				linebuf[bnum*8+pnum] = bgcolor;
+		for(uint8_t ln=0; ln<8; ln++) {
+			uint8_t *lineaddr = ZXvideomem+(lnum << 8)+(ln<<5);
+
+			for(uint8_t pnum=0; pnum<8; pnum++) {
+				if(((*(lineaddr+bnum)) >> pnum) & 0x01)
+					linebuf[ln*ZX_PIXELS+bnum*8+7-pnum] = fgcolor;
+				else
+					linebuf[ln*ZX_PIXELS+bnum*8+7-pnum] = bgcolor;
+			}
 		}
 	}
+	ILI9341_sendBuf(ZXD_START_POS, ZXD_START_LINE+lnum*8, ZXD_END_POS, ZXD_START_LINE+lnum*8+7, linebuf);
 
-	ILI9341_sendBuf(ZXD_START_POS, ZXD_START_LINE+lnum, ZXD_END_POS, ZXD_START_LINE+lnum, linebuf);
+	lnum++;
+	if(lnum >= ZX_LINES/8) {
+		lnum = 0;
+		frnum++;
+		if(frnum >=50) frnum = 0;
+	}
+
+	ZX_NEWLINE_RESET;
 }
 
 

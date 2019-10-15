@@ -10,22 +10,25 @@
 uint8_t is_zx_running = 0;
 
 void zxsys_Run() {
-	LL_TIM_EnableUpdateEvent(TIM3);
-	LL_TIM_EnableCounter(TIM3);
-	LL_TIM_EnableIT_UPDATE(TIM3);
+
 
 	mem_Init(MEMTYPE_ZX);
-	ZXdisp_Init();
 	Z80_Init(zxports_out, zxports_in);
+	for(uint16_t i = 0x4000; i<0x5800; i++) {
+		mem_write(i, i);
+	}
+	for(uint16_t i = 0x5800; i<0x5B00; i++) {
+		mem_write(i, i);
+	}
+	ZXdisp_Init();
 
 	is_zx_running = 1;
 
-	uint32_t nxttact = SysTick->VAL / 37;
-
 	while(1) {
-		if((SysTick->VAL / 37) >= nxttact) {
-			nxttact += Z80_Step();
-		}
+		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
+		if(zx_newline_flag)
+			ZXdisp_drawnextline();
+		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
 	}
 }
 

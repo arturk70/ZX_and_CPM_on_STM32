@@ -18,9 +18,14 @@
 #define ZXD_START_POS	((ILI9341_PWIDTH-ZX_PIXELS)/2)
 #define ZXD_END_POS		(ZXD_START_POS+ZX_PIXELS-1)
 
+#define ZX_NEWLINE_SET {zx_newline_flag = 1;}
+#define ZX_NEWLINE_RESET {zx_newline_flag = 0;}
+
+extern uint8_t zx_newline_flag;
+
 void ZXdisp_Init();
 void ZXdisp_deInit();
-void ZXdisp_drawline(uint8_t lnum);
+void ZXdisp_drawnextline();
 
 
 #endif /* ZX_DISPLAY_H_ */

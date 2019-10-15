@@ -24,7 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "ili9341_driver.h"
-#include "zx_system.h"
+#include "zx_display.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -235,7 +235,7 @@ void TIM3_IRQHandler(void)
   /* USER CODE BEGIN TIM3_IRQn 0 */
 	if(LL_TIM_IsActiveFlag_UPDATE(TIM3)) {
 		LL_TIM_ClearFlag_UPDATE(TIM3);
-		LL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+		ZX_NEWLINE_SET;
 	}
   /* USER CODE END TIM3_IRQn 0 */
   /* USER CODE BEGIN TIM3_IRQn 1 */
