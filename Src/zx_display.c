@@ -22,7 +22,7 @@ void ZXdisp_Init() {
 	ZXvideomem = get_ZX_videomem();
 	ILI9341_Init();
 	ZXdisp_clear();
-	linebuf = malloc(ZX_PIXELS);
+	linebuf = malloc(ZX_PIXELS*2);
 	flash = 0;
 }
 void ZXdisp_deInit() {

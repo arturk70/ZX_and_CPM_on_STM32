@@ -191,6 +191,8 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 	ILI9341_setFrame(x1, y1, x2, y2);
 	ILI9341_sendCommand(ILI9341_RAMRD);
 
+	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV8);
+
 	uint8_t r,g,b;
 	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
 	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
@@ -216,6 +218,8 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
 	ILI9341_CS_SET;
 	ILI9341_CS_RESET;
+
+	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV2);
 
 //	LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH);
 //	while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_RX_CH));

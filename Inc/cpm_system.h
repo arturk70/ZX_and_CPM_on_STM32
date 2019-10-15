@@ -14,10 +14,6 @@
 #include "z80.h"
 #include "kbd_driver.h"
 
-void CPMsys_Run() {
-	cpmdisp_Init();
-	mem_Init(MEMTYPE_CPM);
-
-}
+void CPMsys_Run();
 
 #endif /* CPM_SYSTEM_H_ */

@@ -155,7 +155,7 @@ void cpmdisp_clear() {
 void cpmdisp_Init() {
 	ILI9341_Init();
 	cpmdisp_clear();
-	chbuf=malloc(FNT_WIDTH*FNT_HEIGHT);
+	chbuf=malloc(FNT_WIDTH*FNT_HEIGHT*2);
 	scrbuf=malloc(SCR_WIDTH*SCR_HEIGHT);
 	for(uint16_t i=0;i<SCR_WIDTH*SCR_HEIGHT;i++) scrbuf[i]=0x00;
 	drawsymbol(CURSOR_CHAR, cpos[ROW], cpos[COL]);

@@ -28,6 +28,8 @@ uint8_t extmem_read(uint16_t addr) {
 	ILI9341_setFrame(x, y, x, y);
 	ILI9341_sendCommand(ILI9341_RAMRD);
 
+	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV8);
+
 	uint8_t r,g,b;
 	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
 	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
@@ -48,6 +50,8 @@ uint8_t extmem_read(uint16_t addr) {
 	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
 	ILI9341_CS_SET;
 	ILI9341_CS_RESET;
+
+	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV2);
 
 	if(0 == (addr % 2))
 		res=(((g & 0xfc) << 3u) | (b >> 3u)); //get L byte
@@ -66,6 +70,8 @@ void extmem_write(uint16_t addr, uint8_t data) {
 	ILI9341_setFrame(x, y, x, y);
 	ILI9341_sendCommand(ILI9341_RAMRD);
 
+	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV8);
+
 	uint8_t r,g,b;
 	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
 	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
@@ -87,6 +93,7 @@ void extmem_write(uint16_t addr, uint8_t data) {
 	ILI9341_CS_SET;
 	ILI9341_CS_RESET;
 
+	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV2);
 
 	uint8_t pixh, pixl;
 	pixh = (r & 0xF8) | (g >> 5u);

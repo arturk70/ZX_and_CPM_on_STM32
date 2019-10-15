@@ -30,8 +30,7 @@
 	    LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_TX_CH); \
 		while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_TX_CH)); \
 	    if(LL_DMA_IsActiveFlag_TE3(ILI9341_DMA)) { \
-	    	LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin); \
-			LL_DMA_ClearFlag_TE3(ILI9341_DMA);} \
+	    	LL_DMA_ClearFlag_TE3(ILI9341_DMA);} \
 		LL_DMA_ClearFlag_TC3(ILI9341_DMA); \
 		while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0); \
 		LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_8BIT); \
@@ -40,8 +39,7 @@
 	    LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH); \
 		while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_RX_CH)); \
 	    if(LL_DMA_IsActiveFlag_TE2(ILI9341_DMA)) { \
-	    	LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin); \
-			LL_DMA_ClearFlag_TE2(ILI9341_DMA);} \
+	    	LL_DMA_ClearFlag_TE2(ILI9341_DMA);} \
 		LL_DMA_ClearFlag_TC2(ILI9341_DMA); \
 		while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0); \
 		LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_8BIT); \

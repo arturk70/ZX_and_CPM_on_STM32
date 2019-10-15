@@ -233,9 +233,7 @@ void DMA1_Channel3_IRQHandler(void)
 void TIM3_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM3_IRQn 0 */
-	if(is_zx_running) {
-
-	}
+	LL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
   /* USER CODE END TIM3_IRQn 0 */
   /* USER CODE BEGIN TIM3_IRQn 1 */
 
