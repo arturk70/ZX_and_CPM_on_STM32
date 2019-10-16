@@ -46,8 +46,8 @@ void ZXdisp_drawnextline() {
 	uint16_t bgcolor;
 	uint16_t tmp;
 
-	for(uint8_t bnum=0; bnum<32; bnum++) {
-		attr = *(attraddr+bnum);
+	for(uint8_t colnum=0; colnum<32; colnum++) {
+		attr = *(attraddr+colnum);
 		fgcolor  = (attr & 0x02) ? 0xf800 : 0;
 		fgcolor |= (attr & 0x04) ? 0x07e0 : 0;
 		fgcolor |= (attr & 0x01) ? 0x001f : 0;
@@ -64,15 +64,13 @@ void ZXdisp_drawnextline() {
 			bgcolor = tmp;
 		}
 
-		uint8_t *chladdr = ZXvideomem+(lnum<<8)+bnum;
-		for(uint8_t ln=0; ln<8; ln++) {
-			for(uint8_t pnum=0; pnum<8; pnum++) {
-				if(((*(chladdr)) >> pnum) & 0x01)
-					linebuf[ln*ZX_PIXELS+bnum*8+7-pnum] = fgcolor;
+		for(uint8_t pixline=0; pixline<8; pixline++) {
+			for(uint8_t pixnum=0; pixnum<8; pixnum++) {
+				if((((ZXvideomem[lnum*ZX_PIXELS+colnum+pixline*32]) >> pixnum) & 0x01) != 0)
+					linebuf[pixline*ZX_PIXELS+colnum*8+7-pixnum] = fgcolor;
 				else
-					linebuf[ln*ZX_PIXELS+bnum*8+7-pnum] = bgcolor;
+					linebuf[pixline*ZX_PIXELS+colnum*8+7-pixnum] = bgcolor;
 			}
-			chladdr +=32;
 		}
 	}
 	ILI9341_sendBuf(ZXD_START_POS, ZXD_START_LINE+lnum*8, ZXD_END_POS, ZXD_START_LINE+lnum*8+7, linebuf);
