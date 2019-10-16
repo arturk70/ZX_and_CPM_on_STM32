@@ -20,15 +20,25 @@ void zxsys_Run() {
 	for(uint16_t i = 0x5800; i<0x5B00; i++) {
 		mem_write(i, i);
 	}
+	for(uint8_t i=0; i<3; i++)
+		for(uint8_t j=0; j<32; j++)
+			for(uint8_t l=0; l<8; l++) {
+				uint16_t la = (i*32+j)*8+l;
+				uint16_t sa = (i<<8) | (l<<5) | j;
+				uint8_t b = mem_read(0x3d00+la);
+				mem_write(0x4000+sa, b);
+
+			}
 	ZXdisp_Init();
 
 	is_zx_running = 1;
 
 	while(1) {
-		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 		if(zx_newline_flag)
 			ZXdisp_drawnextline();
 		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
+		while(!zx_newline_flag);
+		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 	}
 }
 

@@ -233,10 +233,7 @@ void DMA1_Channel3_IRQHandler(void)
 void TIM3_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM3_IRQn 0 */
-	if(LL_TIM_IsActiveFlag_UPDATE(TIM3)) {
-		LL_TIM_ClearFlag_UPDATE(TIM3);
-		ZX_NEWLINE_SET;
-	}
+	TIM3_IRQ_HANDLER();
   /* USER CODE END TIM3_IRQn 0 */
   /* USER CODE BEGIN TIM3_IRQn 1 */
 
