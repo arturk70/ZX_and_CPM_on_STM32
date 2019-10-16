@@ -168,6 +168,7 @@ void cpmdisp_deInit() {
 }
 
 void cpmdisp_putc(char c) {
+	if(c == '\0') return;
 	if(c == '\n') {
 		for(uint8_t i=cpos[COL]; i< SCR_WIDTH; i++)
 			scrbuf[cpos[ROW]*SCR_WIDTH+i] = 0x00;
