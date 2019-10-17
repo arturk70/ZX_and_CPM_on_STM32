@@ -148,13 +148,13 @@ int main(void)
 		  CPMsys_Run();
 	  }
 	  else if(sym == '9') {
-		  cpmdisp_puts("\n\nEnter brightness[6-0]=[20%-100%]>");
-		  do { sym = cpmkbd_read(); } while('\0' == sym);
-		  cpmdisp_putc(sym);
-		  if('0' == sym)
-			  ILI9341_setLEDpwm(1000);
-		  else if((sym >= '6') &(sym <= '9'))
-			  ILI9341_setLEDpwm((sym-'6')*200+200);
+		  cpmdisp_puts("\n\nEnter brightness[1-0]=[10%-100%]>");
+			do { sym = cpmkbd_read(); } while('\0' == sym);
+			cpmdisp_putc(sym);
+			if('0' == sym)
+				ILI9341_setLEDpwm(1000);
+			else if((sym >= '1') &(sym <= '9'))
+				ILI9341_setLEDpwm((sym-'1')*100+100);
 	  }
 	  LL_mDelay(2000);
 	  cpmdisp_puts("\n\n");
