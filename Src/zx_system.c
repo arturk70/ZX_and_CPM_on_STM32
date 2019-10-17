@@ -14,6 +14,8 @@ void zxsys_Run() {
 
 	mem_Init(MEMTYPE_ZX);
 	Z80_Init(zxports_out, zxports_in);
+	ZXdisp_Init();
+
 	for(uint16_t i = 0x4000; i<0x5800; i++) {
 		mem_write(i, i);
 	}
@@ -29,7 +31,7 @@ void zxsys_Run() {
 				mem_write(0x4000+sa, b);
 
 			}
-	ZXdisp_Init();
+
 
 	is_zx_running = 1;
 

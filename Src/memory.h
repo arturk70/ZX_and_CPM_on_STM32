@@ -18,6 +18,7 @@ void mem_write(uint16_t addr, uint8_t data);
 void mem_Init(uint8_t type);
 void mem_clear();
 uint16_t mem_test();
+uint16_t mem_rnd_test();
 uint8_t *get_ZX_videomem();
 
 #endif /* MEMORY_H_ */

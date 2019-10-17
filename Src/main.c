@@ -1,21 +1,21 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+ * All rights reserved.</center></h2>
+ *
+ * This software component is licensed by ST under BSD 3-Clause license,
+ * the "License"; You may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at:
+ *                        opensource.org/licenses/BSD-3-Clause
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -112,57 +112,62 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  cpmdisp_Init();
+	cpmdisp_Init();
 
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-	  char sym;
-	  cpmdisp_puts("\n\n    Press <6> for ZX Spectrum\n");
-	  cpmdisp_puts("    Press <7> for CP/M\n");
-	  cpmdisp_puts("    Press <8> for memory test\n");
-	  cpmdisp_puts("    Press <9> for brightness\n");
-	  cpmdisp_puts("    >");
+	while (1)
+	{
+		char sym;
+		cpmdisp_puts("\n\n    Press <6> for ZX Spectrum\n");
+		cpmdisp_puts("    Press <7> for CP/M\n");
+		cpmdisp_puts("    Press <8> for memory test\n");
+		cpmdisp_puts("    Press <9> for brightness\n");
+		cpmdisp_puts("    >");
 
-	  do { sym = cpmkbd_read(); } while('\0' == sym);
-	  cpmdisp_putc(sym);
-	  if(sym == '8') {
-		mem_Init(MEMTYPE_CPM);
-		char buf[10];
-		uint16_t errors = mem_test();
-		cpmdisp_puts("\n\n\n\n\n    Memory test finished ");
-		if(0 == errors) cpmdisp_puts("successfully");
-		else { cpmdisp_puts("with ");cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
-		cpmdisp_puts("!\n\n");
-	  }
-	  else if(sym == '6') {
-		  cpmdisp_deInit();
-		  zxsys_Run();
-	  }
-	  else if(sym == '7') {
-		  cpmdisp_deInit();
-		  CPMsys_Run();
-	  }
-	  else if(sym == '9') {
-		  cpmdisp_puts("\n\nEnter brightness[1-0]=[10%-100%]>");
+		do { sym = cpmkbd_read(); } while('\0' == sym);
+		cpmdisp_putc(sym);
+		if(sym == '8') {
+			mem_Init(MEMTYPE_CPM);
+			char buf[20];
+			uint16_t errors = mem_test();
+			cpmdisp_puts("\n\n\n\n\n    Linear memory test: ");
+			if(0 == errors) cpmdisp_puts("successfully");
+			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
+			cpmdisp_puts("!\n");
+			errors = mem_rnd_test();
+			cpmdisp_puts("\n\n\n\n\n    Random memory test: ");
+			if(0 == errors) cpmdisp_puts("successfully");
+			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
+			cpmdisp_puts("!\n");
+		}
+		else if(sym == '6') {
+			cpmdisp_deInit();
+			zxsys_Run();
+		}
+		else if(sym == '7') {
+			cpmdisp_deInit();
+			CPMsys_Run();
+		}
+		else if(sym == '9') {
+			cpmdisp_puts("\n\nEnter brightness[1-0]=[10%-100%]>");
 			do { sym = cpmkbd_read(); } while('\0' == sym);
 			cpmdisp_putc(sym);
 			if('0' == sym)
 				ILI9341_setLEDpwm(1000);
 			else if((sym >= '1') &(sym <= '9'))
 				ILI9341_setLEDpwm((sym-'1')*100+100);
-	  }
-	  LL_mDelay(2000);
-	  cpmdisp_puts("\n\n");
+		}
+		LL_mDelay(2000);
+		cpmdisp_puts("\n\n");
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 
-  }
+	}
   /* USER CODE END 3 */
 }
 
@@ -376,7 +381,7 @@ static void MX_TIM3_Init(void)
   /* USER CODE BEGIN TIM3_Init 1 */
 
   /* USER CODE END TIM3_Init 1 */
-  TIM_InitStruct.Prescaler = 79;
+  TIM_InitStruct.Prescaler = 49;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
   TIM_InitStruct.Autoreload = 999;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
@@ -486,7 +491,7 @@ static void MX_GPIO_Init(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
+	/* User can add his own implementation to report the HAL error return state */
 
   /* USER CODE END Error_Handler_Debug */
 }
@@ -502,7 +507,7 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 { 
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
+	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }

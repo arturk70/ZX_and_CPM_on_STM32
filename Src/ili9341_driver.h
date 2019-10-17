@@ -11,8 +11,8 @@
 #include "main.h"
 #include "ili9341_commands.h"
 
+#ifndef __SIMULATION
 //display RESET pin connect to STM32 reset pin
-
 #define ILI9341_DC_SET		LL_GPIO_SetOutputPin(ILI9341_DC_GPIO_Port, ILI9341_DC_Pin)
 #define ILI9341_DC_RESET	LL_GPIO_ResetOutputPin(ILI9341_DC_GPIO_Port, ILI9341_DC_Pin)
 #define ILI9341_CS_SET		LL_GPIO_SetOutputPin(ILI9341_CS_GPIO_Port, ILI9341_CS_Pin)
@@ -46,6 +46,7 @@
 		ILI9341_DMA_busy = 0; }
 
 extern uint8_t ILI9341_DMA_busy;
+#endif
 
 void ILI9341_Init();
 void ILI9341_sendCommand(uint8_t com);
@@ -56,5 +57,10 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
 
 void ILI9341_setLEDpwm(uint16_t val);
+
+#ifdef __SIMULATION
+void ILI9341_readPix(uint16_t x, uint16_t y, uint8_t *r, uint8_t *g, uint8_t *b);
+void ILI9341_writePix(uint16_t x, uint16_t y, uint16_t color);
+#endif
 
 #endif /* ILI9341DRIVER_H_ */

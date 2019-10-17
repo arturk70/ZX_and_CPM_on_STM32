@@ -5,6 +5,7 @@
  *      Author: artur
  */
 
+#include <stdlib.h>
 #include "memory.h"
 #include "ZXROM.h"
 #include "CPMROM.h"
@@ -84,10 +85,38 @@ uint16_t mem_test() {
 	if(mem_type == MEMTYPE_ZX)
 		straddr += RAM_ROM_splitaddr;
 
+#ifndef __SIMULATION
+	srand(SysTick->VAL);
+#endif
 	for(uint16_t addr=straddr; addr<straddr+0xbfff; addr++) {
-	  mem_write(addr, (uint8_t)(addr&0xff));
-	  tmp = mem_read(addr);
-	  if(tmp != (uint8_t)(addr&0xff)) errcount++;
+		tmp = (uint8_t)rand();
+		mem_write(addr, tmp);
+		if(tmp != mem_read(addr)) errcount++;
+	}
+	mem_clear();
+
+	return errcount;
+}
+
+uint16_t mem_rnd_test() {
+	uint8_t tmp;
+	uint16_t errcount = 0;
+	uint16_t straddr = 0;
+	if(mem_type == MEMTYPE_ZX)
+		straddr += RAM_ROM_splitaddr;
+
+#ifndef __SIMULATION
+	srand(SysTick->VAL);
+#endif
+	uint16_t addr;
+	for(uint16_t i=0; i<0xffff; i++) {
+		tmp = (uint8_t)rand();
+		addr = (uint16_t)rand();
+		if(addr < 0xbfff) {
+			addr += straddr;
+			mem_write(addr, tmp);
+			if(tmp != mem_read(addr)) errcount++;
+		}
 	}
 	mem_clear();
 

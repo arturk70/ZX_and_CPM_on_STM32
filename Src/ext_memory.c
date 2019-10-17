@@ -9,8 +9,9 @@
 
 static uint16_t bl[4], br[4], bt[4], bb[4]; // 0-top bar, 1 - left bar, 2 - right bar, 3 - bottom bar
 static uint16_t bl_straddr[4], bl_endaddr[4];
+static cache_t cache[CACHE_BLOCKS_NUM];
 
-void static calc_pix(uint16_t addr, uint16_t *x, uint16_t *y) {
+static void calc_pix(uint16_t addr, uint16_t *x, uint16_t *y) {
 	uint8_t blnum = 0;
 	while((addr < bl_straddr[blnum]) || (addr > bl_endaddr[blnum])) blnum++;
 
@@ -19,8 +20,68 @@ void static calc_pix(uint16_t addr, uint16_t *x, uint16_t *y) {
 	*y = bt[blnum] + pixnum / (br[blnum] - bl[blnum] + 1);
 }
 
+static uint16_t calc_cache_block(uint16_t addr, uint16_t *x1, uint16_t *y1, uint16_t *x2, uint16_t *y2) {
+	uint16_t straddr = addr & ~((uint16_t)CACHE_BLOCK_SIZE-1);
+
+	calc_pix(straddr, x1, y1);
+	if(straddr/2 < ILI9341_PWIDTH*(ILI9341_PHEIGHT-192)) {
+		*x2 = *x1 + CACHE_BLOCK_SIZE/2 - 1; *y2 = *y1;
+	}
+	else {
+		*x2 = *x1 + 7; *y2 = *y1 + CACHE_BLOCK_SIZE/16 - 1;
+	}
+
+	return straddr;
+}
+
+static uint8_t read_cache(uint16_t addr, uint8_t *data) {
+	for(uint8_t i=0; i<CACHE_BLOCKS_NUM;i++) {
+		if(addr>=cache[i].straddr && addr < (cache[i].straddr+CACHE_BLOCK_SIZE)) {
+			*data = cache[i].data[addr - cache[i].straddr];
+			//cache[i].usage++;
+			cache[i].usage = SysTick->VAL;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+static uint8_t write_cache(uint16_t addr, uint8_t data) {
+	for(uint8_t i=0; i<CACHE_BLOCKS_NUM;i++) {
+		if(addr>=cache[i].straddr && addr < (cache[i].straddr+CACHE_BLOCK_SIZE)) {
+			cache[i].data[addr - cache[i].straddr] = data;
+			//cache[i].usage++;
+			cache[i].usage = SysTick->VAL;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+static void update_cache(uint16_t addr) {
+	uint8_t lfu_num = 0;
+	for(uint8_t i=1; i<CACHE_BLOCKS_NUM;i++) {
+		if(cache[i].usage < cache[lfu_num].usage) lfu_num = i;
+	}
+
+	uint16_t x1, y1, x2, y2;
+
+	calc_cache_block(cache[lfu_num].straddr, &x1, &y1, &x2, &y2);
+	ILI9341_sendBuf(x1, y1, x2, y2, (uint16_t*)cache[lfu_num].data);
+
+	addr = calc_cache_block(addr, &x1, &y1, &x2, &y2);
+	ILI9341_readBuf(x1, y1, x2, y2, (uint16_t*)cache[lfu_num].data);
+	cache[lfu_num].straddr = addr;
+	cache[lfu_num].usage = 0;
+}
+
 uint8_t extmem_read(uint16_t addr) {
 	uint8_t res;
+
+	if(read_cache(addr, &res)) return res;
+
 	uint16_t x, y;
 	uint8_t r,g,b;
 	calc_pix(addr, &x, &y);
@@ -63,11 +124,16 @@ uint8_t extmem_read(uint16_t addr) {
 	else
 		res=((r & 0xF8) | (g >> 5u)); //get H byte
 
+	update_cache(addr);
+
 	return res;
 
 }
 
 void extmem_write(uint16_t addr, uint8_t data) {
+
+	if(write_cache(addr, data)) return;
+
 	uint16_t x, y;
 	uint8_t r,g,b;
 	calc_pix(addr, &x, &y);
@@ -119,6 +185,8 @@ void extmem_write(uint16_t addr, uint8_t data) {
 	ILI9341_sendData(pixl);
 #else
 	ILI9341_writePix(x, y, (pixh << 8) | pixl);
+
+	update_cache(addr);
 #endif
 }
 

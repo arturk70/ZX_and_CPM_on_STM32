@@ -7,31 +7,40 @@
 
 #include "ili9341_driver.h"
 
+#ifndef __SIMULATION
 uint8_t ILI9341_DMA_busy = 0;
+#endif
 static uint8_t is_inited = 0;
 static uint16_t fcolor;
 
 void ILI9341_setLEDpwm(uint16_t val) {
+#ifndef __SIMULATION
 	if(val>999) val=999;
 	ILI9341_SETLED_PWM(val);
+#endif
 }
 
 void ILI9341_sendCommand(uint8_t com) {
+#ifndef __SIMULATION
 	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
 	ILI9341_DC_RESET;
 	LL_SPI_TransmitData8(ILI9341_SPI, com);
 	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
 	ILI9341_DC_SET;
+#endif
 }
 
 void ILI9341_sendData(uint8_t data) {
+#ifndef __SIMULATION
 	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
 	LL_SPI_TransmitData8(ILI9341_SPI, data);
+#endif
 }
 
 void ILI9341_Init() {
 	if(is_inited) return;
 
+#ifndef __SIMULATION
 	//turn on periphery used by driver
 	LL_TIM_CC_EnableChannel(TIM2, LL_TIM_CHANNEL_CH2);
 	LL_TIM_EnableCounter(TIM2);
@@ -135,6 +144,7 @@ void ILI9341_Init() {
 
 	LL_mDelay(100);
 	ILI9341_sendCommand(ILI9341_DISPLAY_ON);
+#endif
 
 	ILI9341_fillArea(0,0,ILI9341_PWIDTH-1,ILI9341_PHEIGHT/2-1,BLACK);
 	ILI9341_fillArea(0,ILI9341_PHEIGHT/2,ILI9341_PWIDTH-1,ILI9341_PHEIGHT-1,BLACK);
@@ -143,6 +153,7 @@ void ILI9341_Init() {
 }
 
 void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
+#ifndef __SIMULATION
 	ILI9341_WAIT_DMA();
 	ILI9341_sendCommand(ILI9341_COLUMN_ADDR);
 	ILI9341_sendData(x1 >> 8);
@@ -155,15 +166,20 @@ void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
 	ILI9341_sendData(y1 & 0xFF);
 	ILI9341_sendData(y2 >> 8);
 	ILI9341_sendData(y2 & 0xFF);
+#else
+#endif
 }
 
 //note: (x2-x1+1)*(y2-y1+1) must be less then 65536
 void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *data) {
+#ifndef __SIMULATION
 	ILI9341_WAIT_DMA();
+#endif
 
 	uint16_t len = (x2-x1+1)*(y2-y1+1);
 
 	ILI9341_setFrame(x1, y1, x2, y2);
+#ifndef __SIMULATION
 	ILI9341_sendCommand(ILI9341_GRAM);
 
 	LL_SPI_DisableDMAReq_TX(ILI9341_SPI);
@@ -180,15 +196,21 @@ void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 	LL_SPI_EnableDMAReq_TX(ILI9341_SPI);
 
 	ILI9341_DMA_busy = 1;
+#else
+#endif
 }
 
 //note: (x2-x1+1)*(y2-y1+1) must be less then 65536
 void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf) {
+#ifndef __SIMULATION
 	ILI9341_WAIT_DMA();
+#endif
 
 	uint16_t len = (x2-x1+1)*(y2-y1+1);
 
 	ILI9341_setFrame(x1, y1, x2, y2);
+
+#ifndef __SIMULATION
 	ILI9341_sendCommand(ILI9341_RAMRD);
 
 	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV8);
@@ -221,40 +243,46 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 
 	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV2);
 
-//	LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH);
-//	while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_RX_CH));
-//	LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_16BIT);
-//	LL_DMA_SetMemoryAddress(ILI9341_DMA, ILI9341_DMA_RX_CH, (uint32_t)buf);
-//	LL_DMA_SetDataLength(ILI9341_DMA, ILI9341_DMA_RX_CH, len+1);
-//	LL_DMA_SetMemoryIncMode(ILI9341_DMA, ILI9341_DMA_RX_CH, LL_DMA_MEMORY_INCREMENT);
-//	LL_DMA_DisableIT_HT(ILI9341_DMA, ILI9341_DMA_RX_CH);
-//	LL_DMA_EnableIT_TC(ILI9341_DMA, ILI9341_DMA_RX_CH);
-//	LL_DMA_EnableIT_TE(ILI9341_DMA, ILI9341_DMA_RX_CH);
-//	LL_SPI_EnableDMAReq_RX(ILI9341_SPI);
-//	LL_DMA_EnableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH);
+	//	LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH);
+	//	while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_RX_CH));
+	//	LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_16BIT);
+	//	LL_DMA_SetMemoryAddress(ILI9341_DMA, ILI9341_DMA_RX_CH, (uint32_t)buf);
+	//	LL_DMA_SetDataLength(ILI9341_DMA, ILI9341_DMA_RX_CH, len+1);
+	//	LL_DMA_SetMemoryIncMode(ILI9341_DMA, ILI9341_DMA_RX_CH, LL_DMA_MEMORY_INCREMENT);
+	//	LL_DMA_DisableIT_HT(ILI9341_DMA, ILI9341_DMA_RX_CH);
+	//	LL_DMA_EnableIT_TC(ILI9341_DMA, ILI9341_DMA_RX_CH);
+	//	LL_DMA_EnableIT_TE(ILI9341_DMA, ILI9341_DMA_RX_CH);
+	//	LL_SPI_EnableDMAReq_RX(ILI9341_SPI);
+	//	LL_DMA_EnableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH);
 
-//	fcolor=0x0000;
-//	LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_TX_CH);
-//	while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_TX_CH));
-//	LL_DMA_SetMemoryAddress(ILI9341_DMA, ILI9341_DMA_TX_CH, (uint32_t)&fcolor);
-//	LL_DMA_SetDataLength(ILI9341_DMA, ILI9341_DMA_TX_CH, len+1);
-//	LL_DMA_SetMemoryIncMode(ILI9341_DMA, ILI9341_DMA_TX_CH, LL_DMA_MEMORY_NOINCREMENT);
-//	LL_DMA_DisableIT_HT(ILI9341_DMA, ILI9341_DMA_TX_CH);
-//	LL_DMA_EnableIT_TC(ILI9341_DMA, ILI9341_DMA_TX_CH);
-//	LL_DMA_EnableIT_TE(ILI9341_DMA, ILI9341_DMA_TX_CH);
-//	LL_SPI_EnableDMAReq_TX(ILI9341_SPI);
-//	LL_DMA_EnableChannel(ILI9341_DMA, ILI9341_DMA_TX_CH);
+	//	fcolor=0x0000;
+	//	LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_TX_CH);
+	//	while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_TX_CH));
+	//	LL_DMA_SetMemoryAddress(ILI9341_DMA, ILI9341_DMA_TX_CH, (uint32_t)&fcolor);
+	//	LL_DMA_SetDataLength(ILI9341_DMA, ILI9341_DMA_TX_CH, len+1);
+	//	LL_DMA_SetMemoryIncMode(ILI9341_DMA, ILI9341_DMA_TX_CH, LL_DMA_MEMORY_NOINCREMENT);
+	//	LL_DMA_DisableIT_HT(ILI9341_DMA, ILI9341_DMA_TX_CH);
+	//	LL_DMA_EnableIT_TC(ILI9341_DMA, ILI9341_DMA_TX_CH);
+	//	LL_DMA_EnableIT_TE(ILI9341_DMA, ILI9341_DMA_TX_CH);
+	//	LL_SPI_EnableDMAReq_TX(ILI9341_SPI);
+	//	LL_DMA_EnableChannel(ILI9341_DMA, ILI9341_DMA_TX_CH);
 
-//	ILI9341_DMA_busy = 1;
+	//	ILI9341_DMA_busy = 1;
+#else
+#endif
 }
 
 //note: (x2-x1+1)*(y2-y1+1) must be less then 65536
 void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
+#ifndef __SIMULATION
 	ILI9341_WAIT_DMA();
+#endif
 	uint16_t len = (x2-x1+1)*(y2-y1+1);
 	fcolor = color;
 
 	ILI9341_setFrame(x1, y1, x2, y2);
+
+#ifndef __SIMULATION
 	ILI9341_sendCommand(ILI9341_GRAM);
 
 	LL_SPI_DisableDMAReq_TX(ILI9341_SPI);
@@ -271,4 +299,16 @@ void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16
 	LL_SPI_EnableDMAReq_TX(ILI9341_SPI);
 
 	ILI9341_DMA_busy = 1;
+#else
+#endif
 }
+
+#ifdef __SIMULATION
+void ILI9341_readPix(uint16_t x, uint16_t y, uint8_t *r, uint8_t *g, uint8_t *b) {
+
+}
+
+void ILI9341_writePix(uint16_t x, uint16_t y, uint16_t color) {
+
+}
+#endif
