@@ -22,7 +22,9 @@
 #define ZX_NEWLINE_SET {zx_newline_flag = 1;}
 #define ZX_NEWLINE_RESET {zx_newline_flag = 0;}
 
+#ifndef __SIMULATION
 #define TIM3_IRQ_HANDLER()	{if(LL_TIM_IsActiveFlag_UPDATE(TIM3)) {LL_TIM_ClearFlag_UPDATE(TIM3);ZX_NEWLINE_SET;}}
+#endif
 
 extern uint8_t zx_newline_flag;
 

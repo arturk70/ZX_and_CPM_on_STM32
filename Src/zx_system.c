@@ -36,9 +36,13 @@ void zxsys_Run() {
 	while(1) {
 		if(zx_newline_flag)
 			ZXdisp_drawnextline();
+#ifndef __SIMULATION
 		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
+#endif
 		while(!zx_newline_flag);
+#ifndef __SIMULATION
 		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
+#endif
 	}
 }
 

@@ -28,13 +28,17 @@ void ZXdisp_Init() {
 	lnum = 0;
 	frnum = 0;
 
+#ifndef __SIMULATION
 	LL_TIM_EnableUpdateEvent(TIM3);
 	LL_TIM_EnableCounter(TIM3);
 	LL_TIM_EnableIT_UPDATE(TIM3);
+#endif
 }
 void ZXdisp_deInit() {
+#ifndef __SIMULATION
 	LL_TIM_DisableIT_UPDATE(TIM3);
 	LL_TIM_DisableCounter(TIM3);
+#endif
 	free(linebuf);
 }
 
