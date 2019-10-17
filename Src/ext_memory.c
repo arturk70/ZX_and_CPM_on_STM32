@@ -38,8 +38,8 @@ static uint8_t read_cache(uint16_t addr, uint8_t *data) {
 	for(uint8_t i=0; i<CACHE_BLOCKS_NUM;i++) {
 		if(addr>=cache[i].straddr && addr < (cache[i].straddr+CACHE_BLOCK_SIZE)) {
 			*data = cache[i].data[addr - cache[i].straddr];
-			//cache[i].usage++;
-			cache[i].usage = SysTick->VAL;
+			cache[i].usage++;
+			//cache[i].usage = SysTick->VAL;
 			return 1;
 		}
 	}
@@ -51,8 +51,8 @@ static uint8_t write_cache(uint16_t addr, uint8_t data) {
 	for(uint8_t i=0; i<CACHE_BLOCKS_NUM;i++) {
 		if(addr>=cache[i].straddr && addr < (cache[i].straddr+CACHE_BLOCK_SIZE)) {
 			cache[i].data[addr - cache[i].straddr] = data;
-			//cache[i].usage++;
-			cache[i].usage = SysTick->VAL;
+			cache[i].usage++;
+			//cache[i].usage = SysTick->VAL;
 			return 1;
 		}
 	}

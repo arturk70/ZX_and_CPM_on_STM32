@@ -62,7 +62,7 @@ void ZXdisp_drawnextline() {
 			fgcolor &= 0xc618;
 			bgcolor &= 0xc618;
 		}
-		if((attr & 0x80) && (frnum >25)) {
+		if((attr & 0x80) && (frnum >10)) {
 			tmp = fgcolor;
 			fgcolor = bgcolor;
 			bgcolor = tmp;
@@ -83,7 +83,7 @@ void ZXdisp_drawnextline() {
 	if(lnum >= ZX_LINES/8) {
 		lnum = 0;
 		frnum++;
-		if(frnum >=50) frnum = 0;
+		if(frnum >=20) frnum = 0;
 	}
 
 	ZX_NEWLINE_RESET;
