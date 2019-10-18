@@ -7,9 +7,17 @@
 
 #include "ili9341_driver.h"
 
-#ifndef __SIMULATION
-uint8_t ILI9341_DMA_busy = 0;
+#ifdef __SIMULATION
+static struct {
+	uint16_t x1;
+	uint16_t y1;
+	uint16_t x2;
+	uint16_t y2;
+} frame;
+
+uint16_t ili9341_image[ILI9341_PWIDTH*ILI9341_PHEIGHT];
 #endif
+uint8_t ILI9341_DMA_busy = 0;
 static uint8_t is_inited = 0;
 static uint16_t fcolor;
 
@@ -19,6 +27,25 @@ void ILI9341_setLEDpwm(uint16_t val) {
 	ILI9341_SETLED_PWM(val);
 #endif
 }
+
+#ifdef __SIMULATION
+void uint16_rgb(uint16_t pix, uint8_t *r, uint8_t *g, uint8_t *b) {
+	*r = (pix&0b1111100000000000)>>8; *g = (pix&0b0000011111100000)>>3; *b = (pix&0b0000000000011111)<<3;
+}
+
+void rgb_uint16(uint8_t r, uint8_t g, uint8_t b, uint16_t *pix) {
+	*pix = ((r&0b11111000)<<8) | ((g&0b11111100)<<3) | ((b>>3)&0b11111000);
+}
+
+void ILI9341_readPix(uint16_t x, uint16_t y, uint8_t *r, uint8_t *g, uint8_t *b) {
+
+	uint16_rgb(ili9341_image[y*320+x], r, g ,b);
+}
+
+void ILI9341_writePix(uint16_t x, uint16_t y, uint16_t color) {
+	ili9341_image[y*320+x] = color;
+}
+#endif
 
 void ILI9341_sendCommand(uint8_t com) {
 #ifndef __SIMULATION
@@ -167,6 +194,10 @@ void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
 	ILI9341_sendData(y2 >> 8);
 	ILI9341_sendData(y2 & 0xFF);
 #else
+	frame.x1 = x1;
+	frame.y1 = y1;
+	frame.x2 = x2;
+	frame.y2 = y2;
 #endif
 }
 
@@ -197,6 +228,12 @@ void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 
 	ILI9341_DMA_busy = 1;
 #else
+	unsigned int dptr = 0;
+	for(int y=frame.y1; y<=frame.y2; y++)
+		for(int x=frame.x1; x<=frame.x2; x++) {
+			ili9341_image[y*320+x] = data[dptr];
+			dptr++;
+		}
 #endif
 }
 
@@ -269,6 +306,12 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 
 	//	ILI9341_DMA_busy = 1;
 #else
+	unsigned int dptr = 0;
+	for(int y=frame.y1; y<=frame.y2; y++)
+		for(int x=frame.x1; x<=frame.x2; x++) {
+			buf[dptr] = ili9341_image[y*320+x];
+			dptr++;
+		}
 #endif
 }
 
@@ -300,15 +343,12 @@ void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16
 
 	ILI9341_DMA_busy = 1;
 #else
+	unsigned int dptr = 0;
+	for(int y=frame.y1; y<=frame.y2; y++)
+		for(int x=frame.x1; x<=frame.x2; x++) {
+			ili9341_image[y*320+x] = color;
+			dptr++;
+		}
 #endif
 }
 
-#ifdef __SIMULATION
-void ILI9341_readPix(uint16_t x, uint16_t y, uint8_t *r, uint8_t *g, uint8_t *b) {
-
-}
-
-void ILI9341_writePix(uint16_t x, uint16_t y, uint16_t color) {
-
-}
-#endif
