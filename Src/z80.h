@@ -111,9 +111,10 @@ typedef struct {
 
 } z80_state;
 
-void Z80_Init(void (*outfn)(uint16_t addr, uint8_t data), uint8_t (*infn)(uint16_t addr));
-void z80_interrupt();
-void z80_nmi();
+void z80_Init(void (*outfn)(uint16_t addr, uint8_t data), uint8_t (*infn)(uint16_t addr));
+void z80_reset();
+uint8_t z80_interrupt();
+uint8_t z80_nmi();
 uint8_t Z80_Step();
 
 
