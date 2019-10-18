@@ -68,8 +68,10 @@ static void update_cache(uint16_t addr) {
 
 	uint16_t x1, y1, x2, y2;
 
-	calc_cache_block(cache[lfu_num].straddr, &x1, &y1, &x2, &y2);
-	ILI9341_sendBuf(x1, y1, x2, y2, (uint16_t*)cache[lfu_num].data);
+	if(cache[lfu_num].usage != 0) {
+		calc_cache_block(cache[lfu_num].straddr, &x1, &y1, &x2, &y2);
+		ILI9341_sendBuf(x1, y1, x2, y2, (uint16_t*)cache[lfu_num].data);
+	}
 
 	addr = calc_cache_block(addr, &x1, &y1, &x2, &y2);
 	ILI9341_readBuf(x1, y1, x2, y2, (uint16_t*)cache[lfu_num].data);
@@ -206,4 +208,6 @@ void extmem_Init(uint16_t b0l, uint16_t b0r, uint16_t b0t, uint16_t b0b,
 	bl_endaddr[2]=bl_straddr[2]+(br[2]-bl[2]+1)*(bb[2]-bt[2]+1)*2-1;
 	bl_straddr[3] = bl_endaddr[2]+1;
 	bl_endaddr[3]=bl_straddr[3]+(br[3]-bl[3]+1)*(bb[3]-bt[3]+1)*2-1;
+	for(uint8_t i=1; i<CACHE_BLOCKS_NUM;i++)
+			cache[i].straddr = 0xffff;
 }

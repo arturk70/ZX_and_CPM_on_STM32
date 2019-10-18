@@ -7,8 +7,6 @@
 
 #include "zx_system.h"
 
-uint8_t is_zx_running = 0;
-
 void zxsys_Run() {
 
 
@@ -33,18 +31,18 @@ void zxsys_Run() {
 			}
 
 
-	is_zx_running = 1;
-
 	while(1) {
-		if(zx_newline_flag)
-			ZXdisp_drawnextline();
 #ifndef __SIMULATION
 		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
 #endif
-		while(!zx_newline_flag);
+		while(!zx_newline_flag || ILI9341_DMA_busy) {
+			Z80_Step();
+		}
 #ifndef __SIMULATION
 		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 #endif
+
+		ZXdisp_drawnextline();
 	}
 }
 
