@@ -30,7 +30,7 @@ extern uint8_t zx_newline_flag;
 
 void ZXdisp_Init();
 void ZXdisp_deInit();
-void ZXdisp_drawnextline();
+uint8_t ZXdisp_drawnextline();
 
 
 #endif /* ZX_DISPLAY_H_ */

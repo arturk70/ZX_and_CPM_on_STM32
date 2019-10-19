@@ -9,6 +9,7 @@
 #define Z80_H_
 
 #include "main.h"
+#include "memory.h"
 
 /* Macros used for accessing the registers */
 #define A   regs.af.b.h
@@ -80,6 +81,16 @@
 #define FLAG_Z	0x40
 #define FLAG_S	0x80
 
+#define HLIXIY_REG (*(regs.hlixiyptr)).w
+#define HLIXIY_REGH (*(regs.hlixiyptr)).b.h
+#define HLIXIY_REGL (*(regs.hlixiyptr)).b.l
+
+#define IS_PREFIX (state.prefix)
+#define IS_DD_PREFIX ((state.prefix & 0xff00) == 0xdd00)
+#define IS_FD_PREFIX ((state.prefix & 0xff00) == 0xfd00)
+#define IS_ED_PREFIX ((state.prefix & 0x00ff) == 0x00ed)
+#define IS_CB_PREFIX ((state.prefix & 0x00ff) == 0x00cb)
+#define CLR_PREFIX() { state.prefix = 0; }
 
 typedef union {
   struct { uint8_t h,l; } b;
@@ -96,26 +107,33 @@ typedef struct {
   uint8_t r7;	/* The high bit of the R register */
   regpair sp,pc;
   regpair memptr;	/* The hidden register */
+  regpair* hlixiyptr; //pointer to HL or IX or IY register for DD/FD prefixes
   uint8_t iff1, iff2, im;
 } z80_registers;
 
 typedef struct {
 	uint8_t iff2_read;
 	uint8_t halted;
-	int z80_interrupt_event;
-	int z80_nmi_event;
-	int z80_nmos_iff2_event;
-  /* Interrupts were enabled at this time; do not accept any interrupts
-     until tstates > this value */
-	int32_t interrupts_enabled_at;
+	uint16_t prefix;
+	uint32_t int_req;
+	uint32_t nmi_req;
+	uint8_t int_blocked;//interrupt can be blocked for next command by prefixes or EI
 
 } z80_state;
+
+extern z80_registers regs;
+extern z80_state state;
+
+extern void (*port_out)(uint16_t addr, uint8_t data);
+extern uint8_t (*port_in)(uint16_t addr);
 
 void z80_Init(void (*outfn)(uint16_t addr, uint8_t data), uint8_t (*infn)(uint16_t addr));
 void z80_reset();
 uint8_t z80_interrupt();
 uint8_t z80_nmi();
-uint8_t Z80_Step();
+void req_int(uint32_t tstates);
+void req_nmi(uint32_t tstates);
+uint8_t z80_step();
 
 
 #endif /* Z80_H_ */

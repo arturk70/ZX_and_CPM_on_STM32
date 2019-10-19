@@ -36,7 +36,7 @@ static uint16_t calc_cache_block(uint16_t addr, uint16_t *x1, uint16_t *y1, uint
 
 static uint8_t read_cache(uint16_t addr, uint8_t *data) {
 	for(uint8_t i=0; i<CACHE_BLOCKS_NUM;i++) {
-		if(addr>=cache[i].straddr && addr < (cache[i].straddr+CACHE_BLOCK_SIZE)) {
+		if(addr>=cache[i].straddr && addr <= (cache[i].straddr+CACHE_BLOCK_SIZE-1)) {
 			*data = cache[i].data[addr - cache[i].straddr];
 			cache[i].usage++;
 			//cache[i].usage = SysTick->VAL;
@@ -49,7 +49,7 @@ static uint8_t read_cache(uint16_t addr, uint8_t *data) {
 
 static uint8_t write_cache(uint16_t addr, uint8_t data) {
 	for(uint8_t i=0; i<CACHE_BLOCKS_NUM;i++) {
-		if(addr>=cache[i].straddr && addr < (cache[i].straddr+CACHE_BLOCK_SIZE)) {
+		if(addr>=cache[i].straddr && addr <= (cache[i].straddr+CACHE_BLOCK_SIZE-1)) {
 			cache[i].data[addr - cache[i].straddr] = data;
 			cache[i].usage++;
 			//cache[i].usage = SysTick->VAL;
@@ -73,10 +73,9 @@ static void update_cache(uint16_t addr) {
 		ILI9341_sendBuf(x1, y1, x2, y2, (uint16_t*)cache[lfu_num].data);
 	}
 
-	addr = calc_cache_block(addr, &x1, &y1, &x2, &y2);
-	ILI9341_readBuf(x1, y1, x2, y2, (uint16_t*)cache[lfu_num].data);
-	cache[lfu_num].straddr = addr;
+	cache[lfu_num].straddr = calc_cache_block(addr, &x1, &y1, &x2, &y2);
 	cache[lfu_num].usage = 0;
+	ILI9341_readBuf(x1, y1, x2, y2, (uint16_t*)cache[lfu_num].data);
 }
 
 uint8_t extmem_read(uint16_t addr) {

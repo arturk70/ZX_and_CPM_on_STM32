@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include "z80_ops.h"
 #include "z80.h"
-#include "memory.h"
 
 z80_registers regs;
 z80_state state;
@@ -19,6 +18,10 @@ uint8_t (*port_in)(uint16_t addr);
 void z80_Init(void (*outfn)(uint16_t addr, uint8_t data), uint8_t (*infn)(uint16_t addr)) {
 	port_out = outfn;
 	port_in = infn;
+
+	state.int_req = 0;
+	state.nmi_req = 0;
+	state.int_blocked = 0;
 
 	BC = DE = HL = 0;
 	BC_= DE_= HL_= 0;
@@ -33,25 +36,22 @@ void z80_reset() {
 	PC = 0;
 	SP = 0xffff;
 	IFF1 = IFF2 = IM = 0;
+	regs.hlixiyptr = &(regs.hl);
 	state.halted = 0;
 	state.iff2_read = 0;
+	state.prefix = 0;
 
-	state.interrupts_enabled_at = -1;
 }
 
 uint8_t z80_interrupt() {
 	uint8_t tstates = 0;
-	/* An interrupt will occur if IFF1 is set and the /INT line hasn't
-	     gone high again. On a Timex machine, we also need the SCLD's
-	     INTDISABLE to be clear */
-	if( IFF1 /*&& tstates < machine_current->timings.interrupt_length*/) {
+
+	if( IFF1) {
 
 		if ( state.iff2_read) {
 			/* We just executed LD A,I or LD A,R, causing IFF2 to be copied to the
-		 parity flag.  This occured whilst accepting an interrupt.  For NMOS
-		 Z80s only, clear the parity flag to reflect the fact that IFF2 would
-		 have actually been cleared before its value was transferred by LD A,I
-		 or LD A,R.  We cannot do this when emulating LD itself as we cannot
+		 parity flag.  This occured whilst accepting an interrupt.
+		 We cannot do this when emulating LD itself as we cannot
 		 tell whether the next instruction will be interrupted. */
 			F &= ~FLAG_P;
 		}
@@ -61,7 +61,8 @@ uint8_t z80_interrupt() {
 		IFF1 = IFF2 = 0;
 		R++;
 
-		mem_write( --SP, PCH ); mem_write( --SP, PCL );
+		mem_write( --SP, PCH );
+		mem_write( --SP, PCL );
 
 		switch(IM) {
 		case 0:
@@ -100,7 +101,7 @@ uint8_t z80_interrupt() {
 }
 
 uint8_t z80_nmi() {
-	if( state.halted ) state.halted = 0;
+	if(state.halted) state.halted = 0;
 
 	IFF1 = 0;
 	R++;
@@ -113,14 +114,71 @@ uint8_t z80_nmi() {
 	return 11;
 }
 
-uint8_t Z80_Step() {
-	uint8_t code = mem_read(PC);
+//set interrupt requests for tstates time
+void req_int(uint32_t tstates) {state.nmi_req += tstates;}
+void req_nmi(uint32_t tstates) {state.nmi_req += tstates;}
+
+uint8_t z80_step() {
+	uint8_t tstates;
+
+	if(state.nmi_req && !state.int_blocked)
+		tstates = z80_nmi();
+	else if(state.int_req && !state.int_blocked)
+		tstates = z80_interrupt();
+	else if(state.halted) {
+		R++;
+	}
+	else {
+		uint8_t code = mem_read(PC);
+		PC++;
+		R++;
 
 #ifdef __SIMULATION
-	printf("Exec 0x%04x: 0x%02x\n", PC, code);
+		printf("Exec 0x%04x: 0x%02x\n", PC, code);
 #endif
-	z80ops[code](code);
+		if(!IS_PREFIX) {
+			tstates = z80ops[code](code);
+		}
+		else {
+			if(IS_DD_PREFIX)
+				regs.hlixiyptr = &(regs.ix);
+			if(IS_FD_PREFIX)
+				regs.hlixiyptr = &(regs.iy);
 
-	return optstates[code];
+			if(IS_ED_PREFIX) {
+				if((code < 0x40) || (code > 0xbf) || (code > 0x7f && code < 0xa0))
+					tstates = CTR(0xff);
+				else
+					tstates = z80edops[code-0x40](code);
+			}
+			else if(IS_CB_PREFIX) {
+				if(code < 0x40)
+					tstates = SFT(code);
+				else
+					tstates = BIT(code);
+			}
+			else
+				tstates = z80ops[code](code);
+
+			if(code != 0xcb) {
+				regs.hlixiyptr = &(regs.hl);
+				CLR_PREFIX();
+			}
+		}
+	}
+
+	if(state.int_blocked) state.int_blocked--;
+
+	if(state.nmi_req > tstates)
+		state.nmi_req -= tstates;
+	else
+		state.nmi_req = 0;
+
+	if(state.int_req > tstates)
+		state.int_req -= tstates;
+	else
+		state.int_req = 0;
+
+	return tstates;
 }
 

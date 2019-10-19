@@ -8,12 +8,11 @@
 #include "zx_system.h"
 
 void zxsys_Run() {
-
-
 	mem_Init(MEMTYPE_ZX);
 	z80_Init(zxports_out, zxports_in);
 	ZXdisp_Init();
 
+//prepare test screen
 	for(uint16_t i = 0x4000; i<0x5800; i++) {
 		mem_write(i, i);
 	}
@@ -29,6 +28,7 @@ void zxsys_Run() {
 				mem_write(0x4000+sa, b);
 
 			}
+//end test screen
 
 
 	while(1) {
@@ -36,13 +36,13 @@ void zxsys_Run() {
 		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
 #endif
 		while(!zx_newline_flag || ILI9341_DMA_busy) {
-			Z80_Step();
+			z80_step();
 		}
 #ifndef __SIMULATION
 		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 #endif
 
-		ZXdisp_drawnextline();
+		if(ZXdisp_drawnextline() == 0) req_int(2);
 	}
 }
 

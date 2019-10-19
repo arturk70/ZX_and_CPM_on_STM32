@@ -11,8 +11,8 @@
 
 static uint8_t *ZXvideomem;
 static uint16_t *linebuf;
-static uint8_t lnum;
-static uint8_t frnum;
+static uint16_t lnum;
+static uint16_t frnum;
 uint8_t zx_newline_flag;
 
 void ZXdisp_clear() {
@@ -42,38 +42,29 @@ void ZXdisp_deInit() {
 	free(linebuf);
 }
 
-void ZXdisp_drawnextline() {
+uint8_t ZXdisp_drawnextline() {
 	uint8_t *attraddr = ZXvideomem+0x1800+lnum*32;
 
-	uint8_t attr;
-	uint16_t fgcolor;
-	uint16_t bgcolor;
-	uint16_t tmp;
+	register uint32_t attr;
+	register uint32_t fgbgcolor;
+	register uint16_t videomemshft;
+	register uint16_t bufshft;
 
-	for(uint8_t colnum=0; colnum<32; colnum++) {
+	for(register uint16_t colnum=0; colnum<32; colnum++) {
 		attr = *(attraddr+colnum);
-		fgcolor  = (attr & 0x02) ? 0xf800 : 0;
-		fgcolor |= (attr & 0x04) ? 0x07e0 : 0;
-		fgcolor |= (attr & 0x01) ? 0x001f : 0;
-		bgcolor  = (attr & 0x10) ? 0xf800 : 0;
-		bgcolor |= (attr & 0x20) ? 0x07e0 : 0;
-		bgcolor |= (attr & 0x08) ? 0x001f : 0;
-		if(!(attr & 0x40)) {
-			fgcolor &= 0xc618;
-			bgcolor &= 0xc618;
-		}
-		if((attr & 0x80) && (frnum >10)) {
-			tmp = fgcolor;
-			fgcolor = bgcolor;
-			bgcolor = tmp;
-		}
+		fgbgcolor  = (((attr << 26) & 0x08000000) | ((attr << 20) & 0x00400000) | ((attr << 16) & 0x00010000) |
+						    ((attr << 7) & 0x0800) | ((attr << 1) & 0x0040) | ((attr >> 3) & 0x0001)) * ((attr & 0x40) ? 0x1f : 0x18);
+		register uint8_t is_flash_pos = (((attr & 0x80) >> 4) & frnum) >> 3;
 
-		for(uint8_t pixline=0; pixline<8; pixline++) {
-			for(uint8_t pixnum=0; pixnum<8; pixnum++) {
-				if((((ZXvideomem[lnum*ZX_PIXELS+colnum+pixline*32]) >> pixnum) & 0x01) != 0)
-					linebuf[pixline*ZX_PIXELS+colnum*8+7-pixnum] = fgcolor;
+		videomemshft = (lnum<<8)+colnum;
+		for(register uint16_t pixlnnum=0; pixlnnum<8; pixlnnum++) {
+			register uint8_t pixline = ZXvideomem[videomemshft+pixlnnum*32];
+			bufshft = (((pixlnnum<<5)+colnum)<<3)+7;
+			for(register uint16_t pixnum=0; pixnum<8; pixnum++) {
+				if(((pixline >> pixnum) & 0x01) ^ is_flash_pos)
+					linebuf[bufshft-pixnum] = fgbgcolor >> 16;
 				else
-					linebuf[pixline*ZX_PIXELS+colnum*8+7-pixnum] = bgcolor;
+					linebuf[bufshft-pixnum] = fgbgcolor;
 			}
 		}
 	}
@@ -83,10 +74,12 @@ void ZXdisp_drawnextline() {
 	if(lnum >= ZX_LINES/8) {
 		lnum = 0;
 		frnum++;
-		if(frnum >=20) frnum = 0;
+		if(frnum > 0x0f) frnum = 0;
 	}
 
 	ZX_NEWLINE_RESET;
+
+	return lnum;
 }
 
 
