@@ -26,17 +26,17 @@ void z80_Init(void (*outfn)(uint16_t addr, uint8_t data), uint8_t (*infn)(uint16
 	BC = DE = HL = 0;
 	BC_= DE_= HL_= 0;
 	IX = IY = 0;
-	regs.memptr.w = 0;	/* TODO: confirm if this happens on soft reset */
 	z80_reset();
 }
 
 void z80_reset() {
-	AF = AF_ = 0xffff;
+	FA = FA_ = 0xffff;
 	I= R = R7 = 0;
 	PC = 0;
 	SP = 0xffff;
 	IFF1 = IFF2 = IM = 0;
 	regs.hlixiyptr = &(regs.hl);
+	regs.ixiyshift = 0;
 	state.halted = 0;
 	state.iff2_read = 0;
 	state.prefix = 0;
@@ -92,8 +92,6 @@ uint8_t z80_interrupt() {
 		}
 		}
 
-		regs.memptr.w = PC;
-
 		return tstates;
 	}
 
@@ -129,12 +127,11 @@ uint8_t z80_step() {
 		R++;
 	}
 	else {
-		uint8_t code = mem_read(PC);
-		PC++;
+		uint8_t code = mem_read(PC++);
 		R++;
 
 #ifdef __SIMULATION
-		printf("Exec 0x%04x: 0x%02x\n", PC, code);
+		printf("Exec 0x%04x: 0x%02x\n", PC-1, code);
 #endif
 		if(!IS_PREFIX) {
 			tstates = z80ops[code](code);
@@ -147,11 +144,19 @@ uint8_t z80_step() {
 
 			if(IS_ED_PREFIX) {
 				if((code < 0x40) || (code > 0xbf) || (code > 0x7f && code < 0xa0))
-					tstates = CTR(0xff);
-				else
-					tstates = z80edops[code-0x40](code);
+					tstates = CTR(0xff); //incorrect op
+				else {
+					if(code < 0x80)
+						tstates = z80edops[code-0x40](code);
+					else
+						tstates = z80edops[code-0x60](code);
+				}
 			}
 			else if(IS_CB_PREFIX) {
+				if(IS_DDFD_PREFIX) {
+					regs.ixiyshift = code;
+					code = mem_read(PC++);
+				}
 				if(code < 0x40)
 					tstates = SFT(code);
 				else

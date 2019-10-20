@@ -12,9 +12,9 @@
 #include "memory.h"
 
 /* Macros used for accessing the registers */
-#define A   regs.af.b.h
-#define F   regs.af.b.l
-#define AF  regs.af.w
+#define A   regs.fa.b.l
+#define F   regs.fa.b.h
+#define FA  regs.fa.w
 
 #define B   regs.bc.b.h
 #define C   regs.bc.b.l
@@ -28,9 +28,9 @@
 #define L   regs.hl.b.l
 #define HL  regs.hl.w
 
-#define A_  regs.af_.b.h
-#define F_  regs.af_.b.l
-#define AF_ regs.af_.w
+#define A_  regs.fa_.b.l
+#define F_  regs.fa_.b.h
+#define FA_ regs.fa_.w
 
 #define B_  regs.bc_.b.h
 #define C_  regs.bc_.b.l
@@ -68,7 +68,7 @@
 #define IFF2 regs.iff2
 #define IM   regs.im
 
-#define IR ( ( regs.i ) << 8 | ( regs.r7 & 0x80 ) | ( regs.r & 0x7f ) )
+#define IR ((regs.i) << 8 | (regs.r7 & 0x80) | (regs.r & 0x7f))
 
 /* The flags */
 #define FLAG_C	0x01
@@ -81,11 +81,12 @@
 #define FLAG_Z	0x40
 #define FLAG_S	0x80
 
-#define HLIXIY_REG (*(regs.hlixiyptr)).w
-#define HLIXIY_REGH (*(regs.hlixiyptr)).b.h
-#define HLIXIY_REGL (*(regs.hlixiyptr)).b.l
+#define HLIXIY_REG ((*(regs.hlixiyptr)).w)
+#define HLIXIY_REGH ((*(regs.hlixiyptr)).b.h)
+#define HLIXIY_REGL ((*(regs.hlixiyptr)).b.l)
 
 #define IS_PREFIX (state.prefix)
+#define IS_DDFD_PREFIX (state.prefix & 0xff00)
 #define IS_DD_PREFIX ((state.prefix & 0xff00) == 0xdd00)
 #define IS_FD_PREFIX ((state.prefix & 0xff00) == 0xfd00)
 #define IS_ED_PREFIX ((state.prefix & 0x00ff) == 0x00ed)
@@ -98,16 +99,16 @@ typedef union {
 } regpair;
 
 typedef struct {
-  regpair af,bc,de,hl;
-  regpair af_,bc_,de_,hl_;
+  regpair bc,de,hl,fa;
+  regpair bc_,de_,hl_,fa_;
   regpair ix,iy;
   uint8_t i;
   uint16_t r;	/* The low seven bits of the R register. 16 bits long
 			   so it can also act as an RZX instruction counter */
   uint8_t r7;	/* The high bit of the R register */
   regpair sp,pc;
-  regpair memptr;	/* The hidden register */
   regpair* hlixiyptr; //pointer to HL or IX or IY register for DD/FD prefixes
+  uint8_t ixiyshift;
   uint8_t iff1, iff2, im;
 } z80_registers;
 

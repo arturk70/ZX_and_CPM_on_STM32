@@ -33,13 +33,13 @@ void zxsys_Run() {
 
 	while(1) {
 #ifndef __SIMULATION
-		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
+//		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
 #endif
 		while(!zx_newline_flag || ILI9341_DMA_busy) {
 			z80_step();
 		}
 #ifndef __SIMULATION
-		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
+//		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 #endif
 
 		if(ZXdisp_drawnextline() == 0) req_int(2);
