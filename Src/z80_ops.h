@@ -18,19 +18,23 @@
 
 typedef uint8_t (*z80cmd_t)(uint8_t code);
 
-uint8_t __N(uint8_t code);
+uint8_t NONI(uint8_t code);
 uint8_t CTR(uint8_t code);
-uint8_t LD8(uint8_t code);
-uint8_t LDX(uint8_t code);
+uint8_t EDCT(uint8_t code);
+uint8_t LD_(uint8_t code);
+uint8_t EDLD(uint8_t code);
 uint8_t INC(uint8_t code);
 uint8_t DEC(uint8_t code);
 uint8_t ALU(uint8_t code);
+uint8_t EDAL(uint8_t code);
 uint8_t JMP(uint8_t code);
 uint8_t STK(uint8_t code);
 uint8_t SFT(uint8_t code);
+uint8_t EDSF(uint8_t code);
 uint8_t BIT(uint8_t code);
 uint8_t EX_(uint8_t code);
 uint8_t IO_(uint8_t code);
+uint8_t EDIO(uint8_t code);
 uint8_t DAA(uint8_t code);
 
 uint8_t PFX(uint8_t code);

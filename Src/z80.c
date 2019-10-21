@@ -144,7 +144,7 @@ uint8_t z80_step() {
 
 			if(IS_ED_PREFIX) {
 				if((code < 0x40) || (code > 0xbf) || (code > 0x7f && code < 0xa0))
-					tstates = CTR(0xff); //incorrect op
+					tstates = NONI(code); //incorrect op NONI
 				else {
 					if(code < 0x80)
 						tstates = z80edops[code-0x40](code);
@@ -165,7 +165,7 @@ uint8_t z80_step() {
 			else
 				tstates = z80ops[code](code);
 
-			if(code != 0xcb) {
+			if(!(IS_DDFD_PREFIX && (code == 0xcb))) {//not DDCB or FDCB
 				regs.hlixiyptr = &(regs.hl);
 				CLR_PREFIX();
 			}

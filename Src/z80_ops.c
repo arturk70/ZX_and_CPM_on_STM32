@@ -27,14 +27,14 @@ const uint8_t optstates[256] = {
 };
 
 const z80cmd_t z80ops[256] = {
-		CTR, LDX, LD8, INC, INC, DEC, LD8, SFT, EX_, ALU, LD8, DEC, INC, DEC, LD8, SFT, //0x00-0x0f
-		JMP, LDX, LD8, INC, INC, DEC, LD8, SFT, JMP, ALU, LD8, DEC, INC, DEC, LD8, SFT, //0x10-0x1f
-		JMP, LDX, LDX, INC, INC, DEC, LD8, DAA, JMP, ALU, LDX, DEC, INC, DEC, LD8, ALU, //0x20-0x2f
-		JMP, LDX, LD8, INC, INC, DEC, LD8, CTR, JMP, ALU, LD8, DEC, INC, DEC, LD8, CTR, //0x30-0x3f
-		LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, //0x40-0x4f
-		LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, //0x50-0x5f
-		LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, //0x60-0x6f
-		LD8, LD8, LD8, LD8, LD8, LD8, CTR, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, LD8, //0x70-0x7f
+		CTR, LD_, LD_, INC, INC, DEC, LD_, SFT, EX_, ALU, LD_, DEC, INC, DEC, LD_, SFT, //0x00-0x0f
+		JMP, LD_, LD_, INC, INC, DEC, LD_, SFT, JMP, ALU, LD_, DEC, INC, DEC, LD_, SFT, //0x10-0x1f
+		JMP, LD_, LD_, INC, INC, DEC, LD_, DAA, JMP, ALU, LD_, DEC, INC, DEC, LD_, ALU, //0x20-0x2f
+		JMP, LD_, LD_, INC, INC, DEC, LD_, CTR, JMP, ALU, LD_, DEC, INC, DEC, LD_, CTR, //0x30-0x3f
+		LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, //0x40-0x4f
+		LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, //0x50-0x5f
+		LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, //0x60-0x6f
+		LD_, LD_, LD_, LD_, LD_, LD_, CTR, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, LD_, //0x70-0x7f
 		ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, //0x80-0x8f
 		ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, //0x90-0x9f
 		ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, //0xa0-0xaf
@@ -42,7 +42,7 @@ const z80cmd_t z80ops[256] = {
 		JMP, STK, JMP, JMP, JMP, STK, ALU, JMP, JMP, JMP, JMP, PFX, JMP, JMP, ALU, JMP, //0xc0-0xcf
 		JMP, STK, JMP, IO_, JMP, STK, ALU, JMP, JMP, EX_, JMP, IO_, JMP, PFX, ALU, JMP, //0xd0-0xdf
 		JMP, STK, JMP, EX_, JMP, STK, ALU, JMP, JMP, JMP, JMP, EX_, JMP, PFX, ALU, JMP, //0xe0-0xef
-		JMP, STK, JMP, CTR, JMP, STK, ALU, JMP, JMP, LDX, JMP, CTR, JMP, PFX, ALU, JMP  //0xf0-0xff
+		JMP, STK, JMP, CTR, JMP, STK, ALU, JMP, JMP, LD_, JMP, CTR, JMP, PFX, ALU, JMP  //0xf0-0xff
 };
 
 const uint8_t edoptstates[96] = {
@@ -55,12 +55,12 @@ const uint8_t edoptstates[96] = {
 };
 
 const z80cmd_t z80edops[96] = {
-		IO_, IO_, ALU, LDX, ALU, CTR, CTR, LD8, IO_, IO_, ALU, LDX, ALU, CTR, CTR, LD8, //0x40-0x4f
-		IO_, IO_, ALU, LDX, ALU, CTR, CTR, LD8, IO_, IO_, ALU, LDX, ALU, CTR, CTR, LD8, //0x50-0x5f
-		IO_, IO_, ALU, LDX, ALU, CTR, CTR, SFT, IO_, IO_, ALU, LDX, ALU, CTR, CTR, SFT, //0x60-0x6f
-		IO_, IO_, ALU, LDX, ALU, CTR, CTR, SFT, IO_, IO_, ALU, LDX, ALU, CTR, CTR, SFT, //0x70-0x7f
-		LD8, ALU, IO_, IO_, CTR, CTR, CTR, CTR, LD8, ALU, IO_, IO_, CTR, CTR, CTR, CTR, //0xa0-0xaf
-		LD8, ALU, IO_, IO_, CTR, CTR, CTR, CTR, LD8, ALU, IO_, IO_, CTR, CTR, CTR, CTR  //0xb0-0xbf
+		EDIO, EDIO, EDAL, EDLD, EDAL, EDCT, EDCT, EDLD, EDIO, EDIO, EDAL, EDLD, EDAL, EDCT, EDCT, EDLD, //0x40-0x4f
+		EDIO, EDIO, EDAL, EDLD, EDAL, EDCT, EDCT, EDLD, EDIO, EDIO, EDAL, EDLD, EDAL, EDCT, EDCT, EDLD, //0x50-0x5f
+		EDIO, EDIO, EDAL, EDLD, EDAL, EDCT, EDCT, EDSF, EDIO, EDIO, EDAL, EDLD, EDAL, EDCT, EDCT, EDSF, //0x60-0x6f
+		EDIO, EDIO, EDAL, EDLD, EDAL, EDCT, EDCT, EDSF, EDIO, EDIO, EDAL, EDLD, EDAL, EDCT, EDCT, EDSF, //0x70-0x7f
+		EDLD, EDAL, EDIO, EDIO, EDCT, EDCT, EDCT, EDCT, EDLD, EDAL, EDIO, EDIO, EDCT, EDCT, EDCT, EDCT, //0xa0-0xaf
+		EDLD, EDAL, EDIO, EDIO, EDCT, EDCT, EDCT, EDCT, EDLD, EDAL, EDIO, EDIO, EDCT, EDCT, EDCT, EDCT  //0xb0-0xbf
 };
 
 const uint8_t sz53p_table[256] = {
@@ -82,10 +82,10 @@ const uint8_t sz53p_table[256] = {
 		0xa4,0xa0,0xa0,0xa4,0xa0,0xa4,0xa4,0xa0,0xa8,0xac,0xac,0xa8,0xac,0xa8,0xa8,0xac
 };
 
-uint8_t __N(uint8_t code) {
-	ERROR(code);
+uint8_t NONI(uint8_t code) {
+	state.int_blocked = 2;
 
-	return 0;
+	return 4;
 }
 
 uint8_t CTR(uint8_t code) {
@@ -93,53 +93,55 @@ uint8_t CTR(uint8_t code) {
 	if(code == 0xff)
 		state.int_blocked = 2; //incorrect op NONI
 	else {
-		if(IS_ED_PREFIX) {
-			if(code < 0x80)
-				tstates = edoptstates[code-0x40];
-			else
-				tstates = edoptstates[code-0x60];
-
-			if((code == 0x45) || (code == 0x55) || (code == 0x65) || (code == 0x75) ||
-			   (code == 0x4d) || (code == 0x5d) || (code == 0x6d) || (code == 0x7d)) { //RETI/RETN
-				IFF1=IFF2;
-				PCL = mem_read(SP++);
-				PCH = mem_read(SP++);
-			}
-			else if((code == 0x46) || (code == 0x4e) || (code == 0x66) || (code == 0x6e)) {//IM 0
-				IM = 0;
-			}
-			else if((code == 0x56) || (code == 0x76)) {//IM 1
-				IM = 1;
-			}
-			else if((code == 0x5e) || (code == 0x7e)) {//IM 2
-				IM = 2;
-			}
-			else
-				state.int_blocked = 2;  //incorrect op
-		}
-		else {
-			switch (code) {
-			case 0x76://HALT
-				state.halted = 1; break;
-			case 0x37://SCF
-				F = (F & (FLAG_P | FLAG_Z | FLAG_S)) | (A & (FLAG_3 | FLAG_5)) | FLAG_C; break;
-			case 0x3f://CCF
-				F = (F & (FLAG_P | FLAG_Z | FLAG_S)) | ((F & FLAG_C) ? FLAG_H : FLAG_C) | (A & (FLAG_3 | FLAG_5)); break;
-			case 0xf3://DI
-				IFF1 = IFF2 = 0; break;
-			case 0xfb://EI
-				IFF1 = IFF2 = 1; state.int_blocked = 2; break;
-			case 0x00://NOP
-				break;
-			default:
-				ERROR(code); break;
-			}
+		switch (code) {
+		case 0x76://HALT
+			state.halted = 1; break;
+		case 0x37://SCF
+			F = (F & (FLAG_P | FLAG_Z | FLAG_S)) | (A & (FLAG_3 | FLAG_5)) | FLAG_C; break;
+		case 0x3f://CCF
+			F = (F & (FLAG_P | FLAG_Z | FLAG_S)) | ((F & FLAG_C) ? FLAG_H : FLAG_C) | (A & (FLAG_3 | FLAG_5)); break;
+		case 0xf3://DI
+			IFF1 = IFF2 = 0; break;
+		case 0xfb://EI
+			IFF1 = IFF2 = 1; state.int_blocked = 2; break;
+		case 0x00://NOP
+			break;
+		default:
+			ERROR(code); break;
 		}
 	}
 	return tstates;
 }
 
-uint8_t LD8(uint8_t code) {
+uint8_t EDCT(uint8_t code) {
+	uint8_t tstates;
+	if(code < 0x80)
+		tstates = edoptstates[code-0x40];
+	else
+		tstates = edoptstates[code-0x60];
+
+	if((code == 0x45) || (code == 0x55) || (code == 0x65) || (code == 0x75) ||
+	   (code == 0x4d) || (code == 0x5d) || (code == 0x6d) || (code == 0x7d)) { //RETI/RETN
+		IFF1=IFF2;
+		PCL = mem_read(SP++);
+		PCH = mem_read(SP++);
+	}
+	else if((code == 0x46) || (code == 0x4e) || (code == 0x66) || (code == 0x6e)) {//IM 0
+		IM = 0;
+	}
+	else if((code == 0x56) || (code == 0x76)) {//IM 1
+		IM = 1;
+	}
+	else if((code == 0x5e) || (code == 0x7e)) {//IM 2
+		IM = 2;
+	}
+	else
+		state.int_blocked = 2;  //incorrect op NONI
+
+	return tstates;
+}
+
+uint8_t LD_(uint8_t code) {
 	uint8_t tstates = optstates[code];
 	//TODO all
 	switch (code) {
@@ -150,8 +152,13 @@ uint8_t LD8(uint8_t code) {
 	return tstates;
 }
 
-uint8_t LDX(uint8_t code) {
-	uint8_t tstates = optstates[code];
+uint8_t EDLD(uint8_t code) {
+	uint8_t tstates;
+	if(code < 0x80)
+		tstates = edoptstates[code-0x40];
+	else
+		tstates = edoptstates[code-0x60];
+
 	//TODO all
 	switch (code) {
 	default:
@@ -186,19 +193,29 @@ uint8_t DEC(uint8_t code) {
 uint8_t ALU(uint8_t code) {
 	uint8_t tstates = optstates[code];
 
-	if(IS_CB_PREFIX) {
-		if(code & 0x04) {//NEG
+	//TODO all
+	switch (code) {
+	default:
+		ERROR(code); break;
+	}
 
-		}
-		else {
-			//TODO CPI CPD
-		}
+	return tstates;
+}
+
+uint8_t EDAL(uint8_t code) {
+	uint8_t tstates;
+	if(code < 0x80)
+		tstates = edoptstates[code-0x40];
+	else
+		tstates = edoptstates[code-0x60];
+
+	if(code & 0x04) {//NEG
+		//TODO
 	}
 	else {
-
+		//TODO CPI CPD
 	}
 
-	//TODO all
 	switch (code) {
 	default:
 		ERROR(code); break;
@@ -209,41 +226,42 @@ uint8_t ALU(uint8_t code) {
 
 uint8_t JMP(uint8_t code) {
 	uint8_t tstates = optstates[code];
-	int8_t dh, dl;
+	uint8_t dh, dl;
+	int8_t d;
 
 	if(code < 0x40) {
-		dl = mem_read(PC++);
+		d = mem_read(PC++);
 		switch (code) {
 		case 0x10://DJNZ
 			if(--B) {
-				PC += dl;
+				PC += d;
 				tstates += 5;
 			}
 			break;
 		case 0x20://JR NZ
 			if(!(F & FLAG_Z)) {
-				PC += dl;
+				PC += d;
 				tstates += 5;
 			}
 			break;
 		case 0x30://JR NC
 			if(!(F & FLAG_C)) {
-				PC += dl;
+				PC += d;
 				tstates += 5;
 			}
 			break;
 		case 0x18://JR
-			PC += dl;
+			PC += d;
 			break;
 		case 0x28://JR Z
 			if(F & FLAG_Z) {
-				PC += dl;
+				PC += d;
 				tstates += 5;
 			}
 			break;
 		case 0x38://JR C
 			if(F & FLAG_C) {
-				PC += dl;
+				PC += d;
 				tstates += 5;
 			}
 			break;
@@ -252,11 +270,11 @@ uint8_t JMP(uint8_t code) {
 		}
 	}
 	else if(((code &0x07) == 0x00) || ((code &0x07) == 0x02) || ((code &0x07) == 0x04)) {
-		if((code &0x07) == 0x00) {
+		if((code &0x07) == 0x00) {//for RET
 			dl = mem_read(SP++);
 			dh = mem_read(SP++);
 		}
-		else {
+		else {//for JP & CALL
 			dl = mem_read(PC++);
 			dh = mem_read(PC++);
 		}
@@ -528,31 +546,6 @@ uint8_t SFT(uint8_t code) {
 		else
 			*regptr = tmpres;
 	}
-	else if(IS_ED_PREFIX) {
-		if(code < 0x80)
-			tstates = edoptstates[code-0x40];
-		else
-			tstates = edoptstates[code-0x60];
-
-		switch (code) {
-		case 0x67://RRD
-		case 0x77:
-			tmp = mem_read(HL);
-			mem_write(HL, (A << 4) | (tmp >> 4));
-			A = (A & 0xf0) | (tmp & 0x0f);
-			F = (F & FLAG_C) | sz53p_table[A];
-			break;
-		case 0x6f://RLD
-		case 0x7f:
-			tmp = mem_read(HL);
-			mem_write(HL, (tmp << 4) | (A & 0x0f));
-			A = (A & 0xf0) | (tmp >> 4);
-			F = (F & FLAG_C) | sz53p_table[A];
-			break;
-		default:
-			ERROR(code); break;
-		}
-	}
 	else {
 		switch (code) {
 		case 0x07://RLCA
@@ -577,6 +570,41 @@ uint8_t SFT(uint8_t code) {
 		default:
 			ERROR(code); break;
 		}
+	}
+
+	return tstates;
+}
+
+uint8_t EDSF(uint8_t code) {
+	uint8_t tstates;
+	if(code < 0x80)
+		tstates = edoptstates[code-0x40];
+	else
+		tstates = edoptstates[code-0x60];
+
+	uint8_t tmp;
+	switch (code) {
+	case 0x67://RRD
+	case 0x77:
+		tmp = mem_read(HL);
+		mem_write(HL, (A << 4) | (tmp >> 4));
+		A = (A & 0xf0) | (tmp & 0x0f);
+		F = (F & FLAG_C) | sz53p_table[A];
+		break;
+	case 0x6f://RLD
+	case 0x7f:
+		tmp = mem_read(HL);
+		mem_write(HL, (tmp << 4) | (A & 0x0f));
+		A = (A & 0xf0) | (tmp >> 4);
+		F = (F & FLAG_C) | sz53p_table[A];
+		break;
+	default:
+		ERROR(code); break;
+	}
+
+	switch (code) {
+	default:
+		ERROR(code); break;
 	}
 
 	return tstates;
@@ -630,7 +658,8 @@ uint8_t BIT(uint8_t code) {
 uint8_t EX_(uint8_t code) {
 	uint8_t tstates = optstates[code];
 
-	if(IS_DDFD_PREFIX && (code != 0xe3)) tstates = CTR(0xff);
+//	if(IS_DDFD_PREFIX && (code != 0xe3))
+//		return NONI(code);
 
 	uint16_t tmp;
 	switch (code) {
@@ -656,7 +685,7 @@ uint8_t EX_(uint8_t code) {
 
 uint8_t IO_(uint8_t code) {
 	uint8_t tstates = optstates[code];
-	if(!IS_ED_PREFIX) {
+
 		switch (code) {
 		case 0xd3://OUT (*),A
 			port_out(((uint16_t)A << 8) | mem_read(PC++), A); break;
@@ -665,75 +694,106 @@ uint8_t IO_(uint8_t code) {
 		default:
 			ERROR(code); break;
 		}
-	}
-	else {
-		uint8_t tmp1, tmp2;
 
-		if(code < 0x80)
-			tstates = edoptstates[code-0x40];
-		else
-			tstates = edoptstates[code-0x60];
-		uint8_t tmp;
-		switch (code) {
-		case 0x40://IN
-			B = port_in(BC);
-			F = ( F & FLAG_C) | sz53p_table[B]; break;
-		case 0x48://IN
-			C = port_in(BC);
-			F = ( F & FLAG_C) | sz53p_table[C]; break;
-		case 0x50://IN
-			D = port_in(BC);
-			F = ( F & FLAG_C) | sz53p_table[D]; break;
-		case 0x58://IN
-			E = port_in(BC);
-			F = ( F & FLAG_C) | sz53p_table[E]; break;
-		case 0x60://IN
-			H = port_in(BC);
-			F = ( F & FLAG_C) | sz53p_table[H]; break;
-		case 0x68://IN
-			L = port_in(BC);
-			F = ( F & FLAG_C) | sz53p_table[L]; break;
-		case 0x70://IN
-			tmp = port_in(BC);
-			F = ( F & FLAG_C) | sz53p_table[tmp]; break;
-		case 0x78://IN
-			A = port_in(BC);
-			F = ( F & FLAG_C) | sz53p_table[A]; break;
-		case 0x41://OUT
-			port_out(BC, B); break;
-		case 0x49://OUT
-			port_out(BC, C); break;
-		case 0x51://OUT
-			port_out(BC, D); break;
-		case 0x59://OUT
-			port_out(BC, E); break;
-		case 0x61://OUT
-			port_out(BC, H); break;
-		case 0x69://OUT
-			port_out(BC, L); break;
-		case 0x71://OUT
-			port_out(BC, 0); break;
-		case 0x79://OUT
-			port_out(BC, A); break;
-		case 0xa2:
-			tmp1 = port_in(BC);
-			mem_write(HL, tmp1);
-	        B--; HL++;
-	        tmp2 = tmp1 + C + 1;
-			F = ((tmp1 & 0x80) ? FLAG_N : 0) | ((tmp2 < tmp1) ? FLAG_H | FLAG_C : 0) |
-			     ((sz53p_table[(tmp2 & 0x07) ^ B] & FLAG_P) ? FLAG_P : 0) | (sz53p_table[B] & ~FLAG_P);
-			break;
-		case 0xb2:
-			//TODO
-		case 0xa3:
-		case 0xb3:
-		case 0xaa:
-		case 0xba:
-		case 0xab:
-		case 0xbb:
-		default:
-			ERROR(code); break;
-		}
+	return tstates;
+}
+
+uint8_t EDIO(uint8_t code) {
+	uint8_t tstates;
+	if(code < 0x80)
+		tstates = edoptstates[code-0x40];
+	else
+		tstates = edoptstates[code-0x60];
+
+	uint8_t tmp1, tmp2;
+	switch (code) {
+	case 0x40://IN
+		B = port_in(BC);
+		F = ( F & FLAG_C) | sz53p_table[B]; break;
+	case 0x48://IN
+		C = port_in(BC);
+		F = ( F & FLAG_C) | sz53p_table[C]; break;
+	case 0x50://IN
+		D = port_in(BC);
+		F = ( F & FLAG_C) | sz53p_table[D]; break;
+	case 0x58://IN
+		E = port_in(BC);
+		F = ( F & FLAG_C) | sz53p_table[E]; break;
+	case 0x60://IN
+		H = port_in(BC);
+		F = ( F & FLAG_C) | sz53p_table[H]; break;
+	case 0x68://IN
+		L = port_in(BC);
+		F = ( F & FLAG_C) | sz53p_table[L]; break;
+	case 0x70://IN
+		tmp1 = port_in(BC);
+		F = ( F & FLAG_C) | sz53p_table[tmp1]; break;
+	case 0x78://IN
+		A = port_in(BC);
+		F = ( F & FLAG_C) | sz53p_table[A]; break;
+	case 0x41://OUT
+		port_out(BC, B); break;
+	case 0x49://OUT
+		port_out(BC, C); break;
+	case 0x51://OUT
+		port_out(BC, D); break;
+	case 0x59://OUT
+		port_out(BC, E); break;
+	case 0x61://OUT
+		port_out(BC, H); break;
+	case 0x69://OUT
+		port_out(BC, L); break;
+	case 0x71://OUT
+		port_out(BC, 0); break;
+	case 0x79://OUT
+		port_out(BC, A); break;
+	case 0xa2://INI
+	case 0xb2://INIR
+		tmp1 = port_in(BC);
+		mem_write(HL, tmp1);
+		B--;HL++;
+        tmp2 = tmp1 + C + 1;
+		F = ((tmp1 & 0x80) ? FLAG_N : 0) | ((tmp2 < tmp1) ? FLAG_H | FLAG_C : 0) |
+		    ((sz53p_table[(tmp2 & 0x07) ^ B] & FLAG_P) ? FLAG_P : 0) | (sz53p_table[B] & ~FLAG_P);
+		if(((code & 0xf0) == 0xb0) && B) PC -= 2;
+		break;
+	case 0xa3://OUTI
+	case 0xb3://OUTIR
+		tmp1 = mem_read(HL);
+		B--; HL++;
+		port_out(BC, tmp1);
+		tmp2 = tmp1 + L;
+		F = ((tmp1 & 0x80) ? FLAG_N : 0) | ((tmp2 < tmp1 ) ? FLAG_H | FLAG_C : 0) |
+			((sz53p_table[(tmp2 & 0x07) ^ B] & FLAG_P) ? FLAG_P : 0) | (sz53p_table[B] & ~FLAG_P);
+		if(((code & 0xf0) == 0xb0) && B) PC -= 2;
+		break;
+	case 0xaa://IND
+	case 0xba://INDR
+		tmp1 = port_in(BC);
+		mem_write(HL, tmp1);
+        B--; HL--;
+        tmp2 = tmp1 + C - 1;
+		F = ((tmp1 & 0x80) ? FLAG_N : 0) | ((tmp2 < tmp1) ? FLAG_H | FLAG_C : 0) |
+		    ((sz53p_table[(tmp2 & 0x07) ^ B] & FLAG_P) ? FLAG_P : 0) | (sz53p_table[B] & ~FLAG_P);
+		if(((code & 0xf0) == 0xb0) && B) PC -= 2;
+		break;
+	case 0xab://OUTD
+	case 0xbb://OUTDR
+		tmp1 = mem_read(HL);
+		B--; HL--;
+		port_out(BC, tmp1);
+		tmp2 = tmp1 + L;
+		F = ((tmp1 & 0x80) ? FLAG_N : 0) | ((tmp2 < tmp1 ) ? FLAG_H | FLAG_C : 0) |
+			((sz53p_table[(tmp2 & 0x07) ^ B] & FLAG_P) ? FLAG_P : 0) | (sz53p_table[B] & ~FLAG_P);
+		if(((code & 0xf0) == 0xb0) && B) PC -= 2;
+		break;
+	default:
+		ERROR(code); break;
+	}
+
+	switch (code) {
+	default:
+		ERROR(code); break;
 	}
 
 	return tstates;
