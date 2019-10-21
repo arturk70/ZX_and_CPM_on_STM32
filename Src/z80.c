@@ -5,7 +5,6 @@
  *      Author: artur
  */
 
-#include <stdio.h>
 #include "z80_ops.h"
 #include "z80.h"
 
@@ -44,17 +43,17 @@ void z80_reset() {
 }
 
 uint8_t z80_interrupt() {
-	uint8_t tstates = 0;
+	uint8_t tstates = 13;
 
 	if( IFF1) {
 
-		if ( state.iff2_read) {
-			/* We just executed LD A,I or LD A,R, causing IFF2 to be copied to the
-		 parity flag.  This occured whilst accepting an interrupt.
-		 We cannot do this when emulating LD itself as we cannot
-		 tell whether the next instruction will be interrupted. */
-			F &= ~FLAG_P;
-		}
+//		if ( state.iff2_read) {
+//			/* We just executed LD A,I or LD A,R, causing IFF2 to be copied to the
+//		 parity flag.  This occured whilst accepting an interrupt.
+//		 We cannot do this when emulating LD itself as we cannot
+//		 tell whether the next instruction will be interrupted. */
+//			F &= ~FLAG_P;
+//		}
 
 		if( state.halted ) { PC++; state.halted = 0; }
 
@@ -73,12 +72,10 @@ uint8_t z80_interrupt() {
 		   incremented as normal.  As RST 38 takes a single byte, we do not
 		   emulate fetching of additional bytes. */
 			PC = 0x0038;
-			tstates = 13;
 			break;
 		case 1:
 			/* RST 38 */
 			PC = 0x0038;
-			tstates = 13;
 			break;
 		case 2:
 			/* We assume 0xff is on the data bus, as the Spectrum leaves it pulled
@@ -91,11 +88,9 @@ uint8_t z80_interrupt() {
 			break;
 		}
 		}
-
-		return tstates;
 	}
 
-	return 0;
+	return tstates;
 }
 
 uint8_t z80_nmi() {
@@ -113,16 +108,24 @@ uint8_t z80_nmi() {
 }
 
 //set interrupt requests for tstates time
-void req_int(uint32_t tstates) {state.nmi_req += tstates;}
+void req_int(uint32_t tstates) {state.int_req += tstates;}
 void req_nmi(uint32_t tstates) {state.nmi_req += tstates;}
 
 uint8_t z80_step() {
 	uint8_t tstates;
 
-	if(state.nmi_req && !state.int_blocked)
+	if(state.nmi_req && !state.int_blocked) {
+#ifdef __SIMULATION
+		printf("Process NMI at PC=0x%04x\n", PC);
+#endif
 		tstates = z80_nmi();
-	else if(state.int_req && !state.int_blocked)
+	}
+	else if(state.int_req && IFF1 && !state.int_blocked) {
+#ifdef __SIMULATION
+		printf("Process INT at PC=0x%04x, IM=0x%02x\n", PC, IM);
+#endif
 		tstates = z80_interrupt();
+	}
 	else if(state.halted) {
 		R++;
 	}
@@ -131,7 +134,7 @@ uint8_t z80_step() {
 		R++;
 
 #ifdef __SIMULATION
-		printf("Exec 0x%04x: 0x%02x\n", PC-1, code);
+		printf("Exec 0x%04x: (0x%04x)0x%02x\n", PC-1, state.prefix, code);
 #endif
 		if(!IS_PREFIX) {
 			tstates = z80ops[code](code);
