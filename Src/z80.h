@@ -12,8 +12,8 @@
 #include "memory.h"
 
 /* Macros used for accessing the registers */
-#define A   regs.fa.b.l
-#define F   regs.fa.b.h
+#define A   regs.fa.b.h
+#define F   regs.fa.b.l
 #define FA  regs.fa.w
 
 #define B   regs.bc.b.h
@@ -28,8 +28,8 @@
 #define L   regs.hl.b.l
 #define HL  regs.hl.w
 
-#define A_  regs.fa_.b.l
-#define F_  regs.fa_.b.h
+#define A_  regs.fa_.b.h
+#define F_  regs.fa_.b.l
 #define FA_ regs.fa_.w
 
 #define B_  regs.bc_.b.h
@@ -117,7 +117,7 @@ typedef struct {
 } z80_registers;
 
 typedef struct {
-	uint8_t iff2_read;
+//	uint8_t iff2_read;
 	uint8_t halted;
 	uint16_t prefix;
 	uint32_t int_req;

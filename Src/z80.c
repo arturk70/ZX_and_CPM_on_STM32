@@ -37,7 +37,7 @@ void z80_reset() {
 	regs.hlixiyptr = &(regs.hl);
 	regs.ixiyshift = 0;
 	state.halted = 0;
-	state.iff2_read = 0;
+//	state.iff2_read = 0;
 	state.prefix = 0;
 
 }
@@ -127,6 +127,7 @@ uint8_t z80_step() {
 		tstates = z80_interrupt();
 	}
 	else if(state.halted) {
+		tstates = 4;
 		R++;
 	}
 	else {
@@ -136,43 +137,40 @@ uint8_t z80_step() {
 #ifdef __SIMULATION
 		printf("Exec 0x%04x: (0x%04x)0x%02x\n", PC-1, state.prefix, code);
 #endif
-		if(!IS_PREFIX) {
-			tstates = z80ops[code](code);
-		}
-		else {
-			if(IS_DD_PREFIX)
-				regs.hlixiyptr = &(regs.ix);
-			if(IS_FD_PREFIX)
-				regs.hlixiyptr = &(regs.iy);
 
-			if(IS_ED_PREFIX) {
-				if((code < 0x40) || (code > 0xbf) || (code > 0x7f && code < 0xa0))
-					tstates = NONI(code); //incorrect op NONI
-				else {
-					if(code < 0x80)
-						tstates = z80edops[code-0x40](code);
-					else
-						tstates = z80edops[code-0x60](code);
-				}
-			}
-			else if(IS_CB_PREFIX) {
-				if(IS_DDFD_PREFIX) {
-					regs.ixiyshift = code;
-					code = mem_read(PC++);
-				}
-				if(code < 0x40)
-					tstates = SFT(code);
+		if(IS_DD_PREFIX)
+			regs.hlixiyptr = &(regs.ix);
+		if(IS_FD_PREFIX)
+			regs.hlixiyptr = &(regs.iy);
+
+		if(IS_ED_PREFIX) {
+			if((code < 0x40) || (code > 0xbf) || (code > 0x7f && code < 0xa0))
+				tstates = NONI(code); //incorrect op NONI
+			else {
+				if(code < 0x80)
+					tstates = z80edops[code-0x40](code);
 				else
-					tstates = BIT(code);
-			}
-			else
-				tstates = z80ops[code](code);
-
-			if(!(IS_DDFD_PREFIX && (code == 0xcb))) {//not DDCB or FDCB
-				regs.hlixiyptr = &(regs.hl);
-				CLR_PREFIX();
+					tstates = z80edops[code-0x60](code);
 			}
 		}
+		else if(IS_CB_PREFIX) {
+			if(IS_DDFD_PREFIX) {
+				regs.ixiyshift = code;
+				code = mem_read(PC++);
+			}
+			if(code < 0x40)
+				tstates = SFT(code);
+			else
+				tstates = BIT(code);
+		}
+		else
+			tstates = z80ops[code](code);
+
+		if(IS_DDFD_PREFIX && (code != 0xcb))
+					regs.hlixiyptr = &(regs.hl);
+
+		if(IS_PREFIX && !((code == 0xcb) | (code == 0xdd) | (code == 0xfd) | (code == 0xed)))
+			CLR_PREFIX();
 	}
 
 	if(state.int_blocked) state.int_blocked--;

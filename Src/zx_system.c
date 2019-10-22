@@ -42,7 +42,8 @@ void zxsys_Run() {
 //		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 #endif
 
-		if(ZXdisp_drawnextline() == 0) req_int(2);
+		if(ZXdisp_drawnextline() == 0)
+			req_int(40);
 	}
 }
 
