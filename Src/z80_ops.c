@@ -171,8 +171,59 @@ uint8_t EDLD(uint8_t code) {
 
 uint8_t INC(uint8_t code) {
 	uint8_t tstates = optstates[code];
-	//TODO all
+
 	switch (code) {
+	case 0x04://INC B
+		B++;
+		F = (F & FLAG_C) | ((B == 0x80) ? FLAG_V : 0) | ((B & 0x0f) ? 0 : FLAG_H) | (sz53p_table[B] & ~FLAG_P);
+		break;
+	case 0x14://INC D
+		D++;
+		F = (F & FLAG_C) | ((D == 0x80) ? FLAG_V : 0) | ((D & 0x0f) ? 0 : FLAG_H) | (sz53p_table[D] & ~FLAG_P);
+		break;
+	case 0x24://INC H
+		HLIXIY_REGH++;
+		F = (F & FLAG_C) | ((HLIXIY_REGH == 0x80) ? FLAG_V : 0) | ((HLIXIY_REGH & 0x0f) ? 0 : FLAG_H) | (sz53p_table[HLIXIY_REGH] & ~FLAG_P);
+		break;
+	case 0x34://INC (HL)
+	{
+		uint8_t addrshft = 0;
+		if(IS_DDFD_PREFIX)
+			addrshft = mem_read(PC++);
+		uint8_t tmp = mem_read(HLIXIY_REG + addrshft);
+		tmp++;
+		F = (F & FLAG_C) | ((tmp == 0x80) ? FLAG_V : 0) | ((tmp & 0x0f) ? 0 : FLAG_H) | (sz53p_table[tmp] & ~FLAG_P);
+		mem_write(HLIXIY_REG + addrshft, tmp);
+	}
+	break;
+	case 0x03://INC BC
+		BC++;
+		break;
+	case 0x13://INC DE
+		DE++;
+		break;
+	case 0x23://INC HL
+		HLIXIY_REG++;
+		break;
+	case 0x33://INC SP
+		SP++;
+		break;
+	case 0x0c://INC C
+		C++;
+		F = (F & FLAG_C) | ((C == 0x80) ? FLAG_V : 0) | ((C & 0x0f) ? 0 : FLAG_H) | (sz53p_table[C] & ~FLAG_P);
+		break;
+	case 0x1c://INC E
+		E++;
+		F = (F & FLAG_C) | ((E == 0x80) ? FLAG_V : 0) | ((E & 0x0f) ? 0 : FLAG_H) | (sz53p_table[E] & ~FLAG_P);
+		break;
+	case 0x2c://INC L
+		HLIXIY_REGL++;
+		F = (F & FLAG_C) | ((HLIXIY_REGL == 0x80) ? FLAG_V : 0) | ((HLIXIY_REGL & 0x0f) ? 0 : FLAG_H) | (sz53p_table[HLIXIY_REGL] & ~FLAG_P);
+		break;
+	case 0x3c://INC A
+		A++;
+		F = (F & FLAG_C) | ((A == 0x80) ? FLAG_V : 0) | ((A & 0x0f) ? 0 : FLAG_H) | (sz53p_table[A] & ~FLAG_P);
+		break;
 	default:
 		ERROR(code); break;
 	}
@@ -182,6 +233,7 @@ uint8_t INC(uint8_t code) {
 
 uint8_t DEC(uint8_t code) {
 	uint8_t tstates = optstates[code];
+
 	switch (code) {
 	case 0x05://DEC B
 		F = (F & FLAG_C) | ((B & 0x0f) ? 0 : FLAG_H) | FLAG_N;
