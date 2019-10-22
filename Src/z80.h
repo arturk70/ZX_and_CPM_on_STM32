@@ -97,7 +97,7 @@ typedef union {
 #ifdef __SIMULATION
   struct { uint8_t l,h; } b;
 #else
-  struct { uint8_t h,l; } b;
+  struct { uint8_t l,h; } b;
 #endif
   uint16_t w;
 } regpair;

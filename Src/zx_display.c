@@ -11,8 +11,8 @@
 
 static uint8_t *ZXvideomem;
 static uint16_t *linebuf;
-static uint16_t lnum;
-static uint16_t frnum;
+static uint8_t lnum;
+static uint8_t frnum;
 uint8_t zx_newline_flag;
 
 void ZXdisp_clear() {
@@ -24,7 +24,7 @@ void ZXdisp_Init() {
 	ZXvideomem = get_ZX_videomem();
 	ILI9341_Init();
 	ZXdisp_clear();
-	linebuf = malloc(ZX_PIXELS*8*2);
+	linebuf = malloc(ZX_PIXELS*2);
 	lnum = 0;
 	frnum = 0;
 
@@ -43,35 +43,31 @@ void ZXdisp_deInit() {
 }
 
 uint8_t ZXdisp_drawnextline() {
-	uint8_t *attraddr = ZXvideomem+0x1800+lnum*32;
-
+	register uint8_t *attraddr = ZXvideomem+0x1800+(lnum/8)*32;
+	register uint8_t *lineaddr = ZXvideomem+(((uint16_t)lnum & 0x00c0)<<5)+(((uint16_t)lnum & 0x0038)<<2)+(((uint16_t)lnum & 0x0007)<<8);
 	register uint32_t attr;
 	register uint32_t fgbgcolor;
-	register uint16_t videomemshft;
-	register uint16_t bufshft;
+	register uint8_t bufshft;
 
-	for(register uint16_t colnum=0; colnum<32; colnum++) {
+	for(register uint8_t colnum=0; colnum<32; colnum++) {
 		attr = *(attraddr+colnum);
 		fgbgcolor  = (((attr << 26) & 0x08000000) | ((attr << 20) & 0x00400000) | ((attr << 16) & 0x00010000) |
 						    ((attr << 7) & 0x0800) | ((attr << 1) & 0x0040) | ((attr >> 3) & 0x0001)) * ((attr & 0x40) ? 0x1f : 0x18);
 		register uint8_t is_flash_pos = (((attr & 0x80) >> 4) & frnum) >> 3;
 
-		videomemshft = (lnum<<8)+colnum;
-		for(register uint16_t pixlnnum=0; pixlnnum<8; pixlnnum++) {
-			register uint8_t pixline = ZXvideomem[videomemshft+pixlnnum*32];
-			bufshft = (((pixlnnum<<5)+colnum)<<3)+7;
-			for(register uint16_t pixnum=0; pixnum<8; pixnum++) {
+			register uint8_t pixline = *(lineaddr+colnum);
+			bufshft = colnum*8+7;
+			for(register uint8_t pixnum=0; pixnum<8; pixnum++) {
 				if(((pixline >> pixnum) & 0x01) ^ is_flash_pos)
 					linebuf[bufshft-pixnum] = fgbgcolor >> 16;
 				else
 					linebuf[bufshft-pixnum] = fgbgcolor;
 			}
-		}
 	}
-	ILI9341_sendBuf(ZXD_START_POS, ZXD_START_LINE+lnum*8, ZXD_END_POS, ZXD_START_LINE+lnum*8+7, linebuf);
+	ILI9341_sendBuf(ZXD_START_POS, ZXD_START_LINE+lnum, ZXD_END_POS, ZXD_START_LINE+lnum, linebuf);
 
 	lnum++;
-	if(lnum >= ZX_LINES/8) {
+	if(lnum >= ZX_LINES) {
 		lnum = 0;
 		frnum++;
 		if(frnum > 0x0f) frnum = 0;

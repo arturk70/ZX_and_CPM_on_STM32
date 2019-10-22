@@ -5,6 +5,7 @@
  *      Author: artur
  */
 
+#include "stdlib.h"
 #include "zx_system.h"
 
 void zxsys_Run() {
@@ -23,7 +24,7 @@ void zxsys_Run() {
 		for(uint8_t j=0; j<32; j++)
 			for(uint8_t l=0; l<8; l++) {
 				uint16_t la = (i*32+j)*8+l;
-				uint16_t sa = (i<<8) | (l<<5) | j;
+				uint16_t sa = (i<<5) | (l<<8) | j;
 				uint8_t b = mem_read(0x3d00+la);
 				mem_write(0x4000+sa, b);
 
@@ -33,13 +34,13 @@ void zxsys_Run() {
 
 	while(1) {
 #ifndef __SIMULATION
-//		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
+		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
 #endif
 		while(!zx_newline_flag || ILI9341_DMA_busy) {
 			z80_step();
 		}
 #ifndef __SIMULATION
-//		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
+		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 #endif
 
 		if(ZXdisp_drawnextline() == 0)
