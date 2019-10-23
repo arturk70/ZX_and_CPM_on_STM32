@@ -34,35 +34,11 @@ static uint16_t calc_cache_block(uint16_t addr, uint16_t *x1, uint16_t *y1, uint
 	return straddr;
 }
 
-static uint8_t read_cache(uint16_t addr, uint8_t *data) {
-	for(uint8_t i=0; i<CACHE_BLOCKS_NUM;i++) {
-		if(addr>=cache[i].straddr && addr <= (cache[i].straddr+CACHE_BLOCK_SIZE-1)) {
-			*data = cache[i].data[addr - cache[i].straddr];
-			cache[i].usage++;
-			//cache[i].usage = SysTick->VAL;
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
-static uint8_t write_cache(uint16_t addr, uint8_t data) {
-	for(uint8_t i=0; i<CACHE_BLOCKS_NUM;i++) {
-		if(addr>=cache[i].straddr && addr <= (cache[i].straddr+CACHE_BLOCK_SIZE-1)) {
-			cache[i].data[addr - cache[i].straddr] = data;
-			cache[i].usage++;
-			//cache[i].usage = SysTick->VAL;
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
-static void update_cache(uint16_t addr) {
+static uint8_t search_cache(uint16_t addr) {//return index of appropriate cache block, update if need
 	uint8_t lfu_num = 0;
 	for(uint8_t i=1; i<CACHE_BLOCKS_NUM;i++) {
+		if((addr >= cache[i].straddr) && (addr < (cache[i].straddr+CACHE_BLOCK_SIZE)))
+			return i;
 		if(cache[i].usage < cache[lfu_num].usage) lfu_num = i;
 	}
 
@@ -76,119 +52,25 @@ static void update_cache(uint16_t addr) {
 	cache[lfu_num].straddr = calc_cache_block(addr, &x1, &y1, &x2, &y2);
 	cache[lfu_num].usage = 0;
 	ILI9341_readBuf(x1, y1, x2, y2, (uint16_t*)cache[lfu_num].data);
+
+	return lfu_num;
 }
 
 uint8_t extmem_read(uint16_t addr) {
-	uint8_t res;
+	uint8_t blocknum = search_cache(addr);
 
-	if(read_cache(addr, &res)) return res;
+	cache[blocknum].usage++;
 
-	uint16_t x, y;
-	uint8_t r,g,b;
-	calc_pix(addr, &x, &y);
-
-#ifndef __SIMULATION
-	ILI9341_WAIT_DMA();
-
-	ILI9341_setFrame(x, y, x, y);
-	ILI9341_sendCommand(ILI9341_RAMRD);
-
-	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV8);
-
-	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
-	r=LL_SPI_ReceiveData8(ILI9341_SPI);//read dummy byte
-	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
-	r=LL_SPI_ReceiveData8(ILI9341_SPI);
-	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
-	g=LL_SPI_ReceiveData8(ILI9341_SPI);
-	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
-	b=LL_SPI_ReceiveData8(ILI9341_SPI);
-	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
-	ILI9341_CS_SET;
-	ILI9341_CS_RESET;
-
-	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV2);
-#else
-	ILI9341_readPix(x, y, &r, &g, &b);
-#endif
-
-	if(0 == (addr % 2))
-		res=(((g & 0xfc) << 3u) | (b >> 3u)); //get L byte
-	else
-		res=((r & 0xF8) | (g >> 5u)); //get H byte
-
-	update_cache(addr);
-
-	return res;
+	return cache[blocknum].data[addr - cache[blocknum].straddr];
 
 }
 
 void extmem_write(uint16_t addr, uint8_t data) {
+	uint8_t blocknum = search_cache(addr);
 
-	if(write_cache(addr, data)) return;
+	cache[blocknum].usage++;
 
-	uint16_t x, y;
-	uint8_t r,g,b;
-	calc_pix(addr, &x, &y);
-
-#ifndef __SIMULATION
-	ILI9341_WAIT_DMA();
-
-	ILI9341_setFrame(x, y, x, y);
-	ILI9341_sendCommand(ILI9341_RAMRD);
-
-	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV8);
-
-	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
-	r=LL_SPI_ReceiveData8(ILI9341_SPI);//read dummy byte
-	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
-	r=LL_SPI_ReceiveData8(ILI9341_SPI);
-	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
-	g=LL_SPI_ReceiveData8(ILI9341_SPI);
-	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
-	b=LL_SPI_ReceiveData8(ILI9341_SPI);
-	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
-	ILI9341_CS_SET;
-	ILI9341_CS_RESET;
-
-	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV2);
-#else
-	ILI9341_readPix(x, y, &r, &g, &b);
-#endif
-
-	uint8_t pixh, pixl;
-	pixh = (r & 0xF8) | (g >> 5u);
-	pixl = ((g & 0xfc) << 3u) | (b >> 3u);
-	if(0 == (addr % 2))
-		pixl = data; //to L byte
-	else
-		pixh = data; //to H byte
-
-#ifndef __SIMULATION
-	ILI9341_sendCommand(ILI9341_GRAM);
-	ILI9341_sendData(pixh);
-	ILI9341_sendData(pixl);
-#else
-	ILI9341_writePix(x, y, (pixh << 8) | pixl);
-
-	update_cache(addr);
-#endif
+	cache[blocknum].data[addr - cache[blocknum].straddr] = data;
 }
 
 void extmem_Init(uint16_t b0l, uint16_t b0r, uint16_t b0t, uint16_t b0b,
