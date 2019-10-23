@@ -161,7 +161,6 @@ int main(void)
 			else if((sym >= '1') &(sym <= '9'))
 				ILI9341_setLEDpwm((sym-'1')*100+100);
 		}
-		LL_mDelay(2000);
 		cpmdisp_puts("\n\n");
     /* USER CODE END WHILE */
 

@@ -29,8 +29,8 @@ void z80_Init(void (*outfn)(uint16_t addr, uint8_t data), uint8_t (*infn)(uint16
 }
 
 void z80_reset() {
-	FA = FA_ = 0xffff;
-	I= R = R7 = 0;
+	AF = AF_ = 0xffff;
+	I= R = 0;
 	PC = 0;
 	SP = 0xffff;
 	IFF1 = IFF2 = IM = 0;
@@ -58,7 +58,7 @@ uint8_t z80_interrupt() {
 		if( state.halted ) { PC++; state.halted = 0; }
 
 		IFF1 = IFF2 = 0;
-		R++;
+		INC_R();
 
 		mem_write( --SP, PCH );
 		mem_write( --SP, PCL );
@@ -97,7 +97,7 @@ uint8_t z80_nmi() {
 	if(state.halted) state.halted = 0;
 
 	IFF1 = 0;
-	R++;
+	INC_R();
 
 	mem_write( --SP, PCH );
 	mem_write( --SP, PCL );
@@ -128,14 +128,14 @@ uint8_t z80_step() {
 	}
 	else if(state.halted) {
 		tstates = 4;
-		R++;
+		INC_R();
 	}
 	else {
 #ifdef __SIMULATION
 		uint16_t prvPC = PC;
 #endif
 		uint8_t code = mem_read(PC++);
-		R++;
+		INC_R();
 
 #ifdef __SIMULATION
 //		printf("Exec 0x%04x: (0x%04x)0x%02x\n", PC-1, state.prefix, code);
@@ -162,7 +162,7 @@ uint8_t z80_step() {
 				code = mem_read(PC++);
 			}
 			if(code < 0x40)
-				tstates = SFT(code);
+				tstates = CBSFT(code);
 			else
 				tstates = BIT(code);
 		}

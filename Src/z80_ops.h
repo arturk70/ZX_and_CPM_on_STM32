@@ -39,6 +39,7 @@ uint8_t EDAL(uint8_t code);
 uint8_t JMP(uint8_t code);
 uint8_t STK(uint8_t code);
 uint8_t SFT(uint8_t code);
+uint8_t CBSFT(uint8_t code);
 uint8_t EDSF(uint8_t code);
 uint8_t BIT(uint8_t code);
 uint8_t EX_(uint8_t code);
