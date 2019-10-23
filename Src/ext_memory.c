@@ -36,7 +36,7 @@ static uint16_t calc_cache_block(uint16_t addr, uint16_t *x1, uint16_t *y1, uint
 
 static uint8_t search_cache(uint16_t addr) {//return index of appropriate cache block, update if need
 	uint8_t lfu_num = 0;
-	for(uint8_t i=1; i<CACHE_BLOCKS_NUM;i++) {
+	for(uint8_t i=0; i<CACHE_BLOCKS_NUM;i++) {
 		if((addr >= cache[i].straddr) && (addr < (cache[i].straddr+CACHE_BLOCK_SIZE)))
 			return i;
 		if(cache[i].usage < cache[lfu_num].usage) lfu_num = i;
@@ -46,12 +46,12 @@ static uint8_t search_cache(uint16_t addr) {//return index of appropriate cache 
 
 	if(cache[lfu_num].usage != 0) {
 		calc_cache_block(cache[lfu_num].straddr, &x1, &y1, &x2, &y2);
-		ILI9341_sendBuf(x1, y1, x2, y2, (uint16_t*)cache[lfu_num].data);
+		ILI9341_sendBuf(x1, y1, x2, y2, (uint16_t*)cache[lfu_num].data, CACHE_BLOCK_SIZE/2);
 	}
 
 	cache[lfu_num].straddr = calc_cache_block(addr, &x1, &y1, &x2, &y2);
 	cache[lfu_num].usage = 0;
-	ILI9341_readBuf(x1, y1, x2, y2, (uint16_t*)cache[lfu_num].data);
+	ILI9341_readBuf(x1, y1, x2, y2, (uint16_t*)cache[lfu_num].data, CACHE_BLOCK_SIZE/2);
 
 	return lfu_num;
 }

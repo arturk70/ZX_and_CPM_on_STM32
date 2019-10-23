@@ -64,7 +64,7 @@ uint8_t ZXdisp_drawnextline() {
 					linebuf[bufshft-pixnum] = fgbgcolor;
 			}
 	}
-	ILI9341_sendBuf(ZXD_START_POS, ZXD_START_LINE+lnum, ZXD_END_POS, ZXD_START_LINE+lnum, linebuf);
+	ILI9341_sendBuf(ZXD_START_POS, ZXD_START_LINE+lnum, ZXD_END_POS, ZXD_START_LINE+lnum, linebuf, ZX_PIXELS);
 
 	lnum++;
 	if(lnum >= ZX_LINES) {

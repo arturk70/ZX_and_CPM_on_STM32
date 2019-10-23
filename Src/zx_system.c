@@ -53,6 +53,10 @@ void zxports_out(uint16_t addr, uint8_t data) {
 }
 
 uint8_t zxports_in(uint16_t addr) {
-	return 0xff;
+	if((addr & 0x00ff) == 0x00fe) {
+		return zxkbd_scan(addr);
+	}
+	else
+		return 0xff;
 }
 

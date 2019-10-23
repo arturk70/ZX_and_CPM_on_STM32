@@ -131,11 +131,14 @@ uint8_t z80_step() {
 		R++;
 	}
 	else {
+#ifdef __SIMULATION
+		uint16_t prvPC = PC;
+#endif
 		uint8_t code = mem_read(PC++);
 		R++;
 
 #ifdef __SIMULATION
-		printf("Exec 0x%04x: (0x%04x)0x%02x\n", PC-1, state.prefix, code);
+//		printf("Exec 0x%04x: (0x%04x)0x%02x\n", PC-1, state.prefix, code);
 #endif
 
 		if(IS_DD_PREFIX)
@@ -165,6 +168,12 @@ uint8_t z80_step() {
 		}
 		else
 			tstates = z80ops[code](code);
+
+#ifdef __SIMULATION
+		if(prvPC < 0x4000 && PC >= 0x4000)
+			printf("Out of ROM by cmd 0x%04x: (0x%04x)0x%02x regs: 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%02x 0x%02x 0x%02x 0x%02x\n",
+					prvPC, state.prefix, code, BC, DE, HL, FA, IX, IY, SP, PC, I, IFF1, IFF2, IM);
+#endif
 
 		if(IS_DDFD_PREFIX && (code != 0xcb))
 					regs.hlixiyptr = &(regs.hl);

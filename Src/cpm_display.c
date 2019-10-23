@@ -37,7 +37,7 @@ inline static void drawsymbol(uint8_t s, uint8_t row, uint8_t col) {
 			CPMD_START_LINE+row*FNT_HEIGHT,
 			CPMD_START_POS+col*FNT_WIDTH+FNT_WIDTH-1,
 			CPMD_START_LINE+row*FNT_HEIGHT+FNT_HEIGHT-1,
-			chbuf);
+			chbuf, FNT_WIDTH*FNT_HEIGHT);
 }
 
 void cpmdisp_scroll(uint8_t lnum) {

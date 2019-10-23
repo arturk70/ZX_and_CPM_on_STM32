@@ -202,12 +202,10 @@ void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
 }
 
 //note: (x2-x1+1)*(y2-y1+1) must be less then 65536
-void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *data) {
+void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *data, uint16_t len) {
 #ifndef __SIMULATION
 	ILI9341_WAIT_DMA();
 #endif
-
-	uint16_t len = (x2-x1+1)*(y2-y1+1);
 
 	ILI9341_setFrame(x1, y1, x2, y2);
 #ifndef __SIMULATION
@@ -228,22 +226,23 @@ void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 
 	ILI9341_DMA_busy = 1;
 #else
-	unsigned int dptr = 0;
-	for(int y=frame.y1; y<=frame.y2; y++)
-		for(int x=frame.x1; x<=frame.x2; x++) {
-			ili9341_image[y*320+x] = data[dptr];
-			dptr++;
+	uint16_t x = x1, y = y1;
+	for(uint16_t i=0; i<len; i++) {
+		ili9341_image[y*320+x] = data[i];
+		if(++x > x2) {
+			x = x1;
+			if(++y > y2)
+				y = y1;
 		}
+	}
 #endif
 }
 
 //note: (x2-x1+1)*(y2-y1+1) must be less then 65536
-void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf) {
+void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf, uint16_t len) {
 #ifndef __SIMULATION
 	ILI9341_WAIT_DMA();
 #endif
-
-	uint16_t len = (x2-x1+1)*(y2-y1+1);
 
 	ILI9341_setFrame(x1, y1, x2, y2);
 
@@ -306,12 +305,15 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 
 	//	ILI9341_DMA_busy = 1;
 #else
-	unsigned int dptr = 0;
-	for(int y=frame.y1; y<=frame.y2; y++)
-		for(int x=frame.x1; x<=frame.x2; x++) {
-			buf[dptr] = ili9341_image[y*320+x];
-			dptr++;
+	uint16_t x = x1, y = y1;
+	for(uint16_t i=0; i<len; i++) {
+		buf[i] = ili9341_image[y*320+x];
+		if(++x > x2) {
+			x = x1;
+			if(++y > y2)
+				y = y1;
 		}
+	}
 #endif
 }
 
@@ -320,12 +322,12 @@ void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16
 #ifndef __SIMULATION
 	ILI9341_WAIT_DMA();
 #endif
-	uint16_t len = (x2-x1+1)*(y2-y1+1);
 	fcolor = color;
 
 	ILI9341_setFrame(x1, y1, x2, y2);
 
 #ifndef __SIMULATION
+	uint16_t len = (x2-x1+1)*(y2-y1+1);
 	ILI9341_sendCommand(ILI9341_GRAM);
 
 	LL_SPI_DisableDMAReq_TX(ILI9341_SPI);
