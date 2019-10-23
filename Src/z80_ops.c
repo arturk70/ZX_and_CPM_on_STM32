@@ -387,7 +387,7 @@ uint8_t EDLD(uint8_t code) {
 			tmp=mem_read(HL);
 			BC--;
 			mem_write(DE,tmp);
-			DE++; HL++;
+			DE--; HL--;
 			tmp += A;
 			F = (F & (FLAG_C | FLAG_Z | FLAG_S)) | (BC ? FLAG_V : 0) | (tmp & FLAG_3) | ((tmp & 0x02) ? FLAG_5 : 0);
 			if((code & 0x10) && BC) {
