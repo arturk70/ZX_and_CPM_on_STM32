@@ -65,8 +65,8 @@ void cpmdisp_Init() {
 
 void cpmdisp_deInit() {
 	cpmdisp_clear();
-	free(scrbuf);
-	free(chbuf);
+	if(scrbuf != NULL) free(scrbuf);
+	if(chbuf != NULL) free(chbuf);
 }
 
 void cpmdisp_putc(char c) {

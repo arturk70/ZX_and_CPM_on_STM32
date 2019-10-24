@@ -111,7 +111,7 @@ typedef struct {
   uint8_t r;
   regpair sp,pc;
   regpair* hlixiyptr; //pointer to HL or IX or IY register for DD/FD prefixes
-  uint8_t ixiyshift;
+  int8_t ixiyshift;
   uint8_t iff1, iff2, im;
 } z80_registers;
 

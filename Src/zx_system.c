@@ -44,7 +44,7 @@ void zxsys_Run() {
 #endif
 
 		if(ZXdisp_drawnextline() == 0)
-			req_int(40);
+			req_int(4);
 	}
 }
 
@@ -54,7 +54,7 @@ void zxports_out(uint16_t addr, uint8_t data) {
 
 uint8_t zxports_in(uint16_t addr) {
 	if((addr & 0x00ff) == 0x00fe) {
-		return zxkbd_scan(addr);
+		return zxkbd_scan(addr>>8);
 	}
 	else
 		return 0xff;

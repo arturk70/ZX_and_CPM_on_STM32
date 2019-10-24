@@ -39,7 +39,7 @@ void ZXdisp_deInit() {
 	LL_TIM_DisableIT_UPDATE(TIM3);
 	LL_TIM_DisableCounter(TIM3);
 #endif
-	free(linebuf);
+	if(linebuf != NULL) free(linebuf);
 }
 
 uint8_t ZXdisp_drawnextline() {

@@ -173,7 +173,7 @@ uint8_t z80_step() {
 #ifdef __SIMULATION
 		if(prvPC < 0x4000 && PC >= 0x4000)
 			printf("Out of ROM by cmd 0x%04x: (0x%04x)0x%02x regs: 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%02x 0x%02x 0x%02x 0x%02x\n",
-					prvPC, state.prefix, code, BC, DE, HL, FA, IX, IY, SP, PC, I, IFF1, IFF2, IM);
+					prvPC, state.prefix, code, BC, DE, HL, AF, IX, IY, SP, PC, I, IFF1, IFF2, IM);
 #endif
 
 		if(IS_DDFD_PREFIX && (code != 0xcb))
@@ -185,9 +185,13 @@ uint8_t z80_step() {
 
 	if(state.nmi_req > tstates)
 		state.nmi_req -= tstates;
+	else
+		state.nmi_req = 0;
 
 	if(state.int_req > tstates)
 		state.int_req -= tstates;
+	else
+		state.int_req = 0;
 
 	return tstates;
 }
