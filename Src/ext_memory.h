@@ -16,7 +16,8 @@
 
 typedef struct {
 	uint16_t straddr;
-	uint16_t usage;
+	uint16_t usage; //read or write counter
+	uint8_t writed; //write flag
 	uint8_t data[CACHE_BLOCK_SIZE];
 } cache_t;
 

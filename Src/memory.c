@@ -71,12 +71,13 @@ void mem_Init(uint8_t type) {
 	);
 }
 
-void mem_clear() {
-	ILI9341_fillArea(0, 0, ILI9341_PWIDTH-1, 23, BLACK);
-	ILI9341_fillArea(0, 216, ILI9341_PWIDTH-1, ILI9341_PHEIGHT-1, BLACK);
-	ILI9341_fillArea(0, 24, 7, 215, BLACK);
-	ILI9341_fillArea(312, 24, ILI9341_PWIDTH-1, 215, BLACK);
-}
+//void mem_clear() {
+//	for(uint16_t i=0; i< INTRAMSIZE;i++) mem[i] = 0;
+//	ILI9341_fillArea(0, 0, ILI9341_PWIDTH-1, 23, BLACK);
+//	ILI9341_fillArea(0, 216, ILI9341_PWIDTH-1, ILI9341_PHEIGHT-1, BLACK);
+//	ILI9341_fillArea(0, 24, 7, 215, BLACK);
+//	ILI9341_fillArea(312, 24, ILI9341_PWIDTH-1, 215, BLACK);
+//}
 
 uint16_t mem_test() {
 	uint8_t tmp;
@@ -93,7 +94,7 @@ uint16_t mem_test() {
 		mem_write(addr, tmp);
 		if(tmp != mem_read(addr)) errcount++;
 	}
-	mem_clear();
+//	mem_clear();
 
 	return errcount;
 }
@@ -118,7 +119,7 @@ uint16_t mem_rnd_test() {
 			if(tmp != mem_read(addr)) errcount++;
 		}
 	}
-	mem_clear();
+//	mem_clear();
 
 	return errcount;
 }
