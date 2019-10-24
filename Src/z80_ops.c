@@ -83,7 +83,7 @@ const uint8_t sz53p_table[256] = {
 };
 
 uint8_t NONI(uint8_t code) {
-	state.int_blocked = 2;
+	state.int_blocked = 1;
 
 	return 4;
 }
@@ -91,7 +91,7 @@ uint8_t NONI(uint8_t code) {
 uint8_t CTR(uint8_t code) {
 	uint8_t tstates = optstates[code];
 	if(code == 0xff)
-		state.int_blocked = 2; //incorrect op NONI
+		state.int_blocked = 1; //incorrect op NONI
 	else {
 		switch (code) {
 		case 0x76://HALT
@@ -103,7 +103,7 @@ uint8_t CTR(uint8_t code) {
 		case 0xf3://DI
 			IFF1 = IFF2 = 0; break;
 		case 0xfb://EI
-			IFF1 = IFF2 = 1; state.int_blocked = 2; break;
+			IFF1 = IFF2 = 1; state.int_blocked = 1; break;
 		case 0x00://NOP
 			break;
 		default:
@@ -137,7 +137,7 @@ uint8_t EDCT(uint8_t code) {
 		IM = 2;
 	}
 	else
-		state.int_blocked = 2;  //incorrect op NONI
+		state.int_blocked = 1;  //incorrect op NONI
 
 	return tstates;
 }
@@ -1397,7 +1397,7 @@ uint8_t PFX(uint8_t code) {
 		ERROR(code); break;
 	}
 
-	state.int_blocked = 2;
+	state.int_blocked = 1;
 
 	return tstates;
 }

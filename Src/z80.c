@@ -108,19 +108,19 @@ uint8_t z80_nmi() {
 }
 
 //set interrupt requests for tstates time
-void req_int(uint32_t tstates) {state.int_req += tstates;}
-void req_nmi(uint32_t tstates) {state.nmi_req += tstates;}
+void req_int(uint32_t tstates) {if(state.int_req >0) state.int_req += tstates; else state.int_req = tstates;}
+void req_nmi(uint32_t tstates) {if(state.nmi_req >0) state.nmi_req += tstates; else state.nmi_req = tstates;}
 
 uint8_t z80_step() {
 	uint8_t tstates;
 
-	if(state.nmi_req && !state.int_blocked) {
+	if((state.nmi_req>0) && !state.int_blocked) {
 #ifdef __SIMULATION
 		printf("Process NMI at PC=0x%04x\n", PC);
 #endif
 		tstates = z80_nmi();
 	}
-	else if(state.int_req && IFF1 && !state.int_blocked) {
+	else if((state.int_req>0) && IFF1 && !state.int_blocked) {
 #ifdef __SIMULATION
 		printf("Process INT at PC=0x%04x, IM=0x%02x\n", PC, IM);
 #endif
@@ -134,6 +134,7 @@ uint8_t z80_step() {
 #ifdef __SIMULATION
 		uint16_t prvPC = PC;
 #endif
+		state.int_blocked = 0;
 		uint8_t code = mem_read(PC++);
 		INC_R();
 
@@ -182,17 +183,11 @@ uint8_t z80_step() {
 			CLR_PREFIX();
 	}
 
-	if(state.int_blocked) state.int_blocked--;
-
 	if(state.nmi_req > tstates)
 		state.nmi_req -= tstates;
-	else
-		state.nmi_req = 0;
 
 	if(state.int_req > tstates)
 		state.int_req -= tstates;
-	else
-		state.int_req = 0;
 
 	return tstates;
 }

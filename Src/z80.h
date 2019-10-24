@@ -119,8 +119,8 @@ typedef struct {
 //	uint8_t iff2_read;
 	uint8_t halted;
 	uint16_t prefix;
-	uint32_t int_req;
-	uint32_t nmi_req;
+	int16_t int_req;
+	int16_t nmi_req;
 	uint8_t int_blocked;//interrupt can be blocked for next command by prefixes or EI
 
 } z80_state;
