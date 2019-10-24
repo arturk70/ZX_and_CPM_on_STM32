@@ -112,22 +112,22 @@ void req_int(uint32_t tstates) {if(state.int_req >0) state.int_req += tstates; e
 void req_nmi(uint32_t tstates) {if(state.nmi_req >0) state.nmi_req += tstates; else state.nmi_req = tstates;}
 
 uint8_t z80_step() {
-	uint8_t tstates;
+	uint8_t tstates = 0;
 
 	if((state.nmi_req>0) && !state.int_blocked) {
 #ifdef __SIMULATION
 		printf("Process NMI at PC=0x%04x\n", PC);
 #endif
-		tstates = z80_nmi();
+		tstates += z80_nmi();
 	}
 	else if((state.int_req>0) && IFF1 && !state.int_blocked) {
 #ifdef __SIMULATION
 		printf("Process INT at PC=0x%04x, IM=0x%02x\n", PC, IM);
 #endif
-		tstates = z80_interrupt();
+		tstates += z80_interrupt();
 	}
 	else if(state.halted) {
-		tstates = 4;
+		tstates += 4;
 		INC_R();
 	}
 	else {
@@ -149,12 +149,16 @@ uint8_t z80_step() {
 
 		if(IS_ED_PREFIX) {
 			if((code < 0x40) || (code > 0xbf) || (code > 0x7f && code < 0xa0))
-				tstates = NONI(code); //incorrect op NONI
+				NONI(code, &tstates); //incorrect op NONI
 			else {
-				if(code < 0x80)
-					tstates = z80edops[code-0x40](code);
-				else
-					tstates = z80edops[code-0x60](code);
+				if(code < 0x80) {
+					tstates += edoptstates[code-0x40];
+					z80edops[code-0x40](code, &tstates);
+				}
+				else {
+					tstates += edoptstates[code-0x60];
+					z80edops[code-0x60](code, &tstates);
+				}
 			}
 		}
 		else if(IS_CB_PREFIX) {
@@ -162,13 +166,19 @@ uint8_t z80_step() {
 				regs.ixiyshift = code;
 				code = mem_read(PC++);
 			}
-			if(code < 0x40)
-				tstates = CBSFT(code);
-			else
-				tstates = BIT(code);
+			if(code < 0x40) {
+				tstates += 4;
+				CBSFT(code, &tstates);
+			}
+			else {
+				tstates += 4;
+				BIT(code, &tstates);
+			}
 		}
-		else
-			tstates = z80ops[code](code);
+		else {
+			tstates += optstates[code];
+			z80ops[code](code, &tstates);
+		}
 
 #ifdef __SIMULATION
 		if(prvPC < 0x4000 && PC >= 0x4000)

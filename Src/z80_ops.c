@@ -82,14 +82,13 @@ const uint8_t sz53p_table[256] = {
 		0xa4,0xa0,0xa0,0xa4,0xa0,0xa4,0xa4,0xa0,0xa8,0xac,0xac,0xa8,0xac,0xa8,0xa8,0xac
 };
 
-uint8_t NONI(uint8_t code) {
+void NONI(uint8_t code, uint8_t *tstates) {
 	state.int_blocked = 1;
 
-	return 4;
+	tstates += 4;
 }
 
-uint8_t CTR(uint8_t code) {
-	uint8_t tstates = optstates[code];
+void CTR(uint8_t code, uint8_t *tstates) {
 	if(code == 0xff)
 		state.int_blocked = 1; //incorrect op NONI
 	else {
@@ -110,16 +109,9 @@ uint8_t CTR(uint8_t code) {
 			ERROR(code); break;
 		}
 	}
-	return tstates;
 }
 
-uint8_t EDCT(uint8_t code) {
-	uint8_t tstates;
-	if(code < 0x80)
-		tstates = edoptstates[code-0x40];
-	else
-		tstates = edoptstates[code-0x60];
-
+void EDCT(uint8_t code, uint8_t *tstates) {
 	if((code == 0x45) || (code == 0x55) || (code == 0x65) || (code == 0x75) ||
 			(code == 0x4d) || (code == 0x5d) || (code == 0x6d) || (code == 0x7d)) { //RETI/RETN
 		if(code != 0x4d) //only when RETN
@@ -138,12 +130,9 @@ uint8_t EDCT(uint8_t code) {
 	}
 	else
 		state.int_blocked = 1;  //incorrect op NONI
-
-	return tstates;
 }
 
-uint8_t LD_(uint8_t code) {
-	uint8_t tstates = optstates[code];
+void LD_(uint8_t code, uint8_t *tstates) {
 	if(code == 0xf9) {
 		SP = HLIXIY_REG;
 	}
@@ -294,18 +283,9 @@ uint8_t LD_(uint8_t code) {
 			*((uint8_t*)(&regs) + (dstnum^1)) = tmp;
 		}
 	}
-
-
-	return tstates;
 }
 
-uint8_t EDLD(uint8_t code) {
-	uint8_t tstates;
-	if(code < 0x80)
-		tstates = edoptstates[code-0x40];
-	else
-		tstates = edoptstates[code-0x60];
-
+void EDLD(uint8_t code, uint8_t *tstates) {
 	if(code < 0x7f) {
 		uint16_t tmp;
 		switch (code) {
@@ -406,13 +386,9 @@ uint8_t EDLD(uint8_t code) {
 			ERROR(code); break;
 		}
 	}
-
-	return tstates;
 }
 
-uint8_t INC(uint8_t code) {
-	uint8_t tstates = optstates[code];
-
+void INC(uint8_t code, uint8_t *tstates) {
 	switch (code) {
 	case 0x04://INC B
 		B++;
@@ -468,13 +444,9 @@ uint8_t INC(uint8_t code) {
 	default:
 		ERROR(code); break;
 	}
-
-	return tstates;
 }
 
-uint8_t DEC(uint8_t code) {
-	uint8_t tstates = optstates[code];
-
+void DEC(uint8_t code, uint8_t *tstates) {
 	switch (code) {
 	case 0x05://DEC B
 		F = (F & FLAG_C) | ((B & 0x0f) ? 0 : FLAG_H) | FLAG_N;
@@ -538,13 +510,9 @@ uint8_t DEC(uint8_t code) {
 	default:
 		ERROR(code); break;
 	}
-
-	return tstates;
 }
 
-uint8_t ALU(uint8_t code) {
-	uint8_t tstates = optstates[code];
-
+void ALU(uint8_t code, uint8_t *tstates) {
 	if(code < 0x80) {
 		uint32_t tmp;
 		switch (code) {
@@ -614,7 +582,7 @@ uint8_t ALU(uint8_t code) {
 			break;
 		case 0xfe://CP *
 			tmp2 = A - tmp1;
-			F = ( tmp2 & 0x100 ? FLAG_C : ( tmp2 ? 0 : FLAG_Z ) ) | FLAG_N | CALC_SUB_H(A, tmp1, tmp2) |
+			F = (tmp2 & 0x100 ? FLAG_C : (tmp2 ? 0 : FLAG_Z)) | FLAG_N | CALC_SUB_H(A, tmp1, tmp2) |
 					CALC_SUB_V(A, tmp1, tmp2) | (tmp1 & (FLAG_3 | FLAG_5)) | (tmp2 & FLAG_S);
 			break;
 		default:
@@ -690,17 +658,9 @@ uint8_t ALU(uint8_t code) {
 			}
 		}
 	}
-
-	return tstates;
 }
 
-uint8_t EDAL(uint8_t code) {
-	uint8_t tstates;
-	if(code < 0x80)
-		tstates = edoptstates[code-0x40];
-	else
-		tstates = edoptstates[code-0x60];
-
+void EDAL(uint8_t code, uint8_t *tstates) {
 	uint8_t tmp1, tmp2;
 	if(code & 0x04) {//NEG
 		A = -A;
@@ -800,12 +760,9 @@ uint8_t EDAL(uint8_t code) {
 			ERROR(code); break;
 		}
 	}
-
-	return tstates;
 }
 
-uint8_t JMP(uint8_t code) {
-	uint8_t tstates = optstates[code];
+void JMP(uint8_t code, uint8_t *tstates) {
 	uint8_t dh, dl;
 	int8_t d;
 
@@ -942,12 +899,9 @@ uint8_t JMP(uint8_t code) {
 	else {
 		ERROR(code);
 	}
-
-	return tstates;
 }
 
-uint8_t STK(uint8_t code) {
-	uint8_t tstates = optstates[code];
+void STK(uint8_t code, uint8_t *tstates) {
 	switch (code) {
 	case 0xc1://POP BC
 		C = mem_read(SP++);
@@ -984,12 +938,9 @@ uint8_t STK(uint8_t code) {
 	default:
 		ERROR(code); break;
 	}
-
-	return tstates;
 }
 
-uint8_t SFT(uint8_t code) {
-	uint8_t tstates = optstates[code];
+void SFT(uint8_t code, uint8_t *tstates) {
 	uint8_t tmp;
 
 	switch (code) {
@@ -1015,12 +966,9 @@ uint8_t SFT(uint8_t code) {
 	default:
 		ERROR(code); break;
 	}
-
-	return tstates;
 }
 
-uint8_t CBSFT(uint8_t code) {
-	uint8_t tstates = 4;
+void CBSFT(uint8_t code, uint8_t *tstates) {
 	uint8_t tmp;
 
 	uint8_t regnum = code & 0x07;
@@ -1092,17 +1040,9 @@ uint8_t CBSFT(uint8_t code) {
 		mem_write(HLIXIY_REG+regs.ixiyshift, tmpres);
 		regs.ixiyshift = 0;
 	}
-
-	return tstates;
 }
 
-uint8_t EDSF(uint8_t code) {
-	uint8_t tstates;
-	if(code < 0x80)
-		tstates = edoptstates[code-0x40];
-	else
-		tstates = edoptstates[code-0x60];
-
+void EDSF(uint8_t code, uint8_t *tstates) {
 	uint8_t tmp;
 	switch (code) {
 	case 0x67://RRD
@@ -1127,13 +1067,9 @@ uint8_t EDSF(uint8_t code) {
 	default:
 		ERROR(code); break;
 	}
-
-	return tstates;
 }
 
-uint8_t BIT(uint8_t code) {
-	uint8_t tstates = 4;
-
+void BIT(uint8_t code, uint8_t *tstates) {
 	uint8_t bitmask = 0x01 << ((code & 0x38) >> 3);
 	uint8_t regnum = code & 0x07;
 	uint8_t tmpres;
@@ -1158,7 +1094,7 @@ uint8_t BIT(uint8_t code) {
 		F = (F & FLAG_C) | FLAG_H | (tmpres & (FLAG_3 | FLAG_5));
 		if(!(tmpres & bitmask)) F |= FLAG_P | FLAG_Z;
 		if((bitmask == 0x80) && (tmpres & 0x80)) F |= FLAG_S;
-		return tstates;//not need write back result
+		return;//not need write back result
 		break;
 	case 0x80: //RES
 		tmpres &= ~bitmask; if(regnum == 0x06) tstates += 3; break;
@@ -1176,13 +1112,9 @@ uint8_t BIT(uint8_t code) {
 		mem_write(HLIXIY_REG+regs.ixiyshift, tmpres);
 		regs.ixiyshift = 0;
 	}
-
-	return tstates;
 }
 
-uint8_t EX_(uint8_t code) {
-	uint8_t tstates = optstates[code];
-
+void EX_(uint8_t code, uint8_t *tstates) {
 	//	if(IS_DDFD_PREFIX && (code != 0xe3))
 	//		return NONI(code);
 
@@ -1204,13 +1136,9 @@ uint8_t EX_(uint8_t code) {
 	default:
 		ERROR(code); break;
 	}
-
-	return tstates;
 }
 
-uint8_t IO_(uint8_t code) {
-	uint8_t tstates = optstates[code];
-
+void IO_(uint8_t code, uint8_t *tstates) {
 	switch (code) {
 	case 0xd3://OUT (*),A
 		port_out(((uint16_t)A << 8) | mem_read(PC++), A); break;
@@ -1219,17 +1147,9 @@ uint8_t IO_(uint8_t code) {
 	default:
 		ERROR(code); break;
 	}
-
-	return tstates;
 }
 
-uint8_t EDIO(uint8_t code) {
-	uint8_t tstates;
-	if(code < 0x80)
-		tstates = edoptstates[code-0x40];
-	else
-		tstates = edoptstates[code-0x60];
-
+void EDIO(uint8_t code, uint8_t *tstates) {
 	uint8_t tmp1, tmp2;
 	switch (code) {
 	case 0x40://IN
@@ -1315,21 +1235,14 @@ uint8_t EDIO(uint8_t code) {
 	default:
 		ERROR(code); break;
 	}
-
-	return tstates;
 }
 
-uint8_t DAA(uint8_t code) {
-	uint8_t tstates = optstates[code];
+void DAA(uint8_t code, uint8_t *tstates) {
 	//TODO all
 	ERROR(code);
-
-	return tstates;
 }
 
-uint8_t PFX(uint8_t code) {
-	uint8_t tstates = optstates[code];
-
+void PFX(uint8_t code, uint8_t *tstates) {
 	switch (code) {
 	case 0xed://ED
 		state.prefix = 0x00ed; break;
@@ -1344,7 +1257,5 @@ uint8_t PFX(uint8_t code) {
 	}
 
 	state.int_blocked = 1;
-
-	return tstates;
 }
 

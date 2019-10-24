@@ -25,31 +25,32 @@
 #define CALC_ADD_V(arg1, arg2, res)	((BIT8(arg1) & BIT8(arg2) & ~BIT8(res)) | ((~BIT8(arg1) & ~BIT8(arg2) & BIT8(res))) ? FLAG_V : 0)
 #define CALC_SUB_V(arg1, arg2, res)	((BIT8(res) & BIT8(arg2) & ~BIT8(arg1)) | ((~BIT8(res) & ~BIT8(arg2) & BIT8(arg1))) ? FLAG_V : 0)
 
-typedef uint8_t (*z80cmd_t)(uint8_t code);
+typedef void (*z80cmd_t)(uint8_t code, uint8_t *tstates);
 
-uint8_t NONI(uint8_t code);
-uint8_t CTR(uint8_t code);
-uint8_t EDCT(uint8_t code);
-uint8_t LD_(uint8_t code);
-uint8_t EDLD(uint8_t code);
-uint8_t INC(uint8_t code);
-uint8_t DEC(uint8_t code);
-uint8_t ALU(uint8_t code);
-uint8_t EDAL(uint8_t code);
-uint8_t JMP(uint8_t code);
-uint8_t STK(uint8_t code);
-uint8_t SFT(uint8_t code);
-uint8_t CBSFT(uint8_t code);
-uint8_t EDSF(uint8_t code);
-uint8_t BIT(uint8_t code);
-uint8_t EX_(uint8_t code);
-uint8_t IO_(uint8_t code);
-uint8_t EDIO(uint8_t code);
-uint8_t DAA(uint8_t code);
+void NONI(uint8_t code, uint8_t *tstates);
+void CTR(uint8_t code, uint8_t *tstates);
+void EDCT(uint8_t code, uint8_t *tstates);
+void LD_(uint8_t code, uint8_t *tstates);
+void EDLD(uint8_t code, uint8_t *tstates);
+void INC(uint8_t code, uint8_t *tstates);
+void DEC(uint8_t code, uint8_t *tstates);
+void ALU(uint8_t code, uint8_t *tstates);
+void EDAL(uint8_t code, uint8_t *tstates);
+void JMP(uint8_t code, uint8_t *tstates);
+void STK(uint8_t code, uint8_t *tstates);
+void SFT(uint8_t code, uint8_t *tstates);
+void CBSFT(uint8_t code, uint8_t *tstates);
+void EDSF(uint8_t code, uint8_t *tstates);
+void BIT(uint8_t code, uint8_t *tstates);
+void EX_(uint8_t code, uint8_t *tstates);
+void IO_(uint8_t code, uint8_t *tstates);
+void EDIO(uint8_t code, uint8_t *tstates);
+void DAA(uint8_t code, uint8_t *tstates);
 
-uint8_t PFX(uint8_t code);
+void PFX(uint8_t code, uint8_t *tstates);
 
-//extern const uint8_t optstates[256];
+extern const uint8_t optstates[256];
+extern const uint8_t edoptstates[96];
 
 extern const z80cmd_t z80ops[256];
 extern const z80cmd_t z80edops[96];
