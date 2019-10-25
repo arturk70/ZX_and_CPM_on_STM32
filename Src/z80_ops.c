@@ -153,8 +153,10 @@ void LD_(uint8_t code, uint8_t *tstates) {
 				int8_t tmp;
 				regs.ixiyshift = 0;
 				tmp = mem_read(PC++);
-				if(IS_DDFD_PREFIX)
+				if(IS_DDFD_PREFIX) {
 					regs.ixiyshift = tmp;
+					tmp = mem_read(PC++);
+				}
 				mem_write(HLIXIY_REG+regs.ixiyshift, tmp);
 			}
 				break;
@@ -276,9 +278,15 @@ void LD_(uint8_t code, uint8_t *tstates) {
 		} else if(dstnum == 0x06) {//F
 			mem_write(HLIXIY_REG + regs.ixiyshift, tmp);
 		} else if(dstnum == 0x04) {//H
-			HLIXIY_REGH = tmp;
+			if(code == 0x66)
+				H = tmp;
+			else
+				HLIXIY_REGH = tmp;
 		} else if(dstnum == 0x05) {//L
-			HLIXIY_REGL = tmp;
+			if(code == 0x6e)
+				L = tmp;
+			else
+				HLIXIY_REGL = tmp;
 		} else {//other reg
 			*((uint8_t*)(&regs) + (dstnum^1)) = tmp;
 		}
