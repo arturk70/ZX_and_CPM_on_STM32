@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 #include "memory.h"
-#include "ZXROM.h"
+#include "TSTROM.h"
 #include "CPMROM.h"
 
 #define EXTRAMSIZE	(ILI9341_PWIDTH*24*2+(ILI9341_PHEIGHT-24*2)*8*2)*2
@@ -22,7 +22,7 @@ uint8_t *get_ZX_videomem() { if(mem_type == MEMTYPE_ZX) return mem; else return 
 uint8_t mem_read(uint16_t addr) {
 	if(mem_type == MEMTYPE_ZX) {
 		if(addr < RAM_ROM_splitaddr)
-			return ZXROM[addr];
+			return TSTROM[addr];
 		else
 			addr -= RAM_ROM_splitaddr;
 	}

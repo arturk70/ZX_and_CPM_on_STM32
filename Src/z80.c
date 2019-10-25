@@ -116,13 +116,13 @@ uint8_t z80_step() {
 
 	if((state.nmi_req>0) && !state.int_blocked) {
 #ifdef __SIMULATION
-		printf("Process NMI at PC=0x%04x\n", PC);
+//		printf("Process NMI at PC=0x%04x\n", PC);
 #endif
 		tstates += z80_nmi();
 	}
 	else if((state.int_req>0) && IFF1 && !state.int_blocked) {
 #ifdef __SIMULATION
-		printf("Process INT at PC=0x%04x, IM=0x%02x\n", PC, IM);
+//		printf("Process INT at PC=0x%04x, IM=0x%02x\n", PC, IM);
 #endif
 		tstates += z80_interrupt();
 	}

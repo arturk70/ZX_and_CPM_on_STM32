@@ -31,13 +31,15 @@ void zxsys_Run() {
 			}
 //end test screen
 
-
+	uint32_t tstates = 0;
 	while(1) {
+
 #ifndef __SIMULATION
 		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
 #endif
 		while(!zx_newline_flag || ILI9341_DMA_busy) {
-			z80_step();
+			if(tstates < 1140)
+				tstates += z80_step();
 		}
 #ifndef __SIMULATION
 		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
@@ -45,6 +47,9 @@ void zxsys_Run() {
 
 		if(ZXdisp_drawnextline() == 0)
 			req_int(4);
+
+		if(tstates >= 1140)
+			tstates -= 1140;
 	}
 }
 
