@@ -14,6 +14,7 @@ static uint16_t *linebuf;
 static uint8_t lnum;
 static uint8_t frnum;
 uint8_t zx_newline_flag;
+uint16_t zx_border_color;
 
 void ZXdisp_clear() {
 	ILI9341_fillArea(ZXD_START_POS, ZXD_START_LINE, ZXD_END_POS, ZXD_END_LINE, BLACK);
@@ -24,9 +25,10 @@ void ZXdisp_Init() {
 	ZXvideomem = get_ZX_videomem();
 	ILI9341_Init();
 	ZXdisp_clear();
-	linebuf = malloc(ZX_PIXELS*2);
+	linebuf = malloc((ZX_PIXELS+BORDER_WIDTH*2)*2);
 	lnum = 0;
 	frnum = 0;
+	zx_border_color = 0;
 
 #ifndef __SIMULATION
 	LL_TIM_EnableUpdateEvent(TIM3);
@@ -47,7 +49,7 @@ uint8_t ZXdisp_drawnextline() {
 	register uint8_t *lineaddr = ZXvideomem+(((uint16_t)lnum & 0x00c0)<<5)+(((uint16_t)lnum & 0x0038)<<2)+(((uint16_t)lnum & 0x0007)<<8);
 	register uint32_t attr;
 	register uint32_t fgbgcolor;
-	register uint8_t bufshft;
+	register uint16_t bufshft;
 
 	for(register uint8_t colnum=0; colnum<32; colnum++) {
 		attr = *(attraddr+colnum);
@@ -56,7 +58,7 @@ uint8_t ZXdisp_drawnextline() {
 		register uint8_t is_flash_pos = (((attr & 0x80) >> 4) & frnum) >> 3;
 
 			register uint8_t pixline = *(lineaddr+colnum);
-			bufshft = colnum*8+7;
+			bufshft = BORDER_WIDTH+colnum*8+7;
 			for(register uint8_t pixnum=0; pixnum<8; pixnum++) {
 				if(((pixline >> pixnum) & 0x01) ^ is_flash_pos)
 					linebuf[bufshft-pixnum] = fgbgcolor >> 16;
@@ -64,7 +66,10 @@ uint8_t ZXdisp_drawnextline() {
 					linebuf[bufshft-pixnum] = fgbgcolor;
 			}
 	}
-	ILI9341_sendBuf(ZXD_START_POS, ZXD_START_LINE+lnum, ZXD_END_POS, ZXD_START_LINE+lnum, linebuf, ZX_PIXELS);
+	for(register uint8_t i = 0; i< BORDER_WIDTH; i++)
+		linebuf[i] = linebuf[BORDER_WIDTH+ZX_PIXELS+i] = zx_border_color;
+
+	ILI9341_sendBuf(ZXD_START_POS-BORDER_WIDTH, ZXD_START_LINE+lnum, ZXD_END_POS+BORDER_WIDTH, ZXD_START_LINE+lnum, linebuf, (ZX_PIXELS+BORDER_WIDTH*2));
 
 	lnum++;
 	if(lnum >= ZX_LINES) {

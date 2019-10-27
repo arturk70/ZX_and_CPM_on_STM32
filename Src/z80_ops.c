@@ -159,7 +159,7 @@ void LD_(uint8_t code, uint8_t *tstates) {
 				}
 				mem_write(HLIXIY_REG+regs.ixiyshift, tmp);
 			}
-				break;
+			break;
 			case 0x0e://LD  C,*
 				C = mem_read(PC++);
 				break;
@@ -202,21 +202,21 @@ void LD_(uint8_t code, uint8_t *tstates) {
 				break;
 			case 0x22://LD (**),HL
 			{
-			  uint16_t tmp;
-			  tmp = mem_read(PC++);
-			  tmp |= mem_read(PC++) << 8;
-			  mem_write(tmp++, HLIXIY_REGL);
-			  mem_write(tmp, HLIXIY_REGH);
+				uint16_t tmp;
+				tmp = mem_read(PC++);
+				tmp |= mem_read(PC++) << 8;
+				mem_write(tmp++, HLIXIY_REGL);
+				mem_write(tmp, HLIXIY_REGH);
 			}
-				break;
+			break;
 			case 0x32://LD (**),A
 			{
-			  uint16_t tmp;
-			  tmp = mem_read(PC++);
-			  tmp |= mem_read(PC++) << 8;
-			  mem_write(tmp, A);
+				uint16_t tmp;
+				tmp = mem_read(PC++);
+				tmp |= mem_read(PC++) << 8;
+				mem_write(tmp, A);
 			}
-				break;
+			break;
 			case 0x0a://LD A,(BC)
 				A = mem_read(BC);
 				break;
@@ -231,15 +231,15 @@ void LD_(uint8_t code, uint8_t *tstates) {
 				HLIXIY_REGL = mem_read(tmp++);
 				HLIXIY_REGH = mem_read(tmp);
 			}
-				break;
+			break;
 			case 0x3a://LD A,(**)
 			{
-			  uint16_t tmp;
-			  tmp = mem_read(PC++);
-			  tmp |= mem_read(PC++) << 8;
-			  A = mem_read(tmp);
+				uint16_t tmp;
+				tmp = mem_read(PC++);
+				tmp |= mem_read(PC++) << 8;
+				A = mem_read(tmp);
 			}
-				break;
+			break;
 			default:
 				ERROR(code); break;
 			}
@@ -678,67 +678,67 @@ void EDAL(uint8_t code, uint8_t *tstates) {
 		case 0x42://SBC HL, BC
 		{
 			uint16_t tmp = HL - BC - (F & FLAG_C);
-			  F = CALC_C(tmp >> 8) | FLAG_N | CALC_SUB_V(HL, BC, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					  CALC_SUB_H(HL, BC, tmp) | (HL ? 0 : FLAG_Z);
-			  HL = tmp;
+			F = CALC_C(tmp >> 8) | FLAG_N | CALC_SUB_V(HL, BC, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
+					CALC_SUB_H(HL, BC, tmp) | (HL ? 0 : FLAG_Z);
+			HL = tmp;
 		}
-			break;
+		break;
 		case 0x52://SBC HL, DE
 		{
 			uint16_t tmp = HL - DE - (F & FLAG_C);
-			  F = CALC_C(tmp >> 8) | FLAG_N | CALC_SUB_V(HL, DE, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					  CALC_SUB_H(HL, DE, tmp) | (HL ? 0 : FLAG_Z);
-			  HL = tmp;
+			F = CALC_C(tmp >> 8) | FLAG_N | CALC_SUB_V(HL, DE, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
+					CALC_SUB_H(HL, DE, tmp) | (HL ? 0 : FLAG_Z);
+			HL = tmp;
 		}
-			break;
+		break;
 		case 0x62://SBC HL, HL
 		{
 			uint16_t tmp = HL - HL - (F & FLAG_C);
-			  F = CALC_C(tmp >> 8) | FLAG_N | CALC_SUB_V(HL, HL, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					  CALC_SUB_H(HL, HL, tmp) | (HL ? 0 : FLAG_Z);
-			  HL = tmp;
+			F = CALC_C(tmp >> 8) | FLAG_N | CALC_SUB_V(HL, HL, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
+					CALC_SUB_H(HL, HL, tmp) | (HL ? 0 : FLAG_Z);
+			HL = tmp;
 		}
-			break;
+		break;
 		case 0x72://SBC HL, SP
 		{
 			uint16_t tmp = HL - SP - (F & FLAG_C);
-			  F = CALC_C(tmp >> 8) | FLAG_N | CALC_SUB_V(HL, SP, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					  CALC_SUB_H(HL, SP, tmp) | (HL ? 0 : FLAG_Z);
-			  HL = tmp;
+			F = CALC_C(tmp >> 8) | FLAG_N | CALC_SUB_V(HL, SP, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
+					CALC_SUB_H(HL, SP, tmp) | (HL ? 0 : FLAG_Z);
+			HL = tmp;
 		}
-			break;
+		break;
 		case 0x4a://ADC HL, BC
 		{
 			uint16_t tmp = HL + BC + (F & FLAG_C);
-			  F = CALC_C(tmp >> 8) | CALC_ADD_V(HL, BC, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					  CALC_ADD_H(HL, BC, tmp) | (HL ? 0 : FLAG_Z);
-			  HL = tmp;
+			F = CALC_C(tmp >> 8) | CALC_ADD_V(HL, BC, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
+					CALC_ADD_H(HL, BC, tmp) | (HL ? 0 : FLAG_Z);
+			HL = tmp;
 		}
-			break;
+		break;
 		case 0x5a://ADC HL, DE
 		{
 			uint16_t tmp = HL + DE + (F & FLAG_C);
-			  F = CALC_C(tmp >> 8) | CALC_ADD_V(HL, DE, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					  CALC_ADD_H(HL, DE, tmp) | (HL ? 0 : FLAG_Z);
-			  HL = tmp;
+			F = CALC_C(tmp >> 8) | CALC_ADD_V(HL, DE, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
+					CALC_ADD_H(HL, DE, tmp) | (HL ? 0 : FLAG_Z);
+			HL = tmp;
 		}
-			break;
+		break;
 		case 0x6a://ADC HL, HL
 		{
 			uint16_t tmp = HL + HL + (F & FLAG_C);
-			  F = CALC_C(tmp >> 8) | CALC_ADD_V(HL, HL, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					  CALC_ADD_H(HL, HL, tmp) | (HL ? 0 : FLAG_Z);
-			  HL = tmp;
+			F = CALC_C(tmp >> 8) | CALC_ADD_V(HL, HL, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
+					CALC_ADD_H(HL, HL, tmp) | (HL ? 0 : FLAG_Z);
+			HL = tmp;
 		}
-			break;
+		break;
 		case 0x7a://ADC HL, SP
 		{
 			uint16_t tmp = HL + SP + (F & FLAG_C);
-			  F = CALC_C(tmp >> 8) | CALC_ADD_V(HL, SP, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					  CALC_ADD_H(HL, SP, tmp) | (HL ? 0 : FLAG_Z);
-			  HL = tmp;
+			F = CALC_C(tmp >> 8) | CALC_ADD_V(HL, SP, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
+					CALC_ADD_H(HL, SP, tmp) | (HL ? 0 : FLAG_Z);
+			HL = tmp;
 		}
-			break;
+		break;
 		default:
 			ERROR(code); break;
 		}
@@ -871,9 +871,9 @@ void JMP(uint8_t code, uint8_t *tstates) {
 				dh = mem_read(SP++);
 			}
 			else if(code & 0x04) {//for CALL only
-					tstates += 7;
-					mem_write(--SP, PCH);
-					mem_write(--SP, PCL);
+				tstates += 7;
+				mem_write(--SP, PCH);
+				mem_write(--SP, PCL);
 			}
 			PCL = dl;
 			PCH = dh;
@@ -1041,7 +1041,7 @@ void CBSFT(uint8_t code, uint8_t *tstates) {
 	}
 
 	if(regnum == 0x07)//A
-			A = tmpres;
+		A = tmpres;
 	else if(regnum != 0x06)//not F
 		*((uint8_t*)(&regs) + (regnum^1)) = tmpres;
 	else if((regnum == 0x06) || IS_DDFD_PREFIX) {
@@ -1113,7 +1113,7 @@ void BIT(uint8_t code, uint8_t *tstates) {
 	}
 
 	if(regnum == 0x07)//A
-			A = tmpres;
+		A = tmpres;
 	else if(regnum != 0x06)//not F
 		*((uint8_t*)(&regs) + (regnum^1)) = tmpres;
 	else if((regnum == 0x06) || IS_DDFD_PREFIX) {
@@ -1246,8 +1246,26 @@ void EDIO(uint8_t code, uint8_t *tstates) {
 }
 
 void DAA(uint8_t code, uint8_t *tstates) {
-	//TODO all
-	ERROR(code);
+	uint8_t add = 0;
+	uint8_t carry = (F & FLAG_C);
+	uint16_t tmp2;
+
+	if((F & FLAG_H) || ((A & 0x0f) > 9))
+		add = 6;
+	if(carry || (A > 0x99))
+		add |= 0x60;
+	if(A > 0x99)
+		carry = FLAG_C;
+	if(F & FLAG_N) {
+		tmp2 = A - add;
+		F = CALC_C(tmp2) | FLAG_N |	CALC_SUB_H(A, add, tmp2) | CALC_SUB_V(A, add, tmp2) | (sz53p_table[(tmp2 & 0x00ff)] & ~FLAG_P);
+		A = tmp2;
+	} else {
+		tmp2 = A + add;
+		F = (F & (FLAG_V | FLAG_Z | FLAG_S)) | CALC_C(tmp2) | (tmp2 & (FLAG_3 | FLAG_5)) | CALC_ADD_H(A, add, tmp2) | CALC_ADD_V(A, add, tmp2);
+		A = tmp2;
+	}
+	F = (F & ~(FLAG_C | FLAG_P)) | carry | (sz53p_table[A] & FLAG_P);
 }
 
 void PFX(uint8_t code, uint8_t *tstates) {

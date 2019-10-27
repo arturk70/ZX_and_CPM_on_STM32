@@ -11,8 +11,9 @@
 #include "main.h"
 #include "ili9341_driver.h"
 
-#define ZX_LINES	192
-#define ZX_PIXELS	256
+#define ZX_LINES		192
+#define ZX_PIXELS		256
+#define BORDER_WIDTH	24
 
 #define ZXD_START_LINE	((ILI9341_PHEIGHT-ZX_LINES)/2)
 #define ZXD_END_LINE	(ZXD_START_LINE+ZX_LINES-1)
@@ -27,6 +28,7 @@
 #endif
 
 extern uint8_t zx_newline_flag;
+extern uint16_t zx_border_color;
 
 void ZXdisp_Init();
 void ZXdisp_deInit();

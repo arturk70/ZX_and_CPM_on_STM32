@@ -22,39 +22,39 @@ uint8_t *get_ZX_videomem() { if(mem_type == MEMTYPE_ZX) return mem; else return 
 uint8_t mem_read(uint16_t addr) {
 	if(mem_type == MEMTYPE_ZX) {
 		if(addr < RAM_ROM_splitaddr)
-			return TSTROM[addr];
+			return ZXROM[addr];
+		else if(addr < (RAM_ROM_splitaddr+INTRAMSIZE))
+			return mem[addr - RAM_ROM_splitaddr];
 		else
-			addr -= RAM_ROM_splitaddr;
+			return extmem_read(addr - RAM_ROM_splitaddr - INTRAMSIZE);
 	}
 	else {
 		if(addr >= RAM_ROM_splitaddr)
 			return CPMROM[addr-RAM_ROM_splitaddr];
+		else if(addr < INTRAMSIZE)
+			return mem[addr];
+		else
+			return extmem_read(addr-INTRAMSIZE);
 	}
-
-	if(addr<INTRAMSIZE)
-		return mem[addr];
-	else if(addr<(INTRAMSIZE+EXTRAMSIZE))
-		return extmem_read(addr-INTRAMSIZE);
-	else
-		return 0;
 }
 
 void mem_write(uint16_t addr, uint8_t data) {
 	if(mem_type == MEMTYPE_ZX) {
 		if(addr < RAM_ROM_splitaddr)
 			return;
+		else if(addr < (RAM_ROM_splitaddr+INTRAMSIZE))
+			mem[addr - RAM_ROM_splitaddr] = data;
 		else
-			addr -= RAM_ROM_splitaddr;
+			extmem_write(addr - RAM_ROM_splitaddr - INTRAMSIZE, data);
 	}
 	else {
 		if(addr >= RAM_ROM_splitaddr)
 			return;
+		else if(addr < INTRAMSIZE)
+			mem[addr] = data;
+		else
+			extmem_write(addr-INTRAMSIZE, data);
 	}
-
-	if(addr<INTRAMSIZE)
-		mem[addr] = data;
-	else if(addr<(INTRAMSIZE+EXTRAMSIZE))
-		extmem_write(addr-INTRAMSIZE, data);
 }
 
 void mem_Init(uint8_t type) {
@@ -64,11 +64,7 @@ void mem_Init(uint8_t type) {
 	else
 		RAM_ROM_splitaddr = 0xC000;
 
-	extmem_Init(0, ILI9341_PWIDTH-1, 0, 23,
-			0, ILI9341_PWIDTH-1, 216, ILI9341_PHEIGHT-1,
-			0, 7, 24, 215,
-			312, ILI9341_PWIDTH-1, 24, 215
-	);
+	extmem_Init();
 }
 
 //void mem_clear() {
@@ -80,41 +76,52 @@ void mem_Init(uint8_t type) {
 //}
 
 uint16_t mem_test() {
-	uint8_t tmp;
-	uint16_t errcount = 0;
-	uint16_t straddr = 0;
-	if(mem_type == MEMTYPE_ZX)
-		straddr += RAM_ROM_splitaddr;
+	register uint8_t tmp;
+	register uint16_t errcount = 0;
+	register uint16_t straddr, endaddr;
+	if(mem_type == MEMTYPE_ZX) {
+		straddr = RAM_ROM_splitaddr;
+		endaddr = 0xffff;
+	} else {
+		straddr = 0;
+		endaddr = RAM_ROM_splitaddr - 1;
+	}
 
 #ifndef __SIMULATION
 	srand(SysTick->VAL);
 #endif
-	for(uint16_t addr=straddr; addr<straddr+0xbfff; addr++) {
-		tmp = (uint8_t)rand();
+	for(register uint32_t addr=straddr; addr<=endaddr; addr++) {
+		tmp = (uint8_t)addr;
 		mem_write(addr, tmp);
+	}
+	for(register uint32_t addr=straddr; addr<=endaddr; addr++) {
+		tmp = (uint8_t)addr;
 		if(tmp != mem_read(addr)) errcount++;
 	}
 //	mem_clear();
 
 	return errcount;
 }
-
 uint16_t mem_rnd_test() {
-	uint8_t tmp;
-	uint16_t errcount = 0;
-	uint16_t straddr = 0;
-	if(mem_type == MEMTYPE_ZX)
-		straddr += RAM_ROM_splitaddr;
+	register uint8_t tmp;
+	register uint16_t errcount = 0;
+	register uint16_t straddr, endaddr;
+	if(mem_type == MEMTYPE_ZX) {
+		straddr = RAM_ROM_splitaddr;
+		endaddr = 0xffff;
+	} else {
+		straddr = 0;
+		endaddr = RAM_ROM_splitaddr - 1;
+	}
 
 #ifndef __SIMULATION
 	srand(SysTick->VAL);
 #endif
-	uint16_t addr;
-	for(uint16_t i=0; i<0xffff; i++) {
+	register uint16_t addr;
+	for(register uint16_t i=0; i<0xffff; i++) {
 		tmp = (uint8_t)rand();
 		addr = (uint16_t)rand();
-		if(addr < 0xbfff) {
-			addr += straddr;
+		if((addr >= straddr) && (addr <= endaddr)) {
 			mem_write(addr, tmp);
 			if(tmp != mem_read(addr)) errcount++;
 		}

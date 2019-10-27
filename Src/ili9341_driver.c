@@ -272,6 +272,7 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 		while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 		b=LL_SPI_ReceiveData8(ILI9341_SPI);
 		buf[i]=(((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u));//RGB565 to uint16
+//		buf[i]=(((r & 0xf8)) | ((g & 0xe0) >> 5)) | (((g & 0x1c) << 11) | ((b & 0xf8) << 5));//RGB565 to uint16
 	}
 	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
 	ILI9341_CS_SET;

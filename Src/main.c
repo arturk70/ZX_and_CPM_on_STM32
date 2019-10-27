@@ -124,35 +124,39 @@ int main(void)
 		char sym;
 		cpmdisp_puts("\n\n    Press <6> for ZX Spectrum\n");
 		cpmdisp_puts("    Press <7> for CP/M\n");
-		cpmdisp_puts("    Press <8> for memory test\n");
-		cpmdisp_puts("    Press <9> for brightness\n");
+		cpmdisp_puts("    Press <8> for ZX memory test\n");
+		cpmdisp_puts("    Press <9> for CP/M memory test\n");
+		cpmdisp_puts("    Press <0> for brightness\n");
 		cpmdisp_puts("    >");
 
 		do { sym = cpmkbd_read(); } while('\0' == sym);
 		cpmdisp_putc(sym);
-		if(sym == '8') {
-			mem_Init(MEMTYPE_CPM);
+		if((sym == '8') || (sym == '9')) {
+			if(sym == '8')
+				mem_Init(MEMTYPE_ZX);
+			else
+				mem_Init(MEMTYPE_CPM);
+
 			char buf[20];
+
 			uint16_t errors = mem_test();
 			cpmdisp_puts("\n\n\n\n\n    Linear memory test: ");
 			if(0 == errors) cpmdisp_puts("successfully");
 			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
-			cpmdisp_puts("!\n");
+			cpmdisp_puts("!\n\nPress any key for continue\n");
+			do { sym = cpmkbd_read(); } while('\0' == sym);
+
 			errors = mem_rnd_test();
-			cpmdisp_puts("\n\n\n\n\n    Random memory test: ");
+			cpmdisp_puts("\n\n    Random memory test: ");
 			if(0 == errors) cpmdisp_puts("successfully");
 			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
 			cpmdisp_puts("!\n");
-		}
-		else if(sym == '6') {
-			cpmdisp_deInit();
-			zxsys_Run();
 		}
 		else if(sym == '7') {
 			cpmdisp_deInit();
 			CPMsys_Run();
 		}
-		else if(sym == '9') {
+		else if(sym == '0') {
 			cpmdisp_puts("\n\nEnter brightness[1-0]=[10%-100%]>");
 			do { sym = cpmkbd_read(); } while('\0' == sym);
 			cpmdisp_putc(sym);
@@ -160,6 +164,10 @@ int main(void)
 				ILI9341_setLEDpwm(1000);
 			else if((sym >= '1') &(sym <= '9'))
 				ILI9341_setLEDpwm((sym-'1')*100+100);
+		}
+		else {
+			cpmdisp_deInit();
+			zxsys_Run();
 		}
 		cpmdisp_puts("\n\n");
     /* USER CODE END WHILE */
