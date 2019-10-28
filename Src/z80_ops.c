@@ -674,68 +674,69 @@ void EDAL(uint8_t code, uint8_t *tstates) {
 		A = -A;
 	}
 	else if(code & 0x02) {
+		uint32_t tmp;
 		switch (code) {
 		case 0x42://SBC HL, BC
 		{
-			uint16_t tmp = HL - BC - (F & FLAG_C);
+			tmp = HL - BC - (F & FLAG_C);
 			F = CALC_C(tmp >> 8) | FLAG_N | CALC_SUB_V(HL, BC, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					CALC_SUB_H(HL, BC, tmp) | (HL ? 0 : FLAG_Z);
+					CALC_SUB_H(HL, BC, tmp) | ((tmp & 0xffff) ? 0 : FLAG_Z);
 			HL = tmp;
 		}
 		break;
 		case 0x52://SBC HL, DE
 		{
-			uint16_t tmp = HL - DE - (F & FLAG_C);
+			tmp = HL - DE - (F & FLAG_C);
 			F = CALC_C(tmp >> 8) | FLAG_N | CALC_SUB_V(HL, DE, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					CALC_SUB_H(HL, DE, tmp) | (HL ? 0 : FLAG_Z);
+					CALC_SUB_H(HL, DE, tmp) | ((tmp & 0xffff) ? 0 : FLAG_Z);
 			HL = tmp;
 		}
 		break;
 		case 0x62://SBC HL, HL
 		{
-			uint16_t tmp = HL - HL - (F & FLAG_C);
+			tmp = HL - HL - (F & FLAG_C);
 			F = CALC_C(tmp >> 8) | FLAG_N | CALC_SUB_V(HL, HL, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					CALC_SUB_H(HL, HL, tmp) | (HL ? 0 : FLAG_Z);
+					CALC_SUB_H(HL, HL, tmp) | ((tmp & 0xffff) ? 0 : FLAG_Z);
 			HL = tmp;
 		}
 		break;
 		case 0x72://SBC HL, SP
 		{
-			uint16_t tmp = HL - SP - (F & FLAG_C);
+			tmp = HL - SP - (F & FLAG_C);
 			F = CALC_C(tmp >> 8) | FLAG_N | CALC_SUB_V(HL, SP, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					CALC_SUB_H(HL, SP, tmp) | (HL ? 0 : FLAG_Z);
+					CALC_SUB_H(HL, SP, tmp) | ((tmp & 0xffff) ? 0 : FLAG_Z);
 			HL = tmp;
 		}
 		break;
 		case 0x4a://ADC HL, BC
 		{
-			uint16_t tmp = HL + BC + (F & FLAG_C);
+			tmp = HL + BC + (F & FLAG_C);
 			F = CALC_C(tmp >> 8) | CALC_ADD_V(HL, BC, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					CALC_ADD_H(HL, BC, tmp) | (HL ? 0 : FLAG_Z);
+					CALC_ADD_H(HL, BC, tmp) | ((tmp & 0xffff) ? 0 : FLAG_Z);
 			HL = tmp;
 		}
 		break;
 		case 0x5a://ADC HL, DE
 		{
-			uint16_t tmp = HL + DE + (F & FLAG_C);
+			tmp = HL + DE + (F & FLAG_C);
 			F = CALC_C(tmp >> 8) | CALC_ADD_V(HL, DE, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					CALC_ADD_H(HL, DE, tmp) | (HL ? 0 : FLAG_Z);
+					CALC_ADD_H(HL, DE, tmp) | ((tmp & 0xffff) ? 0 : FLAG_Z);
 			HL = tmp;
 		}
 		break;
 		case 0x6a://ADC HL, HL
 		{
-			uint16_t tmp = HL + HL + (F & FLAG_C);
+			tmp = HL + HL + (F & FLAG_C);
 			F = CALC_C(tmp >> 8) | CALC_ADD_V(HL, HL, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					CALC_ADD_H(HL, HL, tmp) | (HL ? 0 : FLAG_Z);
+					CALC_ADD_H(HL, HL, tmp) | ((tmp & 0xffff) ? 0 : FLAG_Z);
 			HL = tmp;
 		}
 		break;
 		case 0x7a://ADC HL, SP
 		{
-			uint16_t tmp = HL + SP + (F & FLAG_C);
+			tmp = HL + SP + (F & FLAG_C);
 			F = CALC_C(tmp >> 8) | CALC_ADD_V(HL, SP, tmp) | (H & (FLAG_3 | FLAG_5 | FLAG_S)) |
-					CALC_ADD_H(HL, SP, tmp) | (HL ? 0 : FLAG_Z);
+					CALC_ADD_H(HL, SP, tmp) | ((tmp & 0xffff) ? 0 : FLAG_Z);
 			HL = tmp;
 		}
 		break;
@@ -865,7 +866,7 @@ void JMP(uint8_t code, uint8_t *tstates) {
 			ERROR(code); break;
 		}
 		if(cond) {
-			if((code &0x07) == 0x00) {//for RET
+			if((code & 0x07) == 0x00) {//for RET
 				tstates += 6;
 				dl = mem_read(SP++);
 				dh = mem_read(SP++);

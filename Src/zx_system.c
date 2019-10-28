@@ -5,7 +5,8 @@
  *      Author: artur
  */
 
-#include "stdlib.h"
+#include <stdlib.h>
+#include <stdio.h>
 #include "zx_system.h"
 
 void zxsys_Run() {
@@ -49,7 +50,7 @@ void zxsys_Run() {
 		ZXdisp_drawnextline();
 
 		if(lines++ == 192*16/50) //50Hz interrupt
-			req_int(4);
+			req_int(32);
 
 		if(tstates >= 1140)
 			tstates -= 1140;
@@ -63,8 +64,13 @@ void zxports_out(uint16_t addr, uint8_t data) {
 }
 
 uint8_t zxports_in(uint16_t addr) {
+	uint8_t res = 0xff;
 	if((addr & 0x00ff) == 0x00fe) {
-		return zxkbd_scan(addr>>8);
+		res = zxkbd_scan(addr>>8);
+#ifdef __SIMULATION
+//		printf("Port read 0x%04x: 0x%02x\n", addr, res);
+#endif
+		return res;
 	}
 	else
 		return 0xff;
