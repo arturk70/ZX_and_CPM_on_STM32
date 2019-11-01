@@ -139,7 +139,7 @@ uint8_t z80_step() {
 		INC_R();
 
 #ifdef __SIMULATION
-//		printf("Exec 0x%04x: (0x%04x)0x%02x\n", PC-1, state.prefix, code);
+//		printf("Exec 0x%04x: (0x%04x)0x%02x\n", prvPC, state.prefix, code);
 #endif
 
 		if(IS_DD_PREFIX)
@@ -181,9 +181,9 @@ uint8_t z80_step() {
 		}
 
 #ifdef __SIMULATION
-		if(prvPC < 0x4000 && PC >= 0x4000)
-			printf("Out of ROM by cmd 0x%04x: (0x%04x)0x%02x regs: 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%02x 0x%02x 0x%02x 0x%02x\n",
-					prvPC, state.prefix, code, BC, DE, HL, AF, IX, IY, SP, PC, I, IFF1, IFF2, IM);
+//		if(prvPC < 0x4000 && PC >= 0x4000)
+//			printf("Out of ROM by cmd 0x%04x: (0x%04x)0x%02x regs: 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%02x 0x%02x 0x%02x 0x%02x\n",
+//					prvPC, state.prefix, code, BC, DE, HL, AF, IX, IY, SP, PC, I, IFF1, IFF2, IM);
 #endif
 
 		if(IS_DDFD_PREFIX && (code != 0xcb))

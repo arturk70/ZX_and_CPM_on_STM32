@@ -991,7 +991,7 @@ void CBSFT(uint8_t code, uint8_t *tstates) {
 		tmpres = A;
 	}
 	else if(regnum == 0x06) {//F
-		tmpres = mem_read(HLIXIY_REG+regs.ixiyshift);
+		tmpres = mem_read(HL);
 		tstates += 7;
 	}
 	else
@@ -1041,14 +1041,18 @@ void CBSFT(uint8_t code, uint8_t *tstates) {
 		ERROR(code); break;
 	}
 
-	if(regnum == 0x07)//A
-		A = tmpres;
-	else if(regnum != 0x06)//not F
-		*((uint8_t*)(&regs) + (regnum^1)) = tmpres;
-	else if((regnum == 0x06) || IS_DDFD_PREFIX) {
+	if(IS_DDFD_PREFIX) {
 		mem_write(HLIXIY_REG+regs.ixiyshift, tmpres);
 		regs.ixiyshift = 0;
 	}
+	else if(regnum == 0x07) {//A
+		A = tmpres;
+	}
+	else if(regnum == 0x06) {//F
+		mem_write(HL, tmpres);
+	}
+	else
+		*((uint8_t*)(&regs) + (regnum^1)) = tmpres;
 }
 
 void EDSF(uint8_t code, uint8_t *tstates) {
@@ -1091,7 +1095,7 @@ void BIT(uint8_t code, uint8_t *tstates) {
 		tmpres = A;
 	}
 	else if(regnum == 0x06) {//F
-		tmpres = mem_read(HLIXIY_REG+regs.ixiyshift);
+		tmpres = mem_read(HL);
 		tstates += 7;
 	}
 	else
@@ -1113,14 +1117,18 @@ void BIT(uint8_t code, uint8_t *tstates) {
 		ERROR(code); break;
 	}
 
-	if(regnum == 0x07)//A
-		A = tmpres;
-	else if(regnum != 0x06)//not F
-		*((uint8_t*)(&regs) + (regnum^1)) = tmpres;
-	else if((regnum == 0x06) || IS_DDFD_PREFIX) {
+	if(IS_DDFD_PREFIX) {
 		mem_write(HLIXIY_REG+regs.ixiyshift, tmpres);
 		regs.ixiyshift = 0;
 	}
+	else if(regnum == 0x07) {//A
+		A = tmpres;
+	}
+	else if(regnum == 0x06) {//F
+		mem_write(HL, tmpres);
+	}
+	else
+		*((uint8_t*)(&regs) + (regnum^1)) = tmpres;
 }
 
 void EX_(uint8_t code, uint8_t *tstates) {

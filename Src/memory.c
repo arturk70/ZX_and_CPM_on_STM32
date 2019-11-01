@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 #include "memory.h"
-#include "TSTROM.h"
+#include "ZXROM.h"
 #include "CPMROM.h"
 
 #define EXTRAMSIZE	(ILI9341_PWIDTH*24*2+(ILI9341_PHEIGHT-24*2)*8*2)*2
