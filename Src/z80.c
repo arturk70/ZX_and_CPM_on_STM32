@@ -112,7 +112,7 @@ void req_int(uint32_t tstates) {if(state.int_req >0) state.int_req += tstates; e
 void req_nmi(uint32_t tstates) {if(state.nmi_req >0) state.nmi_req += tstates; else state.nmi_req = tstates;}
 
 uint8_t z80_step() {
-	uint8_t tstates = 0;
+	int8_t tstates = 0;
 
 	if((state.nmi_req>0) && !state.int_blocked) {
 #ifdef __SIMULATION
@@ -166,6 +166,7 @@ uint8_t z80_step() {
 				regs.ixiyshift = code;
 				code = mem_read(PC++);
 			}
+
 			if(code < 0x40) {
 				tstates += 4;
 				CBSFT(code, &tstates);
