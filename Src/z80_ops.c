@@ -39,10 +39,10 @@ const z80cmd_t z80ops[256] = {
 		ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, //0x90-0x9f
 		ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, //0xa0-0xaf
 		ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, //0xb0-0xbf
-		JPc, POP, JPc, JMP, JPc, PSH, ALU, RST, JPc, JMP, JPc, PFX, JPc, JMP, ALU, RST, //0xc0-0xcf
-		JPc, POP, JPc, IO_, JPc, PSH, ALU, RST, JPc, EX_, JPc, IO_, JPc, PFX, ALU, RST, //0xd0-0xdf
-		JPc, POP, JPc, EX_, JPc, PSH, ALU, RST, JPc, JMP, JPc, EX_, JPc, PFX, ALU, RST, //0xe0-0xef
-		JPc, POP, JPc, DI_, JPc, PSH, ALU, RST, JPc, LDs, JPc, EI_, JPc, PFX, ALU, RST  //0xf0-0xff
+		JPc, POP, JPc, JMP, JPc, PSH, ALn, RST, JPc, JMP, JPc, PFX, JPc, JMP, ALn, RST, //0xc0-0xcf
+		JPc, POP, JPc, IO_, JPc, PSH, ALn, RST, JPc, EX_, JPc, IO_, JPc, PFX, ALn, RST, //0xd0-0xdf
+		JPc, POP, JPc, EX_, JPc, PSH, ALn, RST, JPc, JMP, JPc, EX_, JPc, PFX, ALn, RST, //0xe0-0xef
+		JPc, POP, JPc, DI_, JPc, PSH, ALn, RST, JPc, LDs, JPc, EI_, JPc, PFX, ALn, RST  //0xf0-0xff
 };
 
 const uint8_t edoptstates[96] = {
@@ -161,7 +161,7 @@ void LDn(uint8_t code, int8_t *tstates) {
 		C = mem_read(PC++);
 		break;
 	case 0x03://LD  E,*
-		L = mem_read(PC++);
+		E = mem_read(PC++);
 		break;
 	case 0x05://LD  L,*
 		HLIXIY_REGL = mem_read(PC++);

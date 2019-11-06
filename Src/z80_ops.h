@@ -11,12 +11,6 @@
 #include <stdio.h>
 #include "z80.h"
 
-#ifndef __SIMULATION
-#define ERROR(code) {LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin); LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);}
-#else
-#define ERROR(code) printf("Error executing code 0x%04x: (0x%04x)0x%02x at line %d\n", PC-1, state.prefix, code, __LINE__);
-#endif
-
 #define BIT4(val)	((val) & 0x08)
 #define BIT8(val)	((val) & 0x80)
 #define CALC_C(val)	(((val) & 0x100) ? FLAG_C : 0)
