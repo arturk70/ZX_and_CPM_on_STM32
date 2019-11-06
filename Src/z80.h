@@ -91,6 +91,7 @@
 
 #define IS_PREFIX (state.prefix)
 #define IS_DDFD_PREFIX (state.prefix & 0xff00)
+#define IS_DDFDCB_PREFIX ((state.prefix == 0xddcb) || (state.prefix == 0xfdcb))
 #define IS_DD_PREFIX ((state.prefix & 0xff00) == 0xdd00)
 #define IS_FD_PREFIX ((state.prefix & 0xff00) == 0xfd00)
 #define IS_ED_PREFIX ((state.prefix & 0x00ff) == 0x00ed)

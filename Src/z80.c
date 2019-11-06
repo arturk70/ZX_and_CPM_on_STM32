@@ -138,14 +138,21 @@ uint8_t z80_step() {
 		uint8_t code = mem_read(PC++);
 		INC_R();
 
+		if(IS_DDFDCB_PREFIX) {
+			regs.ixiyshift = code;
+			code = mem_read(PC++);
+		}
+
 #ifdef __SIMULATION
 //		printf("Exec 0x%04x: (0x%04x)0x%02x\n", prvPC, state.prefix, code);
 #endif
 
 		if(IS_DD_PREFIX)
 			regs.hlixiyptr = &(regs.ix);
-		if(IS_FD_PREFIX)
+		else if(IS_FD_PREFIX)
 			regs.hlixiyptr = &(regs.iy);
+		else
+			regs.hlixiyptr = &(regs.hl);
 
 		if(IS_ED_PREFIX) {
 			if((code < 0x40) || (code > 0xbf) || (code > 0x7f && code < 0xa0))
@@ -160,13 +167,10 @@ uint8_t z80_step() {
 					z80edops[code-0x60](code, &tstates);
 				}
 			}
+
+			CLR_PREFIX();
 		}
 		else if(IS_CB_PREFIX) {
-			if(IS_DDFD_PREFIX) {
-				regs.ixiyshift = code;
-				code = mem_read(PC++);
-			}
-
 			if(code < 0x40) {
 				tstates += 4;
 				CBSFT(code, &tstates);
@@ -175,10 +179,15 @@ uint8_t z80_step() {
 				tstates += 4;
 				BIT(code, &tstates);
 			}
+
+			CLR_PREFIX();
 		}
 		else {
 			tstates += optstates[code];
 			z80ops[code](code, &tstates);
+
+			if(IS_PREFIX && !((code == 0xcb) | (code == 0xdd) | (code == 0xfd) | (code == 0xed)))
+				CLR_PREFIX();
 		}
 
 #ifdef __SIMULATION
@@ -186,12 +195,6 @@ uint8_t z80_step() {
 //			printf("Out of ROM by cmd 0x%04x: (0x%04x)0x%02x regs: 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%02x 0x%02x 0x%02x 0x%02x\n",
 //					prvPC, state.prefix, code, BC, DE, HL, AF, IX, IY, SP, PC, I, IFF1, IFF2, IM);
 #endif
-
-		if(IS_DDFD_PREFIX && (code != 0xcb))
-					regs.hlixiyptr = &(regs.hl);
-
-		if(IS_PREFIX && !((code == 0xcb) | (code == 0xdd) | (code == 0xfd) | (code == 0xed)))
-			CLR_PREFIX();
 	}
 
 	if(state.nmi_req > tstates)
