@@ -1014,7 +1014,7 @@ void BIT(uint8_t code, int8_t *tstates) {
 		//for (HL) operations flags 3 & 5 must be set in other way - not realized
 		F = (F & FLAG_C) | FLAG_H | (tmpres & (FLAG_3 | FLAG_5));
 		if(!(tmpres & bitmask)) F |= FLAG_P | FLAG_Z;
-		if((bitmask == 0x80) && (tmpres & 0x80)) F |= FLAG_S;
+		if(tmpres & bitmask & 0x80) F |= FLAG_S;
 		return;//not need write back result
 		break;
 	case 0x80: //RES
