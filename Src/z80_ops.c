@@ -245,8 +245,9 @@ void LD_(uint8_t code, int8_t *tstates) {
 
 	if(srcnum == 0x07) {//A
 		tmp = A;
-	} else if(srcnum == 0x06) {//F
+	} else if(srcnum == 0x06) {//(HL)
 		tmp = mem_read(HLIXIY_REG + ixiyshift);
+		HDN = ((HLIXIY_REG + ixiyshift) >> 8) & 0x00ff;
 	} else if(srcnum == 0x04) {//H
 		if(code == 0x74)
 			tmp = H;
@@ -263,7 +264,7 @@ void LD_(uint8_t code, int8_t *tstates) {
 
 	if(dstnum == 0x07) {//A
 		A = tmp;
-	} else if(dstnum == 0x06) {//F
+	} else if(dstnum == 0x06) {//(HL)
 		mem_write(HLIXIY_REG + ixiyshift, tmp);
 	} else if(dstnum == 0x04) {//H
 		if(code == 0x66)
@@ -317,24 +318,6 @@ void LDIR(uint8_t code, int8_t *tstates) {
 		A = *regptr;
 		F = (F & FLAG_C) | (sz53p_table[A] & ~FLAG_P) | (IFF2 ? FLAG_V : 0);
 	}
-
-//	switch (code) {
-//	case 0x47://LD I, A
-//		I = A;
-//		break;
-//	case 0x57://LD A, I
-//		A = I;
-//		F = (F & FLAG_C) | (sz53p_table[A] & ~FLAG_P) | (IFF2 ? FLAG_V : 0);
-//		break;
-//	case 0x4f://LD R, A
-//		R = A;
-//		break;
-//	case 0x5f://LD A, R
-//		A = R;
-//		F = (F & FLAG_C) | (sz53p_table[A] & ~FLAG_P) | (IFF2 ? FLAG_V : 0);
-//		break;
-//	}
-
 }
 
 void EDLD(uint8_t code, int8_t *tstates) {
@@ -498,6 +481,9 @@ void CPL(uint8_t code, int8_t *tstates) {
 void ALx(uint8_t code, int8_t *tstates) {
 	register uint32_t tmp;
 	register uint8_t hreg;
+
+	HDN = HLIXIY_REGH;
+
 	switch (code >> 4) {
 	case 0x00://ADD HL,BC
 		tmp = HLIXIY_REG + BC;
@@ -743,6 +729,8 @@ void JR_(uint8_t code, int8_t *tstates) {
 		cond = (F & FLAG_C);
 		break;
 	}
+
+	HDN = ((PC+d) >> 8) & 0xff;
 
 	if(cond) {
 		PC += d;
@@ -997,12 +985,13 @@ void BIT(uint8_t code, int8_t *tstates) {
 
 	if(IS_DDFD_PREFIX) {
 		tmpres = mem_read(HLIXIY_REG+regs.ixiyshift);
+		HDN = ((HLIXIY_REG + regs.ixiyshift) >> 8) & 0x00ff;
 		tstates += 15;
 	}
 	else if(regnum == 0x07) {//A
 		tmpres = A;
 	}
-	else if(regnum == 0x06) {//F
+	else if(regnum == 0x06) {//(HL)
 		tmpres = mem_read(HL);
 		tstates += 7;
 	}
@@ -1011,10 +1000,15 @@ void BIT(uint8_t code, int8_t *tstates) {
 
 	switch (code & 0xc0) {
 	case 0x40: //BIT
-		//for (HL) operations flags 3 & 5 must be set in other way - not realized
-		F = (F & FLAG_C) | FLAG_H | (tmpres & (FLAG_3 | FLAG_5));
-		if(!(tmpres & bitmask)) F |= FLAG_P | FLAG_Z;
-		if(tmpres & bitmask & 0x80) F |= FLAG_S;
+		tmpres &= bitmask;
+		F = (F & FLAG_C) | FLAG_H;
+		if(regnum == 0x06)//(HL)
+			F |= (HDN & (FLAG_3 | FLAG_5));
+		else
+			F |= (tmpres & (FLAG_5 | FLAG_3));
+
+		if(!(tmpres)) F |= FLAG_P | FLAG_Z;
+		if(tmpres & 0x80) F |= FLAG_S;
 		return;//not need write back result
 		break;
 	case 0x80: //RES
@@ -1152,25 +1146,29 @@ void IOBL(uint8_t code, int8_t *tstates) {
 void DAA(uint8_t code, int8_t *tstates) {
 	uint8_t add = 0;
 	uint8_t carry = (F & FLAG_C);
-	uint16_t tmp2;
 
 	if((F & FLAG_H) || ((A & 0x0f) > 9))
-		add = 6;
-	if(carry || (A > 0x99))
+		add = 0x06;
+
+	if(carry || (A > 0x99)) {
 		add |= 0x60;
-	if(A > 0x99)
 		carry = FLAG_C;
-	if((F = (F & FLAG_N))) {
-		tmp2 = A - add;
-		F |= CALC_SUB_H(A, add, tmp2);
-		A = tmp2;
+	}
+	else
+		carry = 0;
+
+	if(!(F & FLAG_N)) {
+		F = (((A & 0x0F) > 0x09) ? FLAG_H : 0);
+		A += add;
 	} else {
-		tmp2 = A + add;
-		F |= CALC_ADD_H(A, add, tmp2);
-		A = tmp2;
+		if(F & FLAG_H)
+			F = FLAG_N | ((((A & 0x0F)) < 0x06) ? FLAG_H : 0);
+		else
+			F = FLAG_N;
+		A -= add;
 	}
 
-	F |= CALC_C(tmp2) | sz53p_table[A];
+	F |= carry | sz53p_table[A];
 }
 
 void PFX(uint8_t code, int8_t *tstates) {
