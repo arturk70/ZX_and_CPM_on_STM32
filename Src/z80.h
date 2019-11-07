@@ -70,7 +70,7 @@
 #define IFF2 regs.iff2
 #define IM   regs.im
 
-#define HDN  regs.hidden
+//#define HDN  regs.hidden
 
 #define INC_R()	{regs.r = (regs.r & 0x80) | ((regs.r+1) & 0x7f);}
 
@@ -113,7 +113,7 @@ typedef struct {
   regpair sp,pc;
   regpair* hlixiyptr; //pointer to HL or IX or IY register for DD/FD prefixes
   int8_t ixiyshift;
-  uint8_t iff1, iff2, im, hidden;
+  uint8_t iff1, iff2, im/*, hidden*/;
 } z80_registers;
 
 typedef struct {

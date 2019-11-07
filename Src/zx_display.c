@@ -36,7 +36,7 @@ void ZXdisp_deInit() {
 #endif
 }
 
-uint8_t ZXdisp_drawnextline() {
+void ZXdisp_drawnextline() {
 	register uint8_t *attraddr = ZXvideomem+0x1800+(lnum/8)*32;
 	register uint8_t *lineaddr = ZXvideomem+(((uint16_t)lnum & 0x00c0)<<5)+(((uint16_t)lnum & 0x0038)<<2)+(((uint16_t)lnum & 0x0007)<<8);
 	register uint32_t attr;
@@ -71,8 +71,6 @@ uint8_t ZXdisp_drawnextline() {
 	}
 
 	ZX_NEWLINE_RESET;
-
-	return lnum;
 }
 
 

@@ -251,14 +251,14 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 
 	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV8);
 
-	uint8_t r,g,b;
+	register uint8_t r,g,b;
 	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
 	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
 	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 	r=LL_SPI_ReceiveData8(ILI9341_SPI);//read dummy byte
 
 
-	for(uint16_t i=0; i<len;i++) {
+	for(register uint16_t i=0; i<len;i++) {
 		while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
 		LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
 		while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
@@ -328,7 +328,7 @@ void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16
 	ILI9341_setFrame(x1, y1, x2, y2);
 
 #ifndef __SIMULATION
-	uint16_t len = (x2-x1+1)*(y2-y1+1);
+	register uint16_t len = (x2-x1+1)*(y2-y1+1);
 	ILI9341_sendCommand(ILI9341_GRAM);
 
 	LL_SPI_DisableDMAReq_TX(ILI9341_SPI);

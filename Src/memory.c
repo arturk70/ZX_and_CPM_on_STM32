@@ -76,7 +76,6 @@ void mem_Init(uint8_t type) {
 //}
 
 uint16_t mem_test() {
-	register uint8_t tmp;
 	register uint16_t errcount = 0;
 	register uint16_t straddr, endaddr;
 	if(mem_type == MEMTYPE_ZX) {
@@ -87,16 +86,21 @@ uint16_t mem_test() {
 		endaddr = RAM_ROM_splitaddr - 1;
 	}
 
-#ifndef __SIMULATION
-	srand(SysTick->VAL);
-#endif
+	uint8_t tst[50];
+	uint8_t i;
+	for(i=0;i<50;i++)
+		tst[i] = (uint8_t)rand();
+
+	i = 0;
 	for(register uint32_t addr=straddr; addr<=endaddr; addr++) {
-		tmp = (uint8_t)addr;
-		mem_write(addr, tmp);
+		mem_write(addr, tst[i++]);
+		if(i == 50) i = 0;
 	}
+
+	i = 0;
 	for(register uint32_t addr=straddr; addr<=endaddr; addr++) {
-		tmp = (uint8_t)addr;
-		if(tmp != mem_read(addr)) errcount++;
+		if(tst[i++] != mem_read(addr)) errcount++;
+		if(i == 50) i = 0;
 	}
 //	mem_clear();
 

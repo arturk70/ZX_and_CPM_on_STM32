@@ -11,7 +11,6 @@
 
 static uint8_t cpos[2] = {0,0};
 static uint16_t chbuf[FNT_WIDTH*FNT_HEIGHT];
-//static uint8_t *scrbuf;
 
 void cpmdisp_setcursor(uint8_t row, uint8_t col) {
 	cpos[COL] = col; cpos[ROW] = row;
@@ -19,8 +18,8 @@ void cpmdisp_setcursor(uint8_t row, uint8_t col) {
 
 //s - index in font table
 inline static void drawsymbol(uint8_t s, uint8_t row, uint8_t col) {
-	for(uint8_t l=0;l<6;l++) {
-		for(uint8_t b=0;b<5;b++) {
+	for(register uint8_t l=0;l<6;l++) {
+		for(register uint8_t b=0;b<5;b++) {
 			if((font[s]>>(l*5+b))&0x00000001)
 				chbuf[l*6+b]=FG_COLOR;
 			  else
@@ -28,7 +27,7 @@ inline static void drawsymbol(uint8_t s, uint8_t row, uint8_t col) {
 		}
 		chbuf[l*6+5]=BG_COLOR;
 	}
-	for(uint8_t b=0;b<6;b++) {
+	for(register uint8_t b=0;b<6;b++) {
 		chbuf[FNT_WIDTH*(FNT_HEIGHT-2)+b]=BG_COLOR;
 		chbuf[FNT_WIDTH*(FNT_HEIGHT-1)+b]=BG_COLOR;
 	}
@@ -41,12 +40,7 @@ inline static void drawsymbol(uint8_t s, uint8_t row, uint8_t col) {
 }
 
 void cpmdisp_scroll(uint8_t lnum) {
-//	for(uint16_t i=0; i< SCR_WIDTH*SCR_HEIGHT-SCR_WIDTH*lnum; i++) {
-//				scrbuf[i] = scrbuf[i+SCR_WIDTH*lnum];
-//				drawsymbol(scrbuf[i], i/SCR_WIDTH, i%SCR_WIDTH);
-//	}
-
-	for(uint16_t i=CPMD_START_LINE; i< CPMD_START_LINE+FNT_HEIGHT*(SCR_HEIGHT-lnum); i++) {
+	for(register uint16_t i=CPMD_START_LINE; i< CPMD_START_LINE+FNT_HEIGHT*(SCR_HEIGHT-lnum); i++) {
 		ILI9341_readBuf(CPMD_START_POS, i+FNT_HEIGHT*lnum, CPMD_END_POS, i+FNT_HEIGHT*lnum, linebuf, SCR_WIDTH*FNT_WIDTH);
 		ILI9341_sendBuf(CPMD_START_POS, i, CPMD_END_POS, i, linebuf, SCR_WIDTH*FNT_WIDTH);
 	}
@@ -57,22 +51,17 @@ void cpmdisp_scroll(uint8_t lnum) {
 void cpmdisp_Init() {
 	ILI9341_Init();
 	disp_clear(BG_COLOR);
-	cpos[ROW] = 0; cpos[COL] = 0;
-//	scrbuf=malloc(SCR_WIDTH*SCR_HEIGHT);
-//	for(uint16_t i=0;i<SCR_WIDTH*SCR_HEIGHT;i++) scrbuf[i]=0x00;
+	cpmdisp_setcursor(0, 0);
 	drawsymbol(CURSOR_CHAR, cpos[ROW], cpos[COL]);
 }
 
 void cpmdisp_deInit() {
 	disp_clear(BG_COLOR);
-//	if(scrbuf != NULL) free(scrbuf);
 }
 
 void cpmdisp_putc(char c) {
 	if(c == '\0') return;
 	if(c == '\n') {
-//		for(uint8_t i=cpos[COL]; i< SCR_WIDTH; i++)
-//			scrbuf[cpos[ROW]*SCR_WIDTH+i] = 0x00;
 		drawsymbol(0x00, cpos[ROW], cpos[COL]);
 		cpos[COL]=0;
 		if(++cpos[ROW] == SCR_HEIGHT) {
@@ -86,7 +75,6 @@ void cpmdisp_putc(char c) {
 		else
 			c -= 0x20;
 
-//		scrbuf[cpos[ROW]*SCR_WIDTH+cpos[COL]] = (uint8_t)c;
 		drawsymbol((uint8_t)c, cpos[ROW], cpos[COL]);
 
 		if(++cpos[COL] == SCR_WIDTH) {
@@ -101,6 +89,6 @@ void cpmdisp_putc(char c) {
 }
 
 void cpmdisp_puts(char *s) {
-	for(uint16_t i=0;s[i]!='\0';i++)
+	for(register uint16_t i=0;s[i]!='\0';i++)
 		cpmdisp_putc(s[i]);
 }

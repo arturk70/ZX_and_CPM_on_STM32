@@ -32,7 +32,7 @@ extern uint16_t zx_border_color;
 
 void ZXdisp_Init();
 void ZXdisp_deInit();
-uint8_t ZXdisp_drawnextline();
+void ZXdisp_drawnextline();
 
 
 #endif /* ZX_DISPLAY_H_ */

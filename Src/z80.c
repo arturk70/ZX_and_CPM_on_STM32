@@ -43,7 +43,7 @@ void z80_reset() {
 }
 
 uint8_t z80_interrupt() {
-	uint8_t tstates = 13;
+	register uint8_t tstates = 13;
 
 	if( IFF1) {
 
@@ -82,7 +82,7 @@ uint8_t z80_interrupt() {
 		   high when the end-of-frame interrupt is delivered.  Our interrupt
 		   vector is therefore 0xff. */
 		{
-			uint16_t inttemp=(0x100*I)+0xff;
+			register uint16_t inttemp=(0x100*I)+0xff;
 			PCL = mem_read(inttemp++); PCH = mem_read(inttemp);
 			tstates = 19;
 			break;
@@ -135,7 +135,7 @@ uint8_t z80_step() {
 		uint16_t prvPC = PC;
 #endif
 		state.int_blocked = 0;
-		uint8_t code = mem_read(PC++);
+		register uint8_t code = mem_read(PC++);
 		INC_R();
 
 		if(IS_DDFDCB_PREFIX) {
