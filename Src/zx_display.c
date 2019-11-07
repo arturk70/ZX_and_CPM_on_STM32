@@ -10,22 +10,15 @@
 #include "memory.h"
 
 static uint8_t *ZXvideomem;
-static uint16_t *linebuf;
 static uint8_t lnum;
 static uint8_t frnum;
 uint8_t zx_newline_flag;
 uint16_t zx_border_color;
 
-void ZXdisp_clear() {
-	ILI9341_fillArea(ZXD_START_POS, ZXD_START_LINE, ZXD_END_POS, ZXD_END_LINE, BLACK);
-}
-
-
 void ZXdisp_Init() {
 	ZXvideomem = get_ZX_videomem();
 	ILI9341_Init();
-	ZXdisp_clear();
-	linebuf = malloc((ZX_PIXELS+BORDER_WIDTH*2)*2);
+	disp_clear(BLACK);
 	lnum = 0;
 	frnum = 0;
 	zx_border_color = 0;
@@ -41,7 +34,6 @@ void ZXdisp_deInit() {
 	LL_TIM_DisableIT_UPDATE(TIM3);
 	LL_TIM_DisableCounter(TIM3);
 #endif
-	if(linebuf != NULL) free(linebuf);
 }
 
 uint8_t ZXdisp_drawnextline() {
