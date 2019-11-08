@@ -87,7 +87,7 @@ uint16_t mem_test() {
 	}
 
 	uint8_t tst[50];
-	uint8_t i;
+	register uint8_t i;
 	for(i=0;i<50;i++)
 		tst[i] = (uint8_t)rand();
 

@@ -45,7 +45,7 @@
 		LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_8BIT); \
 		ILI9341_DMA_busy = 0; }
 #else
-extern uint16_t ili9341_image[ILI9341_PWIDTH*ILI9341_PHEIGHT];
+extern uint8_t ili9341_image[ILI9341_PWIDTH*ILI9341_PHEIGHT*3];
 #endif
 
 extern uint8_t ILI9341_DMA_busy;
@@ -63,9 +63,6 @@ void ILI9341_setLEDpwm(uint16_t val);
 #ifdef __SIMULATION
 void ILI9341_readPix(uint16_t x, uint16_t y, uint8_t *r, uint8_t *g, uint8_t *b);
 void ILI9341_writePix(uint16_t x, uint16_t y, uint16_t color);
-
-void uint16_rgb(uint16_t pix, uint8_t *r, uint8_t *g, uint8_t *b);
-void rgb_uint16(uint8_t r, uint8_t g, uint8_t b, uint16_t *pix);
 #endif
 
 #endif /* ILI9341DRIVER_H_ */

@@ -247,7 +247,6 @@ void LD_(uint8_t code, int8_t *tstates) {
 		tmp = A;
 	} else if(srcnum == 0x06) {//(HL)
 		tmp = mem_read(HLIXIY_REG + ixiyshift);
-//		HDN = ((HLIXIY_REG + ixiyshift) >> 8) & 0x00ff;
 	} else if(srcnum == 0x04) {//H
 		if(code == 0x74)
 			tmp = H;
@@ -481,8 +480,6 @@ void CPL(uint8_t code, int8_t *tstates) {
 void ALx(uint8_t code, int8_t *tstates) {
 	register uint32_t tmp;
 	register uint8_t hreg;
-
-//	HDN = HLIXIY_REGH;
 
 	switch (code >> 4) {
 	case 0x00://ADD HL,BC
@@ -729,8 +726,6 @@ void JR_(uint8_t code, int8_t *tstates) {
 		cond = (F & FLAG_C);
 		break;
 	}
-
-//	HDN = ((PC+d) >> 8) & 0xff;
 
 	if(cond) {
 		PC += d;
@@ -979,13 +974,13 @@ void EDSF(uint8_t code, int8_t *tstates) {
 }
 
 void BIT(uint8_t code, int8_t *tstates) {
-	register uint8_t tmpres, HDN;
+	register uint8_t tmpres, hidden;
 	register uint8_t bitmask = 0x01 << ((code & 0x38) >> 3);
 	register uint8_t regnum = code & 0x07;
 
 	if(IS_DDFD_PREFIX) {
 		tmpres = mem_read(HLIXIY_REG+regs.ixiyshift);
-		HDN = ((HLIXIY_REG + regs.ixiyshift) >> 8) & 0x00ff;
+		hidden = ((HLIXIY_REG + regs.ixiyshift) >> 8) & 0x00ff;
 		tstates += 15;
 	}
 	else if(regnum == 0x07) {//A
@@ -1003,7 +998,7 @@ void BIT(uint8_t code, int8_t *tstates) {
 		tmpres &= bitmask;
 		F = (F & FLAG_C) | FLAG_H;
 		if(regnum == 0x06)//(HL)
-			F |= (HDN & (FLAG_3 | FLAG_5));
+			F |= (hidden & (FLAG_3 | FLAG_5));
 		else
 			F |= (tmpres & (FLAG_5 | FLAG_3));
 

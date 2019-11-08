@@ -70,8 +70,6 @@
 #define IFF2 regs.iff2
 #define IM   regs.im
 
-//#define HDN  regs.hidden
-
 #define INC_R()	{regs.r = (regs.r & 0x80) | ((regs.r+1) & 0x7f);}
 
 /* The flags */
@@ -98,10 +96,6 @@
 #define IS_CB_PREFIX ((state.prefix & 0x00ff) == 0x00cb)
 #define CLR_PREFIX() { state.prefix = 0; }
 
-//typedef union {
-//  struct { uint8_t l,h; } b;
-//  uint16_t w;
-//} regpair;
 typedef uint8_t regpair[2];
 
 typedef struct {
@@ -111,13 +105,12 @@ typedef struct {
   uint8_t i;
   uint8_t r;
   regpair sp,pc;
+  uint8_t iff1, iff2, im;
   regpair* hlixiyptr; //pointer to HL or IX or IY register for DD/FD prefixes
   int8_t ixiyshift;
-  uint8_t iff1, iff2, im/*, hidden*/;
 } z80_registers;
 
 typedef struct {
-//	uint8_t iff2_read;
 	uint8_t halted;
 	uint16_t prefix;
 	int16_t int_req;

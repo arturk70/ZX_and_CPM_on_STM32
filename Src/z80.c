@@ -37,7 +37,6 @@ void z80_reset() {
 	regs.hlixiyptr = &(regs.hl);
 	regs.ixiyshift = 0;
 	state.halted = 0;
-//	state.iff2_read = 0;
 	state.prefix = 0;
 
 }
@@ -46,14 +45,6 @@ uint8_t z80_interrupt() {
 	register uint8_t tstates = 13;
 
 	if( IFF1) {
-
-//		if ( state.iff2_read) {
-//			/* We just executed LD A,I or LD A,R, causing IFF2 to be copied to the
-//		 parity flag.  This occured whilst accepting an interrupt.
-//		 We cannot do this when emulating LD itself as we cannot
-//		 tell whether the next instruction will be interrupted. */
-//			F &= ~FLAG_P;
-//		}
 
 		if( state.halted ) { PC++; state.halted = 0; }
 
@@ -189,12 +180,6 @@ uint8_t z80_step() {
 			if(IS_PREFIX && !((code == 0xcb) | (code == 0xdd) | (code == 0xfd) | (code == 0xed)))
 				CLR_PREFIX();
 		}
-
-#ifdef __SIMULATION
-//		if(prvPC < 0x4000 && PC >= 0x4000)
-//			printf("Out of ROM by cmd 0x%04x: (0x%04x)0x%02x regs: 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%04x 0x%02x 0x%02x 0x%02x 0x%02x\n",
-//					prvPC, state.prefix, code, BC, DE, HL, AF, IX, IY, SP, PC, I, IFF1, IFF2, IM);
-#endif
 	}
 
 	if(state.nmi_req > tstates)
