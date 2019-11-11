@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "fatfs.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -82,18 +83,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  
-
-  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_AFIO);
-  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
-
-  NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-
-  /* System interrupt init*/
-
-  /** NOJTAG: JTAG-DP Disabled and SW-DP Enabled 
-  */
-  LL_GPIO_AF_Remap_SWJ_NOJTAG();
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -113,6 +103,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_SPI2_Init();
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
   cpmdisp_Init();
 
@@ -217,8 +208,6 @@ void SystemClock_Config(void)
   {
   
   }
-  LL_Init1msTick(96000000);
-  LL_SYSTICK_SetClkSource(LL_SYSTICK_CLKSOURCE_HCLK);
   LL_SetSystemCoreClock(96000000);
 }
 

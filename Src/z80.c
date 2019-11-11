@@ -123,7 +123,7 @@ uint8_t z80_step() {
 	}
 	else {
 #ifdef __SIMULATION
-		uint16_t prvPC = PC;
+//		uint16_t prvPC = PC;
 #endif
 		state.int_blocked = 0;
 		register uint8_t code = mem_read(PC++);
