@@ -14,10 +14,10 @@ uint8_t ext_kbdscans[8];
 #endif
 
 uint8_t zxkbd_scan(uint8_t addr) {
-	uint8_t scan = 0x1f;
+	register uint8_t scan = 0x1f;
 
 #ifndef __SIMULATION
-	uint32_t pA, pB;
+	register uint32_t pA, pB;
 
 	pB = LL_GPIO_ReadOutputPort(KBDA_8_GPIO_Port);
 	LL_GPIO_WriteOutputPort(KBDA_8_GPIO_Port, (pB & 0xfffff807) | ((uint32_t)addr)<<3);
@@ -27,7 +27,7 @@ uint8_t zxkbd_scan(uint8_t addr) {
 	pB = LL_GPIO_ReadOutputPort(KBDA_8_GPIO_Port);
 	LL_GPIO_WriteOutputPort(KBDA_8_GPIO_Port, (pB & 0xfffff807) | (0x000000ff<<3));
 #else
-	for(uint8_t i=0;i<8;i++) {
+	for(register uint8_t i=0;i<8;i++) {
 		if(~addr & (0x01 << i))
 			return ~ext_kbdscans[i];
 	}
@@ -37,10 +37,10 @@ uint8_t zxkbd_scan(uint8_t addr) {
 }
 
 char cpmkbd_read() {
-	char res='\0';
+	register char res='\0';
 	uint8_t kbdscans[8];
 
-	for(uint8_t i=0; i<8; i++)
+	for(register uint8_t i=0; i<8; i++)
 		kbdscans[i] = ~zxkbd_scan(~(0x01<<i));
 
 	if(kbdscans[6] & 0x01)

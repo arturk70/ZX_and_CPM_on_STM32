@@ -11,6 +11,7 @@
 
 static uint8_t cpos[2] = {0,0};
 static uint16_t chbuf[FNT_WIDTH*FNT_HEIGHT];
+static uint8_t scrbuf[SCR_WIDTH*SCR_HEIGHT];
 
 void cpmdisp_setcursor(uint8_t row, uint8_t col) {
 	cpos[COL] = col; cpos[ROW] = row;
@@ -40,9 +41,9 @@ inline static void drawsymbol(uint8_t s, uint8_t row, uint8_t col) {
 }
 
 void cpmdisp_scroll(uint8_t lnum) {
-	for(register uint16_t i=CPMD_START_LINE; i< CPMD_START_LINE+FNT_HEIGHT*(SCR_HEIGHT-lnum); i++) {
-		ILI9341_readBuf(CPMD_START_POS, i+FNT_HEIGHT*lnum, CPMD_END_POS, i+FNT_HEIGHT*lnum, linebuf, SCR_WIDTH*FNT_WIDTH);
-		ILI9341_sendBuf(CPMD_START_POS, i, CPMD_END_POS, i, linebuf, SCR_WIDTH*FNT_WIDTH);
+	for(register uint16_t i=0; i< SCR_WIDTH*SCR_HEIGHT-SCR_WIDTH*lnum; i++) {
+		scrbuf[i] = scrbuf[i+SCR_WIDTH*lnum];
+		drawsymbol(scrbuf[i], i/SCR_WIDTH, i%SCR_WIDTH);
 	}
 
 	ILI9341_fillArea(CPMD_START_POS, CPMD_END_LINE-FNT_HEIGHT*lnum+1, CPMD_END_POS, CPMD_END_LINE, BG_COLOR);
@@ -52,6 +53,7 @@ void cpmdisp_Init() {
 	ILI9341_Init();
 	disp_clear(BG_COLOR);
 	cpmdisp_setcursor(0, 0);
+	for(register uint16_t i=0;i<SCR_WIDTH*SCR_HEIGHT;i++) scrbuf[i]=0x00;
 	drawsymbol(CURSOR_CHAR, cpos[ROW], cpos[COL]);
 }
 
@@ -62,6 +64,8 @@ void cpmdisp_deInit() {
 void cpmdisp_putc(char c) {
 	if(c == '\0') return;
 	if(c == '\n') {
+		for(register uint8_t i=cpos[COL]; i< SCR_WIDTH; i++)
+			scrbuf[cpos[ROW]*SCR_WIDTH+i] = 0x00;
 		drawsymbol(0x00, cpos[ROW], cpos[COL]);
 		cpos[COL]=0;
 		if(++cpos[ROW] == SCR_HEIGHT) {
@@ -75,6 +79,7 @@ void cpmdisp_putc(char c) {
 		else
 			c -= 0x20;
 
+		scrbuf[cpos[ROW]*SCR_WIDTH+cpos[COL]] = (uint8_t)c;
 		drawsymbol((uint8_t)c, cpos[ROW], cpos[COL]);
 
 		if(++cpos[COL] == SCR_WIDTH) {

@@ -114,7 +114,7 @@ int main(void)
   MX_TIM3_Init();
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
-	cpmdisp_Init();
+  cpmdisp_Init();
 
 
   /* USER CODE END 2 */
@@ -536,21 +536,14 @@ static void MX_GPIO_Init(void)
   LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /**/
-  GPIO_InitStruct.Pin = KBDA_15_Pin|KBDA_8_Pin|KBDA_9_Pin|KBDA_10_Pin 
-                          |KBDA_11_Pin|KBDA_12_Pin|KBDA_13_Pin|KBDA_14_Pin;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
-  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /**/
-  GPIO_InitStruct.Pin = SD_CS_Pin;
+  GPIO_InitStruct.Pin = KBDA_15_Pin|SD_CS_Pin|KBDA_8_Pin|KBDA_9_Pin 
+                          |KBDA_10_Pin|KBDA_11_Pin|KBDA_12_Pin|KBDA_13_Pin 
+                          |KBDA_14_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
-  LL_GPIO_Init(SD_CS_GPIO_Port, &GPIO_InitStruct);
+  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
