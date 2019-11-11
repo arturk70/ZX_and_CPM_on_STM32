@@ -1,6 +1,7 @@
 /Debug
 /Release
 /Drivers
+/Middlewares
 /.settings
 /Startup
 .cproject
