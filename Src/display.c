@@ -9,6 +9,6 @@
 
 uint16_t linebuf[304];
 
-void disp_clear(uint16_t bgcolor) {
-	ILI9341_fillArea(8, 24, 311, 215, bgcolor);
-}
+//void disp_clear(uint16_t bgcolor) {
+//	ILI9341_fillArea(8, 24, 311, 215, bgcolor);
+//}

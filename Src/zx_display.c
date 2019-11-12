@@ -18,7 +18,7 @@ uint16_t zx_border_color;
 void ZXdisp_Init() {
 	ZXvideomem = get_ZX_videomem();
 	ILI9341_Init();
-	disp_clear(BLACK);
+	DISP_CLEAR(BLACK);
 	lnum = 0;
 	frnum = 0;
 	zx_border_color = 0;

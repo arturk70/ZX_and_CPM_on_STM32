@@ -118,17 +118,14 @@ int main(void)
 		cpmdisp_puts("\n\n    Press <6> for ZX Spectrum\n");
 		cpmdisp_puts("    Press <7> for CP/M\n");
 		cpmdisp_puts("    Press <8> for ZX memory test\n");
-		cpmdisp_puts("    Press <9> for CP/M memory test\n");
+		cpmdisp_puts("    Press <9> for SD dir\n");
 		cpmdisp_puts("    Press <0> for brightness\n");
 		cpmdisp_puts("    >");
 
 		do { sym = cpmkbd_read(); } while('\0' == sym);
 		cpmdisp_putc(sym);
-		if((sym == '8') || (sym == '9')) {
-			if(sym == '8')
-				mem_Init(MEMTYPE_ZX);
-			else
-				mem_Init(MEMTYPE_CPM);
+		if(sym == '8') {
+			mem_Init(MEMTYPE_ZX);
 
 			char buf[20];
 
@@ -145,8 +142,48 @@ int main(void)
 			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
 			cpmdisp_puts("!\n");
 		}
+		else if(sym == '9') {
+			cpmdisp_putc('\n');
+
+			char buf[20];
+			FATFS fs;
+			DIR dir;
+			FILINFO fi;
+			FRESULT res;
+
+			res = f_mount(&fs, "0", 1);
+			if(res != FR_OK) {
+				cpmdisp_puts("Error mount drive: ");
+				cpmdisp_puts(utoa(res, buf, 10));
+				cpmdisp_putc('\n');
+			}
+
+			res = f_opendir(&dir, "0:/");
+			if(res != FR_OK) {
+				cpmdisp_puts("Error open dir \"0:/\": ");
+				cpmdisp_puts(utoa(res, buf, 10));
+				cpmdisp_putc('\n');
+			}
+
+			do {
+				res = f_readdir(&dir, &fi);
+				if(fi.fname[0] == '\0')
+					break;
+
+				if(fi.fattrib & AM_DIR)
+					cpmdisp_putc('/');
+				cpmdisp_puts(fi.fname);
+				cpmdisp_putc(' ');
+				if(fi.fattrib & AM_DIR)
+					cpmdisp_putc('\n');
+				else {
+					cpmdisp_puts(utoa(fi.fsize, buf, 10));
+					cpmdisp_puts("b\n");
+				}
+			} while(res == FR_OK);
+		}
 		else if(sym == '7') {
-			cpmdisp_deInit();
+//			cpmdisp_deInit();
 			CPMsys_Run();
 		}
 		else if(sym == '0') {
@@ -159,7 +196,7 @@ int main(void)
 				ILI9341_setLEDpwm((sym-'1')*100+100);
 		}
 		else {
-			cpmdisp_deInit();
+//			cpmdisp_deInit();
 			zxsys_Run();
 		}
 		cpmdisp_puts("\n\n");

@@ -51,15 +51,15 @@ void cpmdisp_scroll(uint8_t lnum) {
 
 void cpmdisp_Init() {
 	ILI9341_Init();
-	disp_clear(BG_COLOR);
+	DISP_CLEAR(BG_COLOR);
 	cpmdisp_setcursor(0, 0);
 	for(register uint16_t i=0;i<SCR_WIDTH*SCR_HEIGHT;i++) scrbuf[i]=0x00;
 	drawsymbol(CURSOR_CHAR, cpos[ROW], cpos[COL]);
 }
 
-void cpmdisp_deInit() {
-	disp_clear(BG_COLOR);
-}
+//void cpmdisp_deInit() {
+//	DISP_CLEAR(BG_COLOR);
+//}
 
 void cpmdisp_putc(char c) {
 	if(c == '\0') return;
