@@ -27,11 +27,10 @@ inline static void drawsymbol(uint8_t s, uint8_t row, uint8_t col) {
 				chbuf[l*6+b]=BG_COLOR;
 		}
 		chbuf[l*6+5]=BG_COLOR;
+		chbuf[FNT_WIDTH*(FNT_HEIGHT-2)+l]=BG_COLOR;
+		chbuf[FNT_WIDTH*(FNT_HEIGHT-1)+l]=BG_COLOR;
 	}
-	for(register uint8_t b=0;b<6;b++) {
-		chbuf[FNT_WIDTH*(FNT_HEIGHT-2)+b]=BG_COLOR;
-		chbuf[FNT_WIDTH*(FNT_HEIGHT-1)+b]=BG_COLOR;
-	}
+
 	ILI9341_sendBuf(
 			CPMD_START_POS+col*FNT_WIDTH,
 			CPMD_START_LINE+row*FNT_HEIGHT,
