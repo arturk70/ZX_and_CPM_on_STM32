@@ -108,7 +108,7 @@ typedef struct {
   uint8_t iff1, iff2, im;
   regpair* hlixiyptr; //pointer to HL or IX or IY register for DD/FD prefixes
   int8_t ixiyshift;
-} z80_registers;
+} z80_registers_t;
 
 typedef struct {
 	uint8_t halted;
@@ -117,10 +117,10 @@ typedef struct {
 	int16_t nmi_req;
 	uint8_t int_blocked;//interrupt can be blocked for next command by prefixes or EI
 
-} z80_state;
+} z80_state_t;
 
-extern z80_registers regs;
-extern z80_state state;
+extern z80_registers_t regs;
+extern z80_state_t state;
 
 extern void (*port_out)(uint16_t addr, uint8_t data);
 extern uint8_t (*port_in)(uint16_t addr);

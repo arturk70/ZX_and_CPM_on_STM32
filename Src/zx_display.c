@@ -9,6 +9,8 @@
 #include "stdlib.h"
 #include "memory.h"
 
+uint16_t linebuf[304];
+
 static uint8_t *ZXvideomem;
 static uint8_t lnum;
 static uint8_t frnum;
@@ -18,7 +20,7 @@ uint16_t zx_border_color;
 void ZXdisp_Init() {
 	ZXvideomem = get_ZX_videomem();
 	ILI9341_Init();
-	DISP_CLEAR(BLACK);
+	CLEAR_DISP(BLACK);
 	lnum = 0;
 	frnum = 0;
 	zx_border_color = 0;

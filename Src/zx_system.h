@@ -14,6 +14,8 @@
 #include "z80.h"
 #include "kbd_driver.h"
 
+extern uint8_t zxsys_isrun;
+
 void zxsys_Run();
 void zxports_out(uint16_t addr, uint8_t data);
 uint8_t zxports_in(uint16_t addr);

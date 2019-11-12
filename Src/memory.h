@@ -16,6 +16,7 @@
 uint8_t mem_read(uint16_t addr);
 void mem_write(uint16_t addr, uint8_t data);
 void mem_Init(uint8_t type);
+void mem_deInit();
 //void mem_clear();
 uint16_t mem_test();
 uint16_t mem_rnd_test();

@@ -9,7 +9,7 @@
 #define ZX_DISPLAY_H_
 
 #include "main.h"
-#include "display.h"
+#include "ili9341_driver.h"
 
 #define ZX_LINES		192
 #define ZX_PIXELS		256

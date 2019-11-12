@@ -10,61 +10,66 @@
 #include "ZXROM.h"
 #include "CPMROM.h"
 
-#define EXTRAMSIZE	(ILI9341_PWIDTH*24*2+(ILI9341_PHEIGHT-24*2)*8*2)*2
-#define INTRAMSIZE	(49152-EXTRAMSIZE)
+#define ZXROMSIZE	0x4000
+#define INTRAMSIZE	0x2000
+#define INTRAMSIZE2	0x0400
 
-static uint16_t RAM_ROM_splitaddr;
 static uint8_t mem_type;
 static uint8_t mem[INTRAMSIZE];
+static uint8_t mem2[INTRAMSIZE2];
 
 uint8_t *get_ZX_videomem() { if(mem_type == MEMTYPE_ZX) return mem; else return 0x00000000; }
 
 uint8_t mem_read(uint16_t addr) {
 	if(mem_type == MEMTYPE_ZX) {
-		if(addr < RAM_ROM_splitaddr)
+		if(addr < ZXROMSIZE)
 			return ZXROM[addr];
-		else if(addr < (RAM_ROM_splitaddr+INTRAMSIZE))
-			return mem[addr - RAM_ROM_splitaddr];
+		else if(addr < (ZXROMSIZE + INTRAMSIZE))
+			return mem[addr - ZXROMSIZE];
+		else if(addr > (0xffff - INTRAMSIZE2))
+					return mem2[addr - (0xffff - INTRAMSIZE2 + 1)];
 		else
-			return extmem_read(addr - RAM_ROM_splitaddr - INTRAMSIZE);
+			return extmem_read(addr);
 	}
 	else {
-		if(addr >= RAM_ROM_splitaddr)
-			return CPMROM[addr-RAM_ROM_splitaddr];
-		else if(addr < INTRAMSIZE)
-			return mem[addr];
+		if(addr < INTRAMSIZE2)
+			return mem2[addr];
+		else if(addr > (0xffff - INTRAMSIZE))
+			return mem[addr - (0xffff - INTRAMSIZE + 1)];
 		else
-			return extmem_read(addr-INTRAMSIZE);
+			return extmem_read(addr);
 	}
 }
 
 void mem_write(uint16_t addr, uint8_t data) {
 	if(mem_type == MEMTYPE_ZX) {
-		if(addr < RAM_ROM_splitaddr)
-			return;
-		else if(addr < (RAM_ROM_splitaddr+INTRAMSIZE))
-			mem[addr - RAM_ROM_splitaddr] = data;
-		else
-			extmem_write(addr - RAM_ROM_splitaddr - INTRAMSIZE, data);
-	}
-	else {
-		if(addr >= RAM_ROM_splitaddr)
-			return;
-		else if(addr < INTRAMSIZE)
-			mem[addr] = data;
-		else
-			extmem_write(addr-INTRAMSIZE, data);
-	}
+			if(addr < ZXROMSIZE)
+				return;
+			else if(addr < (ZXROMSIZE + INTRAMSIZE))
+				mem[addr - ZXROMSIZE] = data;
+			else if(addr > (0xffff - INTRAMSIZE2))
+				mem2[addr - (0xffff - INTRAMSIZE2 + 1)] = data;
+			else
+				extmem_write(addr, data);
+		}
+		else {
+			if(addr < INTRAMSIZE2)
+				mem2[addr] = data;
+			else if(addr > (0xffff - INTRAMSIZE))
+				mem[addr - (0xffff - INTRAMSIZE + 1)] = data;
+			else
+				extmem_write(addr, data);
+		}
 }
 
 void mem_Init(uint8_t type) {
 	mem_type = type;
-	if(mem_type == MEMTYPE_ZX)
-		RAM_ROM_splitaddr = 0x4000;
-	else
-		RAM_ROM_splitaddr = 0xC000;
 
 	extmem_Init();
+}
+
+void mem_deInit() {
+	extmem_deInit();
 }
 
 //void mem_clear() {
@@ -77,13 +82,11 @@ void mem_Init(uint8_t type) {
 
 uint16_t mem_test() {
 	register uint16_t errcount = 0;
-	register uint16_t straddr, endaddr;
+	register uint16_t straddr, endaddr = 0xffff;
 	if(mem_type == MEMTYPE_ZX) {
-		straddr = RAM_ROM_splitaddr;
-		endaddr = 0xffff;
+		straddr = ZXROMSIZE;
 	} else {
 		straddr = 0;
-		endaddr = RAM_ROM_splitaddr - 1;
 	}
 
 	uint8_t tst[50];
@@ -109,13 +112,11 @@ uint16_t mem_test() {
 uint16_t mem_rnd_test() {
 	register uint8_t tmp;
 	register uint16_t errcount = 0;
-	register uint16_t straddr, endaddr;
+	register uint16_t straddr, endaddr = 0xffff;
 	if(mem_type == MEMTYPE_ZX) {
-		straddr = RAM_ROM_splitaddr;
-		endaddr = 0xffff;
+		straddr = ZXROMSIZE;
 	} else {
 		straddr = 0;
-		endaddr = RAM_ROM_splitaddr - 1;
 	}
 
 #ifndef __SIMULATION

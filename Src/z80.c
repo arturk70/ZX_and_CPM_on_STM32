@@ -8,8 +8,8 @@
 #include "z80_ops.h"
 #include "z80.h"
 
-z80_registers regs;
-z80_state state;
+z80_registers_t regs;
+z80_state_t state;
 
 void (*port_out)(uint16_t addr, uint8_t data);
 uint8_t (*port_in)(uint16_t addr);

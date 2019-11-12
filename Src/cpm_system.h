@@ -14,6 +14,6 @@
 #include "z80.h"
 #include "kbd_driver.h"
 
-void CPMsys_Run();
+void cpmsys_Run();
 
 #endif /* CPM_SYSTEM_H_ */

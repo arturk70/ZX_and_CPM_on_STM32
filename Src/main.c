@@ -112,94 +112,114 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	while (1)
-	{
-		char sym;
-		cpmdisp_puts("\n\n    Press <6> for ZX Spectrum\n");
-		cpmdisp_puts("    Press <7> for CP/M\n");
-		cpmdisp_puts("    Press <8> for ZX memory test\n");
-		cpmdisp_puts("    Press <9> for SD dir\n");
-		cpmdisp_puts("    Press <0> for brightness\n");
-		cpmdisp_puts("    >");
+  char buf[20];
 
-		do { sym = cpmkbd_read(); } while('\0' == sym);
-		cpmdisp_putc(sym);
-		if(sym == '8') {
-			mem_Init(MEMTYPE_ZX);
+  	FATFS fs;
+  	FRESULT res;
 
-			char buf[20];
+  	res = f_mount(&fs, "0", 1);
+  	if(res != FR_OK) {
+  		cpmdisp_puts("Error mount drive: ");
+  		cpmdisp_puts(utoa(res, buf, 10));
+  		cpmdisp_putc('\n');
+  	}
 
-			uint16_t errors = mem_test();
-			cpmdisp_puts("\n\n\n\n\n    Linear memory test: ");
-			if(0 == errors) cpmdisp_puts("successfully");
-			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
-			cpmdisp_puts("!\n\nPress any key for continue\n");
-			do { sym = cpmkbd_read(); } while('\0' == sym);
+  	while (1) {
+  		char sym = '\0';
+  		cpmdisp_puts("\n\n    Press <6> for ZX Spectrum\n");
+  		cpmdisp_puts("    Press <7> for CP/M\n");
+  		cpmdisp_puts("    Press <8> for ZX memory test\n");
+  		cpmdisp_puts("    Press <9> for SD dir\n");
+  		cpmdisp_puts("    Press <0> for brightness\n");
+  		cpmdisp_puts("    >");
 
-			errors = mem_rnd_test();
-			cpmdisp_puts("\n\n    Random memory test: ");
-			if(0 == errors) cpmdisp_puts("successfully");
-			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
-			cpmdisp_puts("!\n");
-		}
-		else if(sym == '9') {
-			cpmdisp_putc('\n');
+  		do { sym = cpmkbd_read(); } while('\0' == sym);
+  		cpmdisp_putc(sym);
+  		if(sym == '6') {
+  			zxsys_Run();
+  			CLEAR_DISP(BG_COLOR);
+  		}
+  		else if(sym == '7') {
+  			cpmsys_Run();
+  			CLEAR_DISP(BG_COLOR);
+  		}
+  		else if(sym == '8') {
+  			mem_Init(MEMTYPE_ZX);
 
-			char buf[20];
-			FATFS fs;
-			DIR dir;
-			FILINFO fi;
-			FRESULT res;
+  			uint16_t errors = mem_test();
+  			cpmdisp_puts("\n\n\n\n\n    Linear memory test: ");
+  			if(0 == errors) cpmdisp_puts("successfully");
+  			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
+  			cpmdisp_puts("!\n\nPress any key for continue\n");
+  			do { sym = cpmkbd_read(); } while('\0' == sym);
 
-			res = f_mount(&fs, "0", 1);
-			if(res != FR_OK) {
-				cpmdisp_puts("Error mount drive: ");
-				cpmdisp_puts(utoa(res, buf, 10));
-				cpmdisp_putc('\n');
-			}
+  			errors = mem_rnd_test();
+  			cpmdisp_puts("\n\n    Random memory test: ");
+  			if(0 == errors) cpmdisp_puts("successfully");
+  			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
+  			cpmdisp_puts("!\n");
 
-			res = f_opendir(&dir, "0:/");
-			if(res != FR_OK) {
-				cpmdisp_puts("Error open dir \"0:/\": ");
-				cpmdisp_puts(utoa(res, buf, 10));
-				cpmdisp_putc('\n');
-			}
+  			mem_deInit();
+  		}
+  		else if(sym == '9') {
+  			cpmdisp_puts("\nEnter dir:>");
 
-			do {
-				res = f_readdir(&dir, &fi);
-				if(fi.fname[0] == '\0')
-					break;
+  			sym = '\0';
+  			char dpath[100];
+  			dpath[0] = '0';
+  			dpath[1] = ':';
+  			dpath[2] = '\0';
+  			uint8_t dpptr = 2;
+  			while(1) {
+  				do { sym = cpmkbd_read(); } while('\0' == sym);
+  				cpmdisp_putc(sym);
+  				if('\n' == sym) break;
+  				dpath[dpptr] = sym;
+  				dpath[++dpptr] = '\0';
+  			}
 
-				if(fi.fattrib & AM_DIR)
-					cpmdisp_putc('/');
-				cpmdisp_puts(fi.fname);
-				cpmdisp_putc(' ');
-				if(fi.fattrib & AM_DIR)
-					cpmdisp_putc('\n');
-				else {
-					cpmdisp_puts(utoa(fi.fsize, buf, 10));
-					cpmdisp_puts("b\n");
-				}
-			} while(res == FR_OK);
-		}
-		else if(sym == '7') {
-//			cpmdisp_deInit();
-			CPMsys_Run();
-		}
-		else if(sym == '0') {
-			cpmdisp_puts("\n\nEnter brightness[1-0]=[10%-100%]>");
-			do { sym = cpmkbd_read(); } while('\0' == sym);
-			cpmdisp_putc(sym);
-			if('0' == sym)
-				ILI9341_setLEDpwm(1000);
-			else if((sym >= '1') &(sym <= '9'))
-				ILI9341_setLEDpwm((sym-'1')*100+100);
-		}
-		else {
-//			cpmdisp_deInit();
-			zxsys_Run();
-		}
-		cpmdisp_puts("\n\n");
+  			DIR dir;
+  			FILINFO fi;
+
+  			res = f_opendir(&dir, dpath);
+  			if(res != FR_OK) {
+  				cpmdisp_puts("Error open dir \"");
+  				cpmdisp_puts(dpath);
+  				cpmdisp_puts("\": ");
+  				cpmdisp_puts(utoa(res, buf, 10));
+  				cpmdisp_putc('\n');
+  			}
+
+  			do {
+  				res = f_readdir(&dir, &fi);
+  				if(fi.fname[0] == '\0')
+  					break;
+
+  				if(fi.fattrib & AM_DIR)
+  					cpmdisp_putc('/');
+  				cpmdisp_puts(fi.fname);
+  				cpmdisp_putc(' ');
+  				if(fi.fattrib & AM_DIR)
+  					cpmdisp_putc('\n');
+  				else {
+  					cpmdisp_puts(utoa(fi.fsize, buf, 10));
+  					cpmdisp_puts("b\n");
+  				}
+  			} while(res == FR_OK);
+
+  			f_closedir(&dir);
+  		}
+  		else if(sym == '0') {
+  			cpmdisp_puts("\n\nEnter brightness[1-0]=[10%-100%]>");
+  			do { sym = cpmkbd_read(); } while('\0' == sym);
+  			cpmdisp_putc(sym);
+  			if('0' == sym)
+  				ILI9341_setLEDpwm(1000);
+  			else if((sym >= '1') &(sym <= '9'))
+  				ILI9341_setLEDpwm((sym-'1')*100+100);
+  		}
+
+  		cpmdisp_puts("\n\n");
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

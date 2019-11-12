@@ -8,10 +8,10 @@
 #ifndef CPM_DISPLAY_H_
 #define CPM_DISPLAY_H_
 
-#include "display.h"
+#include "ili9341_driver.h"
 
-#define SCR_WIDTH	50
-#define SCR_HEIGHT	24
+#define SCR_WIDTH	52
+#define SCR_HEIGHT	30
 
 #define FNT_WIDTH	6
 #define FNT_HEIGHT	8

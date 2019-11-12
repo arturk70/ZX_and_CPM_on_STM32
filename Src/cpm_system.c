@@ -8,7 +8,7 @@
 #include "stdlib.h"
 #include "cpm_system.h"
 
-void CPMsys_Run() {
+void cpmsys_Run() {
 	cpmdisp_Init();
 	mem_Init(MEMTYPE_CPM);
 
@@ -23,4 +23,5 @@ void CPMsys_Run() {
 	cpmdisp_puts(utoa(reg[1], buf, 16));
 	cpmdisp_putc('\n');
 
+	mem_deInit();
 }
