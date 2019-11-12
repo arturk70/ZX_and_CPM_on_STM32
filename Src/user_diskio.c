@@ -84,9 +84,8 @@ DSTATUS USER_initialize (
 {
   /* USER CODE BEGIN INIT */
     Stat = STA_NOINIT;
-    uint8_t error = SD_init();
 
-    if((pdrv == 0) && (!error))
+    if(!SD_init())
     	Stat &= ~STA_NOINIT;
 
     return Stat;
@@ -105,7 +104,7 @@ DSTATUS USER_status (
   /* USER CODE BEGIN STATUS */
     Stat = STA_NOINIT;
 
-    if((pdrv == 0) && (sd_info.type != SD_UNKNOWN))
+    if(sd_info.type != SD_UNKNOWN)
     	Stat &= ~STA_NOINIT;
     return Stat;
   /* USER CODE END STATUS */
@@ -127,9 +126,6 @@ DRESULT USER_read (
 )
 {
   /* USER CODE BEGIN READ */
-	if(pdrv != 0)
-		return RES_ERROR;
-
 	for(register int i=0; i<count; i++) {
 		if(SD_readblock(sector, &buff[i*512]) != 0)
 			return RES_ERROR;
@@ -157,9 +153,6 @@ DRESULT USER_write (
 { 
   /* USER CODE BEGIN WRITE */
   /* USER CODE HERE */
-	if(pdrv != 0)
-		return RES_ERROR;
-
 	for(register int i=0; i<count; i++) {
 		if(SD_writeblock(sector, &buff[i*512]) != 0)
 			return RES_ERROR;
@@ -185,27 +178,20 @@ DRESULT USER_ioctl (
 )
 {
   /* USER CODE BEGIN IOCTL */
-    register DRESULT res = RES_ERROR;
+    register DRESULT res = RES_OK;
 
     switch (cmd)
 	{
-	case CTRL_SYNC:
-	  res = RES_OK;
-	  break;
-
 	case GET_SECTOR_COUNT:
 	  *(DWORD*)buff = sd_info.size * 2;
-	  res = RES_OK;
 	  break;
 
 	case GET_SECTOR_SIZE:
 	  *(DWORD*)buff = 512;
-	  res= RES_OK;
 	  break;
 
 	case GET_BLOCK_SIZE:
 	  *(DWORD*)buff = 512;
-	  res= RES_OK;
 	  break;
 	}
 

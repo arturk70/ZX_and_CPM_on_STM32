@@ -114,13 +114,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   char buf[20];
 
-  	FATFS fs;
-  	FRESULT res;
-
-  	res = f_mount(&fs, "0", 1);
-  	if(res != FR_OK) {
+  	retUSER = f_mount(&USERFatFS, "0", 1);
+  	if(retUSER != FR_OK) {
   		cpmdisp_puts("Error mount drive: ");
-  		cpmdisp_puts(utoa(res, buf, 10));
+  		cpmdisp_puts(utoa(retUSER, buf, 10));
   		cpmdisp_putc('\n');
   	}
 
@@ -137,11 +134,11 @@ int main(void)
   		cpmdisp_putc(sym);
   		if(sym == '6') {
   			zxsys_Run();
-  			CLEAR_DISP(BG_COLOR);
+  			ILI9341_clear(BG_COLOR);
   		}
   		else if(sym == '7') {
   			cpmsys_Run();
-  			CLEAR_DISP(BG_COLOR);
+  			ILI9341_clear(BG_COLOR);
   		}
   		else if(sym == '8') {
   			mem_Init(MEMTYPE_ZX);
@@ -181,17 +178,17 @@ int main(void)
   			DIR dir;
   			FILINFO fi;
 
-  			res = f_opendir(&dir, dpath);
-  			if(res != FR_OK) {
+  			retUSER = f_opendir(&dir, dpath);
+  			if(retUSER != FR_OK) {
   				cpmdisp_puts("Error open dir \"");
   				cpmdisp_puts(dpath);
   				cpmdisp_puts("\": ");
-  				cpmdisp_puts(utoa(res, buf, 10));
+  				cpmdisp_puts(utoa(retUSER, buf, 10));
   				cpmdisp_putc('\n');
   			}
 
   			do {
-  				res = f_readdir(&dir, &fi);
+  				retUSER = f_readdir(&dir, &fi);
   				if(fi.fname[0] == '\0')
   					break;
 
@@ -205,7 +202,7 @@ int main(void)
   					cpmdisp_puts(utoa(fi.fsize, buf, 10));
   					cpmdisp_puts("b\n");
   				}
-  			} while(res == FR_OK);
+  			} while(retUSER == FR_OK);
 
   			f_closedir(&dir);
   		}

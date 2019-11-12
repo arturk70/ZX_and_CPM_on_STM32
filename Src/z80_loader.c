@@ -4,6 +4,8 @@
  *  Created on: Nov 12, 2019
  *      Author: artur
  */
+#include "stdlib.h"
+#include "fatfs.h"
 #include "z80_loader.h"
 
 void z80_load() {
@@ -91,7 +93,7 @@ void z80_load() {
 
 #define BUFSIZE	512
 				uint8_t buf[BUFSIZE], b12;
-				uint32_t size = BUFSIZE;
+				UINT size = BUFSIZE;
 
 				res = f_read(&z80f, buf, 30, &size);
 				if(res != FR_OK) {
@@ -137,7 +139,7 @@ void z80_load() {
 					zx_border_color = (((b12 << 9) & 0x0800) | ((b12 << 3) & 0x0040) | ((b12 >> 1) & 0x0001)) * 0x18;
 					// (b12 & 0x20) --- RLE compression used
 
-					register addr = 0x4000;
+					register uint16_t addr = 0x4000;
 					while(f_read(&z80f, buf, BUFSIZE, &size) == FR_OK) {
 						for(uint16_t i=0;i<size;i++) {
 							//TODO RLE decompression
@@ -154,5 +156,5 @@ void z80_load() {
 		}
 	}
 
-	CLEAR_DISP(BG_COLOR);
+	ILI9341_clear(BG_COLOR);
 }

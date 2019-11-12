@@ -9,7 +9,6 @@
 #define EXT_MEMORY_H_
 
 #include "main.h"
-#include "fatfs.h"
 
 #define CACHE_BLOCK_SIZE	512
 #define CACHE_BLOCKS_NUM	8

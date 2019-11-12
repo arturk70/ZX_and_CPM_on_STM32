@@ -20,7 +20,7 @@ uint8_t zxkbd_scan(uint8_t addr) {
 	register uint32_t pA, pB;
 
 	pB = LL_GPIO_ReadOutputPort(KBDA_8_GPIO_Port);
-	LL_GPIO_WriteOutputPort(KBDA_8_GPIO_Port, (pB & 0xfffff807) | ((uint32_t)addr)<<3);
+	LL_GPIO_WriteOutputPort(KBDA_8_GPIO_Port, (pB & 0xfffff807) | ((uint32_t)addr)<<3);//PB3-PB10
 	pA = LL_GPIO_ReadInputPort(KBD_2_GPIO_Port);
 	pB = LL_GPIO_ReadInputPort(KBD_0_GPIO_Port);
 	scan = 0x1f & (pB | 0xfffffffc) & ((pB | 0xfffff7ff) >> 7) & (((pA | 0xfffffffe) << 2) | 0xfffffffb) & (((pA | 0xfffffffb) << 1) | 0xfffffff7);
@@ -37,6 +37,7 @@ uint8_t zxkbd_scan(uint8_t addr) {
 }
 
 char cpmkbd_read() {
+	//TODO optimize algorithm
 	register char res='\0';
 	uint8_t kbdscans[8];
 

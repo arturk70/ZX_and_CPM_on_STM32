@@ -48,8 +48,6 @@
 extern uint8_t ili9341_image[ILI9341_PWIDTH*ILI9341_PHEIGHT*3];
 #endif
 
-#define CLEAR_DISP(color)	{ILI9341_fillArea(0,0,ILI9341_PWIDTH-1,ILI9341_PHEIGHT/2-1,color); ILI9341_fillArea(0,ILI9341_PHEIGHT/2,ILI9341_PWIDTH-1,ILI9341_PHEIGHT-1,color);}
-
 extern uint8_t ILI9341_DMA_busy;
 
 void ILI9341_Init();
@@ -57,8 +55,9 @@ void ILI9341_sendCommand(uint8_t com);
 void ILI9341_sendData(uint8_t data);
 void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf, uint16_t len);
-void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf, uint16_t len);
+//void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf, uint16_t len);
 void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
+void ILI9341_clear(uint16_t color);
 
 void ILI9341_setLEDpwm(uint16_t val);
 

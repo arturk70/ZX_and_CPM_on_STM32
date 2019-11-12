@@ -123,7 +123,7 @@ uint16_t mem_rnd_test() {
 	srand(SysTick->VAL);
 #endif
 	register uint16_t addr;
-	for(register uint16_t i=0; i<0xffff; i++) {
+	for(register uint16_t i=0; i<0x0fff; i++) {
 		tmp = (uint8_t)rand();
 		addr = (uint16_t)rand();
 		if((addr >= straddr) && (addr <= endaddr)) {

@@ -50,27 +50,24 @@ void cpmdisp_scroll(uint8_t lnum) {
 
 void cpmdisp_Init() {
 	ILI9341_Init();
-	CLEAR_DISP(BG_COLOR);
+	ILI9341_clear(BG_COLOR);
 	cpmdisp_setcursor(0, 0);
 	for(register uint16_t i=0;i<SCR_WIDTH*SCR_HEIGHT;i++) scrbuf[i]=0x00;
 	drawsymbol(CURSOR_CHAR, cpos[ROW], cpos[COL]);
 }
 
 //void cpmdisp_deInit() {
-//	DISP_CLEAR(BG_COLOR);
+//	ILI9341_clear(BG_COLOR);
 //}
 
 void cpmdisp_putc(char c) {
+	register uint8_t newline = 0;
 	if(c == '\0') return;
 	if(c == '\n') {
 		for(register uint8_t i=cpos[COL]; i< SCR_WIDTH; i++)
 			scrbuf[cpos[ROW]*SCR_WIDTH+i] = 0x00;
 		drawsymbol(0x00, cpos[ROW], cpos[COL]);
-		cpos[COL]=0;
-		if(++cpos[ROW] == SCR_HEIGHT) {
-			cpmdisp_scroll(1);
-			cpos[ROW] = SCR_HEIGHT-1;
-		}
+		newline = 1;
 	} else {
 		//draw symbol
 		if(c < 0x20)
@@ -82,13 +79,18 @@ void cpmdisp_putc(char c) {
 		drawsymbol((uint8_t)c, cpos[ROW], cpos[COL]);
 
 		if(++cpos[COL] == SCR_WIDTH) {
-			cpos[COL] = 0;
-			if(++cpos[ROW] == SCR_HEIGHT) {
-				cpmdisp_scroll(1);
-				cpos[ROW] = SCR_HEIGHT-1;
-			}
+			newline = 1;
 		}
 	}
+
+	if(newline) {
+		cpos[COL] = 0;
+		if(++cpos[ROW] == SCR_HEIGHT) {
+			cpmdisp_scroll(1);
+			cpos[ROW] = SCR_HEIGHT-1;
+		}
+	}
+
 	drawsymbol(CURSOR_CHAR, cpos[ROW], cpos[COL]);
 }
 

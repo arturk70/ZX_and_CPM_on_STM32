@@ -505,6 +505,7 @@ void ALx(uint8_t code, int8_t *tstates) {
 }
 
 void ALn(uint8_t code, int8_t *tstates) {
+	//TODO optimize F settings
 	register uint8_t tmp1 = mem_read(PC++);
 	register int16_t tmp2;
 	switch ((code & 0x38) >> 3) {
