@@ -136,38 +136,38 @@ void IM_2(uint8_t code, int8_t *tstates) {
 }
 
 void LDn(uint8_t code, int8_t *tstates) {
+	register int8_t tmp;
+	register int8_t ixiyshift = 0;
+
+	if((code == 0x36) && IS_DDFD_PREFIX) {
+		ixiyshift = mem_read(PC++);
+	}
+	tmp = mem_read(PC++);
+
 	switch (code >> 3) {
 	case 0x00://LD  B,*
-		B = mem_read(PC++);
+		B = tmp;
 		break;
 	case 0x02://LD  D,*
-		D = mem_read(PC++);
+		D = tmp;
 		break;
 	case 0x04://LD  H,*
-		HLIXIY_REGH = mem_read(PC++);
+		HLIXIY_REGH = tmp;
 		break;
 	case 0x06://LD  (HL),*
-	{
-		register int8_t tmp;
-		register int8_t ixiyshift = 0;
-		if(IS_DDFD_PREFIX) {
-			ixiyshift = mem_read(PC++);
-		}
-		tmp = mem_read(PC++);
 		mem_write(HLIXIY_REG+ixiyshift, tmp);
 		break;
-	}
 	case 0x01://LD  C,*
-		C = mem_read(PC++);
+		C = tmp;
 		break;
 	case 0x03://LD  E,*
-		E = mem_read(PC++);
+		E = tmp;
 		break;
 	case 0x05://LD  L,*
-		HLIXIY_REGL = mem_read(PC++);
+		HLIXIY_REGL = tmp;
 		break;
 	case 0x07://LD  A,*
-		A = mem_read(PC++);
+		A = tmp;
 		break;
 	}
 }
@@ -193,40 +193,41 @@ void LDx(uint8_t code, int8_t *tstates) {
 }
 
 void LDm(uint8_t code, int8_t *tstates) {
-	register uint16_t tmp;
-	if((code >> 3) > 0x03) {
-		tmp = mem_read(PC++);
-		tmp |= mem_read(PC++) << 8;
+	register uint16_t addr;
+	register uint8_t tmp, hcode;
+	hcode = code & 0xf0;
+	if(hcode  > 0x10) { // (**) ops: LD (**),HL ; LD (**),A ; LD HL,(**) ; LD A,(**)
+		addr = mem_read(PC++);
+		addr |= mem_read(PC++) << 8;
+	}
+	else {
+		if(code & 0xf0)
+			addr = DE;
+		else
+			addr = BC;
 	}
 
-	switch (code >> 3) {
-	case 0x00://LD (BC),A
-		mem_write(BC, A);
-		break;
-	case 0x02://LD (DE),A
-		mem_write(DE, A);
-		break;
-	case 0x04://LD (**),HL
-		mem_write(tmp++, HLIXIY_REGL);
-		mem_write(tmp, HLIXIY_REGH);
-		break;
-	case 0x06://LD (**),A
-		mem_write(tmp, A);
-		break;
-	case 0x01://LD A,(BC)
-		A = mem_read(BC);
-		break;
-	case 0x03://LD A,(DE)
-		A = mem_read(DE);
-		break;
-	case 0x05://LD HL,(**)
-		HLIXIY_REGL = mem_read(tmp++);
-		HLIXIY_REGH = mem_read(tmp);
-		break;
-	case 0x07://LD A,(**)
-		A = mem_read(tmp);
-		break;
+	if(hcode == 0x20) //for HL
+		tmp = HLIXIY_REGL;
+	else
+		tmp = A;
+
+	if(code & 0x08) //read
+		tmp = mem_read(addr);
+	else //write
+		mem_write(addr, tmp);
+
+	if(hcode == 0x20) {//for HL
+		if(code & 0x08) {//read
+			HLIXIY_REGL = tmp;
+			HLIXIY_REGH = mem_read(++addr);
+		}
+		else {//write
+			mem_write(++addr, HLIXIY_REGH);
+		}
 	}
+	else
+		A = tmp;
 }
 
 void LDs(uint8_t code, int8_t *tstates) {//LD SP, HL
@@ -248,15 +249,9 @@ void LD_(uint8_t code, int8_t *tstates) {
 	} else if(srcnum == 0x06) {//(HL)
 		tmp = mem_read(HLIXIY_REG + ixiyshift);
 	} else if(srcnum == 0x04) {//H
-		if(code == 0x74)
-			tmp = H;
-		else
-			tmp = HLIXIY_REGH;
+		tmp = (code == 0x74) ? H : HLIXIY_REGH;
 	} else if(srcnum == 0x05) {//L
-		if(code == 0x75)
-			tmp = L;
-		else
-			tmp = HLIXIY_REGL;
+		tmp = (code == 0x75) ? L : HLIXIY_REGL;
 	}else {//other reg
 		tmp = *((uint8_t*)(&regs) + (srcnum^1));
 	}
@@ -320,43 +315,31 @@ void LDIR(uint8_t code, int8_t *tstates) {
 }
 
 void EDLD(uint8_t code, int8_t *tstates) {
-	uint16_t tmp;
-	tmp = mem_read(PC++);
-	tmp |= mem_read(PC++) << 8;
+	register uint16_t addr;
+	register uint16_t* reg;
+	addr = mem_read(PC++);
+	addr |= mem_read(PC++) << 8;
 
-	switch ((code & 0x38) >> 3) {
+	switch ((code & 0x30) >> 4) {
 	case 0x00://LD (**),BC
-		mem_write(tmp++, C);
-		mem_write(tmp, B);
+		reg = &BC;
 		break;
-	case 0x02://LD (**),DE
-		mem_write(tmp++, E);
-		mem_write(tmp, D);
+	case 0x01://LD (**),DE
+		reg = &DE;
 		break;
-	case 0x04://LD (**),HL
-		mem_write(tmp++, L);
-		mem_write(tmp, H);
+	case 0x02://LD (**),HL
+		reg = &HL;
 		break;
-	case 0x06://LD (**),SP
-		mem_write(tmp++, SPL);
-		mem_write(tmp, SPH);
+	case 0x03://LD (**),SP
+		reg = &SP;
 		break;
-	case 0x01://LD BC,(**)
-		C = mem_read(tmp++);
-		B = mem_read(tmp);
-		break;
-	case 0x03://LD DE,(**)
-		E = mem_read(tmp++);
-		D = mem_read(tmp);
-		break;
-	case 0x05://LD HL,(**)
-		L = mem_read(tmp++);
-		H = mem_read(tmp);
-		break;
-	case 0x07://LD SP,(**)
-		SPL = mem_read(tmp++);
-		SPH = mem_read(tmp);
-		break;
+	}
+	if(code & 0x08) {
+		*reg = mem_read(addr) | (mem_read(addr+1) << 8);
+	}
+	else {
+		mem_write(addr, (*reg & 0x00ff));
+		mem_write(addr+1, (*reg >> 8));
 	}
 }
 
@@ -506,44 +489,44 @@ void ALx(uint8_t code, int8_t *tstates) {
 
 void ALn(uint8_t code, int8_t *tstates) {
 	//TODO optimize F settings
-	register uint8_t tmp1 = mem_read(PC++);
-	register int16_t tmp2;
+	register uint8_t src = mem_read(PC++);
+	register int16_t res;
 	switch ((code & 0x38) >> 3) {
 	case 0x00://ADD A,*
-		tmp2 = A + tmp1;
-		F = CALC_C(tmp2) | CALC_ADD_H(A, tmp1, tmp2) | CALC_ADD_V(A, tmp1, tmp2) | (sz53p_table[(tmp2 & 0x00ff)] & ~FLAG_P);
-		A = tmp2;
+		res = A + src;
+		F = CALC_C(res) | CALC_ADD_H(A, src, res) | CALC_ADD_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+		A = res;
 		break;
 	case 0x02://SUB A,*
-		tmp2 = A - tmp1;
-		F = CALC_C(tmp2) | FLAG_N |	CALC_SUB_H(A, tmp1, tmp2) | CALC_SUB_V(A, tmp1, tmp2) | (sz53p_table[(tmp2 & 0x00ff)] & ~FLAG_P);
-		A = tmp2;
+		res = A - src;
+		F = CALC_C(res) | FLAG_N |	CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+		A = res;
 		break;
 	case 0x04://AND *
-		A &= tmp1;
+		A &= src;
 		F = FLAG_H | sz53p_table[A];
 		break;
 	case 0x06://OR *
-		A |= tmp1;
+		A |= src;
 		F = sz53p_table[A];
 		break;
 	case 0x01://ADC A,*
-		tmp2 = A + tmp1 + (F & FLAG_C);
-		F = CALC_C(tmp2) | CALC_ADD_H(A, tmp1, tmp2) | CALC_ADD_V(A, tmp1, tmp2) | (sz53p_table[(tmp2 & 0x00ff)] & ~FLAG_P);
-		A = tmp2;
+		res = A + src + (F & FLAG_C);
+		F = CALC_C(res) | CALC_ADD_H(A, src, res) | CALC_ADD_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+		A = res;
 		break;
 	case 0x03://SBC A,*
-		tmp2 = A - tmp1 - (F & FLAG_C);
-		F = CALC_C(tmp2) | FLAG_N |	CALC_SUB_H(A, tmp1, tmp2) | CALC_SUB_V(A, tmp1, tmp2) | (sz53p_table[(tmp2 & 0x00ff)] & ~FLAG_P);
-		A = tmp2;
+		res = A - src - (F & FLAG_C);
+		F = CALC_C(res) | FLAG_N |	CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+		A = res;
 		break;
 	case 0x05://XOR *
-		A ^= tmp1;
+		A ^= src;
 		F = sz53p_table[A];
 		break;
 	case 0x07://CP *
-		tmp2 = A - tmp1;
-		F = CALC_C(tmp2) | FLAG_N | CALC_SUB_H(A, tmp1, tmp2) | CALC_SUB_V(A, tmp1, tmp2) | (tmp1 & (FLAG_3 | FLAG_5)) | (tmp2 & FLAG_S) | CALC_Z(tmp2);
+		res = A - src;
+		F = CALC_C(res) | FLAG_N | CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (src & (FLAG_3 | FLAG_5)) | (res & FLAG_S) | CALC_Z(res);
 		break;
 	}
 }
