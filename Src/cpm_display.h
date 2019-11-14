@@ -28,7 +28,6 @@
 #define ROW	1
 #define CURSOR_CHAR	0x5f
 
-void cpmdisp_setcursor(uint8_t row, uint8_t col);
 void cpmdisp_Init();
 //void cpmdisp_deInit();
 void cpmdisp_putc(char c);

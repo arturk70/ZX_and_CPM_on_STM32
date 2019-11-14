@@ -104,7 +104,7 @@ static const uint32_t font[] = { //5x6 font
 0x08421084, //'|'
 0x0e426087, //'}'
 0x000001b6, //'~'
-0xffffffff //0x3f18c63f //''
+0x3f18c63f //0x3f18c63f //''
 };
 
 #endif /* CPM_FONT_H_ */

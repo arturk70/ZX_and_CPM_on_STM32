@@ -10,25 +10,44 @@
 #include "cpm_font.h"
 
 static uint8_t cpos[2] = {0,0};
+//static uint8_t escmode = 0;
 static uint16_t chbuf[FNT_WIDTH*FNT_HEIGHT];
-static uint8_t scrbuf[SCR_WIDTH*SCR_HEIGHT];
-
-void cpmdisp_setcursor(uint8_t row, uint8_t col) {
-	cpos[COL] = col; cpos[ROW] = row;
-}
+static uint8_t scrbuf[SCR_HEIGHT][SCR_WIDTH];
 
 //s - index in font table
-inline static void drawsymbol(uint8_t s, uint8_t row, uint8_t col) {
+static void drawsymbol(uint8_t row, uint8_t col, uint8_t inv) {
+	register uint8_t s;
+	register uint32_t fonts;
+	register uint16_t fg, bg;
+
+	s = scrbuf[row][col];
+	if(s < 0x20)
+		s = 0x00;
+	else if(s > 0x7f)
+		s = 0x5f;
+	else
+		s -= 0x20;
+	fonts = font[s];
+
+	if(inv) {
+		fg = BG_COLOR;
+		bg = FG_COLOR;
+	}
+	else {
+		fg = FG_COLOR;
+		bg = BG_COLOR;
+	}
+
 	for(register uint8_t l=0;l<6;l++) {
 		for(register uint8_t b=0;b<5;b++) {
-			if((font[s]>>(l*5+b))&0x00000001)
-				chbuf[l*6+b]=FG_COLOR;
+			if(((fonts>>(l*5+b)) & 0x00000001))
+				chbuf[l*6+6+b]=fg;
 			  else
-				chbuf[l*6+b]=BG_COLOR;
+				chbuf[l*6+6+b]=bg;
 		}
-		chbuf[l*6+5]=BG_COLOR;
-		chbuf[FNT_WIDTH*(FNT_HEIGHT-2)+l]=BG_COLOR;
-		chbuf[FNT_WIDTH*(FNT_HEIGHT-1)+l]=BG_COLOR;
+		chbuf[l*6+6+5]=bg;
+		chbuf[l]=bg;
+		chbuf[FNT_WIDTH*(FNT_HEIGHT-1)+l]=bg;
 	}
 
 	ILI9341_sendBuf(
@@ -39,21 +58,39 @@ inline static void drawsymbol(uint8_t s, uint8_t row, uint8_t col) {
 			chbuf, FNT_WIDTH*FNT_HEIGHT);
 }
 
+static void setcursor(uint8_t row, uint8_t col) {
+
+	drawsymbol(cpos[ROW], cpos[COL], 0);
+	if(row >= SCR_HEIGHT)
+		row = SCR_HEIGHT-1;
+	if(col >= SCR_WIDTH)
+		col = SCR_WIDTH-1;
+	cpos[ROW] = row; cpos[COL] = col;
+	drawsymbol(row, col, 1);
+}
+
 void cpmdisp_scroll(uint8_t lnum) {
-	for(register uint16_t i=0; i< SCR_WIDTH*SCR_HEIGHT-SCR_WIDTH*lnum; i++) {
-		scrbuf[i] = scrbuf[i+SCR_WIDTH*lnum];
-		drawsymbol(scrbuf[i], i/SCR_WIDTH, i%SCR_WIDTH);
+	for(register uint8_t i=0; i< SCR_HEIGHT-lnum; i++) {
+		for(register uint8_t j=0; j< SCR_WIDTH; j++) {
+			scrbuf[i][j] = scrbuf[i+lnum][j];
+			drawsymbol(i, j, 0);
+		}
 	}
+	for(register uint8_t i=SCR_HEIGHT-lnum; i< SCR_HEIGHT; i++)
+		for(register uint8_t j=0; j< SCR_WIDTH; j++)
+			scrbuf[i][j] = 0x00;
 
 	ILI9341_fillArea(CPMD_START_POS, CPMD_END_LINE-FNT_HEIGHT*lnum+1, CPMD_END_POS, CPMD_END_LINE, BG_COLOR);
+	setcursor(SCR_HEIGHT-lnum, 0);
 }
 
 void cpmdisp_Init() {
 	ILI9341_Init();
 	ILI9341_clear(BG_COLOR);
-	cpmdisp_setcursor(0, 0);
-	for(register uint16_t i=0;i<SCR_WIDTH*SCR_HEIGHT;i++) scrbuf[i]=0x00;
-	drawsymbol(CURSOR_CHAR, cpos[ROW], cpos[COL]);
+	for(register uint8_t i=0;i<SCR_HEIGHT;i++)
+		for(register uint8_t j=0; j< SCR_WIDTH; j++)
+			scrbuf[i][j]=0x00;
+	setcursor(0, 0);
 }
 
 //void cpmdisp_deInit() {
@@ -61,37 +98,84 @@ void cpmdisp_Init() {
 //}
 
 void cpmdisp_putc(char c) {
-	register uint8_t newline = 0;
-	if(c == '\0') return;
-	if(c == '\n') {
-		for(register uint8_t i=cpos[COL]; i< SCR_WIDTH; i++)
-			scrbuf[cpos[ROW]*SCR_WIDTH+i] = 0x00;
-		drawsymbol(0x00, cpos[ROW], cpos[COL]);
-		newline = 1;
-	} else {
-		//draw symbol
-		if(c < 0x20)
-			c = 0x20;
-		else
-			c -= 0x20;
+//	if(escmode) {
+//		if(escmode == 2) {
+//			cpos[ROW] = c - 31;
+//			escmode = 3;
+//			return;
+//		}
+//		else if(escmode == 3) {
+//			setcursor(cpos[ROW], c - 31);
+//		}
+//		else if(c == 'Y') {
+//			escmode = 2;
+//			return;
+//		}
+//		else if(c == 'A') {
+//			if(cpos[ROW] > 0)
+//				setcursor(cpos[ROW]-1, cpos[COL]);
+//		}
+//		else if(c == 'B') {
+//			if(cpos[ROW] < SCR_HEIGHT-1)
+//				setcursor(cpos[ROW]+1, cpos[COL]);
+//		}
+//		else if(c == 'C') {
+//			if(cpos[COL] < SCR_WIDTH-1)
+//				setcursor(cpos[ROW], cpos[COL]+1);
+//		}
+//		else if(c == 'D') {
+//			if(cpos[COL] > 0)
+//				setcursor(cpos[ROW], cpos[COL]-1);
+//		}
+//		else if(c == 'H') {
+//			setcursor(0, 0);
+//		}
+//
+//
+//		escmode = 0;
+//		return;
+//	}
 
-		scrbuf[cpos[ROW]*SCR_WIDTH+cpos[COL]] = (uint8_t)c;
-		drawsymbol((uint8_t)c, cpos[ROW], cpos[COL]);
-
-		if(++cpos[COL] == SCR_WIDTH) {
-			newline = 1;
+	if(c == '\0')
+		return;
+	else if(c == 0x08) {//Backspace
+		for(register uint8_t i=cpos[COL]; i<SCR_WIDTH; i++) {
+			scrbuf[cpos[ROW]][i-1] = scrbuf[cpos[ROW]][i];
+			drawsymbol(cpos[ROW], i-1, 0);
+		}
+		scrbuf[cpos[ROW]][SCR_WIDTH-1] = 0x00;
+		drawsymbol(cpos[ROW], SCR_WIDTH-1, 0);
+		if(cpos[COL] > 0) {
+			setcursor(cpos[ROW], cpos[COL]-1);
+		}
+		else {
+			if(cpos[ROW] > 0) {
+				setcursor(cpos[ROW]-1, SCR_WIDTH - 1);
+			}
 		}
 	}
-
-	if(newline) {
-		cpos[COL] = 0;
-		if(++cpos[ROW] == SCR_HEIGHT) {
+//	else if(c == 0x1b) {//ESC
+//		escmode = 1;
+//	}
+	else if(c == '\n') {//Return
+		if(cpos[ROW] == SCR_HEIGHT-1)
 			cpmdisp_scroll(1);
-			cpos[ROW] = SCR_HEIGHT-1;
-		}
-	}
+		else
+			setcursor(cpos[ROW]+1, 0);
+	} else {
+		//draw ASCII symbol
+		scrbuf[cpos[ROW]][cpos[COL]] = (uint8_t)c;
+		drawsymbol(cpos[ROW], cpos[COL], 0);
 
-	drawsymbol(CURSOR_CHAR, cpos[ROW], cpos[COL]);
+		if(cpos[COL] == SCR_WIDTH-1) {
+			if(cpos[ROW] == SCR_HEIGHT-1)
+				cpmdisp_scroll(1);
+			else
+				setcursor(cpos[ROW]+1, 0);
+		}
+		else
+			setcursor(cpos[ROW], cpos[COL]+1);
+	}
 }
 
 void cpmdisp_puts(char *s) {

@@ -27,7 +27,7 @@ void zxsys_Run() {
 //		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
 #endif
 		while(!zx_newline_flag || ILI9341_DMA_busy) {
-//			if(tstates < 1140) // 3500000/192/16 = 1140 - number of tstates for one line drawing
+			if(tstates < 1140) // 3500000/192/16 = 1140 - number of tstates for one line drawing
 				tstates += z80_step();
 		}
 #ifndef __SIMULATION
@@ -55,6 +55,7 @@ void zxports_out(uint16_t addr, uint8_t data) {
 	else if((addr == 0x00ff) & (data == 0x00)) {
 		//exit from ZX spectrum emulator
 		zxsys_isrun = 0;
+		cpmdisp_Init();
 	}
 	else if((addr == 0x00ff) & (data == 0x01)) {
 		//load Z80 snapshot

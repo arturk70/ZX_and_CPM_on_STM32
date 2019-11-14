@@ -133,17 +133,66 @@ void z80_load() {
 					IFF2 = buf[28];
 					IM = buf[29] & 0x03;
 
-					if(b12 == 0xff)
-						b12 = 0x01;
+//					if(b12 == 0xff)
+//						b12 = 0x01;
 					R = (R & 0x7f) | (b12 << 7);
 					zx_border_color = (((b12 << 9) & 0x0800) | ((b12 << 3) & 0x0040) | ((b12 >> 1) & 0x0001)) * 0x18;
 					// (b12 & 0x20) --- RLE compression used
 
 					register uint16_t addr = 0x4000;
+					register uint8_t num = 0, edflag = 0, rle = 0;
 					while(f_read(&z80f, buf, BUFSIZE, &size) == FR_OK) {
-						for(uint16_t i=0;i<size;i++) {
-							//TODO RLE decompression
-							mem_write(addr++, buf[i]);
+						for(register uint16_t i=0;i<size;i++) {
+							if(buf[i] == 0x00 && buf[i+1] == 0xed && buf[i+2] == 0xed && buf[i+3] == 0x00) {//end of Z80 marker found
+								break;
+							}
+
+							if(addr == 0) { //end of memory reached
+#ifdef	__SIMULATION
+								printf("Error while load Z80 snapshot: end of memory.");
+#endif
+							}
+
+							if(rle) {
+								if(num) {
+									rle = buf[i];
+									for(register uint8_t j=0; j<num; j++)
+										mem_write(addr++, rle);
+
+									num = 0;
+									rle = 0;
+								}
+								else {
+									num = buf[i];
+									if(num < 0x05 && !(num == 0x02 && buf[i+1] == 0xed)) {
+#ifdef	__SIMULATION
+										printf("Error while load Z80 snapshot: incorrect number in RLE block");
+#endif
+										return;
+									}
+								}
+
+							}
+							else {
+								if(edflag) {
+									if(buf[i] == 0xed) {//rle block found
+										rle = 1;
+									}
+									else {
+										mem_write(addr++, 0xed);
+										mem_write(addr++, buf[i]);
+									}
+
+									edflag = 0;
+								}
+								else {
+									if((b12 & 0x20) && (buf[i] == 0xed)) {
+										edflag = 1;
+									}
+									else
+										mem_write(addr++, buf[i]);
+								}
+							}
 						}
 
 						if(size < BUFSIZE) break;
