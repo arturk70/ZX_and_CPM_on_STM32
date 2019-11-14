@@ -38,16 +38,20 @@ static void drawsymbol(uint8_t row, uint8_t col, uint8_t inv) {
 		bg = BG_COLOR;
 	}
 
-	for(register uint8_t l=0;l<6;l++) {
-		for(register uint8_t b=0;b<5;b++) {
-			if(((fonts>>(l*5+b)) & 0x00000001))
-				chbuf[l*6+6+b]=fg;
-			  else
-				chbuf[l*6+6+b]=bg;
+	for(register uint8_t l=0;l<8;l++) {
+		for(register uint8_t b=0;b<6;b++) {
+			if(l == 0 || l == 7 || b == 5)
+				chbuf[l*6+b] = bg;
+			else {
+				l--;
+				if(((fonts>>(l*5+b)) & 0x00000001))
+					chbuf[l*6+b]=fg;
+				else
+					chbuf[l*6+b]=bg;
+				l++;
+			}
+
 		}
-		chbuf[l*6+6+5]=bg;
-		chbuf[l]=bg;
-		chbuf[FNT_WIDTH*(FNT_HEIGHT-1)+l]=bg;
 	}
 
 	ILI9341_sendBuf(

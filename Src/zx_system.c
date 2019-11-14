@@ -67,9 +67,14 @@ uint8_t zxports_in(uint16_t addr) {
 	register uint8_t res = 0xff;
 	if((addr & 0x00ff) == 0x00fe) {
 		res = zxkbd_scan(addr>>8);
-#ifdef __SIMULATION
-//		printf("Port read 0x%04x: 0x%02x\n", addr, res);
-#endif
+		if(((addr>>8) == 0x7f) && ((res & 0x03) == 0 )) {
+//			if(zx_menu())
+			{
+				zxsys_isrun = 0;
+				cpmdisp_Init();
+			}
+		}
+
 		return res;
 	}
 	else
