@@ -10,7 +10,7 @@
 #include "cpm_font.h"
 
 static uint8_t cpos[2] = {0,0};
-//static uint8_t escmode = 0;
+static uint8_t escmode = 0;
 static uint16_t chbuf[FNT_WIDTH*FNT_HEIGHT];
 static uint8_t scrbuf[SCR_HEIGHT][SCR_WIDTH];
 
@@ -21,11 +21,7 @@ static void drawsymbol(uint8_t row, uint8_t col, uint8_t inv) {
 	register uint16_t fg, bg;
 
 	s = scrbuf[row][col];
-	if(s < 0x20)
-		s = 0x00;
-	else if(s > 0x7f)
-		s = 0x5f;
-	else
+	if(s != 0x00)
 		s -= 0x20;
 	fonts = font[s];
 
@@ -40,15 +36,17 @@ static void drawsymbol(uint8_t row, uint8_t col, uint8_t inv) {
 
 	for(register uint8_t l=0;l<8;l++) {
 		for(register uint8_t b=0;b<6;b++) {
-			if(l == 0 || l == 7 || b == 5)
+			if(b == 5)
 				chbuf[l*6+b] = bg;
 			else {
-				l--;
-				if(((fonts>>(l*5+b)) & 0x00000001))
-					chbuf[l*6+b]=fg;
-				else
-					chbuf[l*6+b]=bg;
-				l++;
+				if(l == 0 || l == 7)
+					chbuf[l*6+b] = bg;
+				else {
+					if(((fonts>>((l-1)*5+b)) & 0x00000001))
+						chbuf[l*6+b]=fg;
+					else
+						chbuf[l*6+b]=bg;
+				}
 			}
 
 		}
@@ -102,47 +100,73 @@ void cpmdisp_Init() {
 //}
 
 void cpmdisp_putc(char c) {
-//	if(escmode) {
-//		if(escmode == 2) {
-//			cpos[ROW] = c - 31;
-//			escmode = 3;
-//			return;
-//		}
-//		else if(escmode == 3) {
-//			setcursor(cpos[ROW], c - 31);
-//		}
-//		else if(c == 'Y') {
-//			escmode = 2;
-//			return;
-//		}
-//		else if(c == 'A') {
-//			if(cpos[ROW] > 0)
-//				setcursor(cpos[ROW]-1, cpos[COL]);
-//		}
-//		else if(c == 'B') {
-//			if(cpos[ROW] < SCR_HEIGHT-1)
-//				setcursor(cpos[ROW]+1, cpos[COL]);
-//		}
-//		else if(c == 'C') {
-//			if(cpos[COL] < SCR_WIDTH-1)
-//				setcursor(cpos[ROW], cpos[COL]+1);
-//		}
-//		else if(c == 'D') {
-//			if(cpos[COL] > 0)
-//				setcursor(cpos[ROW], cpos[COL]-1);
-//		}
-//		else if(c == 'H') {
-//			setcursor(0, 0);
-//		}
-//
-//
-//		escmode = 0;
-//		return;
-//	}
+	c &= 0x7f;
 
-	if(c == '\0')
+	if(escmode) {
+		if(escmode == 2) {
+			register uint8_t newrow = c - 31;
+			if(newrow >= SCR_HEIGHT)
+				newrow = SCR_HEIGHT-1;
+			setcursor(newrow, cpos[COL]);
+			escmode = 3;
+			return;
+		}
+		else if(escmode == 3) {
+			register uint8_t newcol = c - 31;
+			if(newcol >= SCR_WIDTH)
+				newcol = SCR_WIDTH-1;
+			setcursor(cpos[ROW], newcol);
+		}
+		else if(c == 'Y') {
+			escmode = 2;
+			return;
+		}
+		else if(c == 'A') {
+			if(cpos[ROW] > 0)
+				setcursor(cpos[ROW]-1, cpos[COL]);
+		}
+		else if(c == 'B') {
+			if(cpos[ROW] < SCR_HEIGHT-1)
+				setcursor(cpos[ROW]+1, cpos[COL]);
+		}
+		else if(c == 'C') {
+			if(cpos[COL] < SCR_WIDTH-1)
+				setcursor(cpos[ROW], cpos[COL]+1);
+		}
+		else if(c == 'D') {
+			if(cpos[COL] > 0)
+				setcursor(cpos[ROW], cpos[COL]-1);
+		}
+		else if(c == 'H') {
+			setcursor(0, 0);
+		}
+		else if(c == 'J') {
+			for(register uint8_t i=cpos[COL]; i<SCR_WIDTH; i++) {
+				scrbuf[cpos[ROW]][i] = 0x00;
+				drawsymbol(cpos[ROW], i, 0);
+			}
+			for(register uint8_t i=cpos[ROW]+1; i<SCR_HEIGHT; i++)
+				for(register uint8_t j=0; j<SCR_WIDTH; j++) {
+					scrbuf[i][j] = 0x00;
+					drawsymbol(i, j, 0);
+				}
+			setcursor(cpos[ROW], cpos[COL]);
+		}
+		else if(c == 'K') {
+			for(register uint8_t i=cpos[COL]; i<SCR_WIDTH; i++) {
+				scrbuf[cpos[ROW]][i] = 0x00;
+				drawsymbol(cpos[ROW], i, 0);
+			}
+			setcursor(cpos[ROW], cpos[COL]);
+		}
+
+		escmode = 0;
 		return;
-	else if(c == 0x08) {//Backspace
+	}
+
+	if(c == 0x07) {//Bell
+	}
+	else if(c == '\b') {//Backspace
 		for(register uint8_t i=cpos[COL]; i<SCR_WIDTH; i++) {
 			scrbuf[cpos[ROW]][i-1] = scrbuf[cpos[ROW]][i];
 			drawsymbol(cpos[ROW], i-1, 0);
@@ -158,15 +182,27 @@ void cpmdisp_putc(char c) {
 			}
 		}
 	}
-//	else if(c == 0x1b) {//ESC
-//		escmode = 1;
-//	}
-	else if(c == '\n') {//Return
+	else if(c == '\t') {//Tab
+		register uint8_t newcol = (cpos[ROW] & 0xf8) + 8;
+		if(newcol >= SCR_WIDTH)
+			newcol = SCR_WIDTH-1;
+		setcursor(cpos[ROW], newcol);
+	}
+	else if(c == '\n') {//LineFeed
 		if(cpos[ROW] == SCR_HEIGHT-1)
 			cpmdisp_scroll(1);
 		else
 			setcursor(cpos[ROW]+1, 0);
-	} else {
+	}
+	else if(c == '\r') {//CarriageReturn
+		setcursor(cpos[ROW], 0);
+	}
+	else if(c == 0x1b) {//ESC
+		escmode = 1;
+	}
+	else if(c < 0x20 || c == 0x7f)
+		return;
+	else {
 		//draw ASCII symbol
 		scrbuf[cpos[ROW]][cpos[COL]] = (uint8_t)c;
 		drawsymbol(cpos[ROW], cpos[COL], 0);
