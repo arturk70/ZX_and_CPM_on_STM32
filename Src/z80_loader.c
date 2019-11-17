@@ -19,8 +19,7 @@ void z80_load() {
 	while(1) {
 		while(cpmkbd_read() != '\0');
 
-		cpmdisp_puts("\n[d] for list, [l <name>] for load\n");
-		cpmdisp_putc('>');
+		cpmdisp_puts("\n[d] for list, [l <name>] for load\n>");
 		inpptr = 0;
 		while(1) {
 			do { sym = cpmkbd_read(); } while('\0' == sym);
@@ -77,13 +76,8 @@ void z80_load() {
 			fname[fnptr++] = '0';
 			fname[fnptr] = '\0';
 
-			cpmdisp_puts("Loading file ");
-			cpmdisp_puts(fname);
-			cpmdisp_putc('\n');
-
 			register FRESULT res;
-			FIL z80f;
-			res = f_open(&z80f, fname, FA_READ);
+			res = f_open(&USERFile, fname, FA_READ);
 			if(res != FR_OK) {
 				cpmdisp_puts("Error load file: ");
 				cpmdisp_puts(utoa(res, strbuf, 10));
@@ -95,7 +89,7 @@ void z80_load() {
 				uint8_t buf[BUFSIZE], b12;
 				UINT size = BUFSIZE;
 
-				res = f_read(&z80f, buf, 30, &size);
+				res = f_read(&USERFile, buf, 30, &size);
 				if(res != FR_OK) {
 					cpmdisp_puts("Error read file: ");
 					cpmdisp_puts(utoa(res, strbuf, 10));
@@ -141,7 +135,7 @@ void z80_load() {
 
 					register uint16_t addr = 0x4000;
 					register uint8_t num = 0, edflag = 0, rle = 0;
-					while(f_read(&z80f, buf, BUFSIZE, &size) == FR_OK) {
+					while(f_read(&USERFile, buf, BUFSIZE, &size) == FR_OK) {
 						for(register uint16_t i=0;i<size;i++) {
 							if(buf[i] == 0x00 && buf[i+1] == 0xed && buf[i+2] == 0xed && buf[i+3] == 0x00) {//end of Z80 marker found
 								break;
@@ -199,7 +193,7 @@ void z80_load() {
 					}
 				}
 			}
-			f_close(&z80f);
+			f_close(&USERFile);
 //			sleep(2);
 			break;
 		}

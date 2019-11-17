@@ -11,37 +11,40 @@
 
 #define SWAP_PARTITION_START_BLOCK	2048
 
+uint32_t mem_time = 0;
+
 static cache_t cache[CACHE_BLOCKS_NUM];
 
 static uint8_t search_cache(uint16_t addr) {//return index of appropriate cache block, update if need
-	register uint8_t lfu_num = 0;
+	register uint8_t lru_num = 0;
 
 	for(register uint8_t i=0; i<CACHE_BLOCKS_NUM;i++) {
 		if((addr >= cache[i].straddr) && (addr <= (cache[i].straddr+CACHE_BLOCK_SIZE-1)))
 			return i;
-		if(cache[i].usage < cache[lfu_num].usage) lfu_num = i;
+		if(cache[i].usaget < cache[lru_num].usaget) lru_num = i;
 	}
 
 //	UINT size;
-	if(cache[lfu_num].writed) {
-//		f_lseek(&USERFile, cache[lfu_num].straddr);
-//		f_write(&USERFile, cache[lfu_num].data, CACHE_BLOCK_SIZE, &size);
-		SD_writeblock((uint32_t)(cache[lfu_num].straddr >> 5) + SWAP_PARTITION_START_BLOCK, cache[lfu_num].data);
+	if(cache[lru_num].writed) {
+//		f_lseek(&USERFile, cache[lru_num].straddr);
+//		f_write(&USERFile, cache[lru_num].data, CACHE_BLOCK_SIZE, &size);
+		SD_writeblock((uint32_t)(cache[lru_num].straddr >> 5) + SWAP_PARTITION_START_BLOCK, cache[lru_num].data);
 	}
 
-	cache[lfu_num].straddr = addr & 0xfe00;
-	cache[lfu_num].usage = cache[lfu_num].writed = 0;
-//	f_lseek(&USERFile, cache[lfu_num].straddr);
-//	f_read(&USERFile, cache[lfu_num].data, CACHE_BLOCK_SIZE, &size);
-	SD_readblock((uint32_t)(cache[lfu_num].straddr >> 5) + SWAP_PARTITION_START_BLOCK, cache[lfu_num].data);
+	cache[lru_num].straddr = addr & 0xfe00;
+	cache[lru_num].usaget = mem_time;
+	cache[lru_num].writed = 0;
+//	f_lseek(&USERFile, cache[lru_num].straddr);
+//	f_read(&USERFile, cache[lru_num].data, CACHE_BLOCK_SIZE, &size);
+	SD_readblock((uint32_t)(cache[lru_num].straddr >> 5) + SWAP_PARTITION_START_BLOCK, cache[lru_num].data);
 
-	return lfu_num;
+	return lru_num;
 }
 
 uint8_t extmem_read(uint16_t addr) {
 	register uint8_t blocknum = search_cache(addr);
 
-	cache[blocknum].usage++;
+	cache[blocknum].usaget = mem_time;
 
 	return cache[blocknum].data[addr - cache[blocknum].straddr];
 
@@ -50,7 +53,7 @@ uint8_t extmem_read(uint16_t addr) {
 void extmem_write(uint16_t addr, uint8_t data) {
 	register uint8_t blocknum = search_cache(addr);
 
-	cache[blocknum].usage++;
+	cache[blocknum].usaget = mem_time;
 	cache[blocknum].writed = 1;
 
 	cache[blocknum].data[addr - cache[blocknum].straddr] = data;
@@ -59,7 +62,7 @@ void extmem_write(uint16_t addr, uint8_t data) {
 void extmem_Init() {
 	for(register uint8_t i=0; i<CACHE_BLOCKS_NUM;i++) {
 			cache[i].straddr = 0xffff;
-			cache[i].usage = 0;
+			cache[i].usaget = 0;
 			cache[i].writed = 0;
 	}
 

@@ -68,11 +68,8 @@ uint8_t zxports_in(uint16_t addr) {
 	if((addr & 0x00ff) == 0x00fe) {
 		res = zxkbd_scan(addr>>8);
 		if(((addr>>8) == 0x7f) && ((res & 0x03) == 0 )) {
-//			if(zx_menu())
-			{
-				zxsys_isrun = 0;
-				cpmdisp_Init();
-			}
+			zxsys_isrun = 0;
+			cpmdisp_Init();
 		}
 
 		return res;

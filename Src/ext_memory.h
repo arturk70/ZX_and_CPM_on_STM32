@@ -11,14 +11,16 @@
 #include "main.h"
 
 #define CACHE_BLOCK_SIZE	512
-#define CACHE_BLOCKS_NUM	8
+#define CACHE_BLOCKS_NUM	10
 
 typedef struct {
 	uint16_t straddr;
-	uint16_t usage; //read or write counter
+	uint32_t usaget; //last read or write time
 	uint8_t writed; //write flag
 	uint8_t data[CACHE_BLOCK_SIZE];
 } cache_t;
+
+extern uint32_t mem_time;
 
 uint8_t extmem_read(uint16_t addr);
 void extmem_write(uint16_t addr, uint8_t data);

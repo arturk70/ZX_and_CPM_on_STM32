@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include "memory.h"
 #include "ZXROM.h"
-#include "CPMROM.h"
 
 #define ZXROMSIZE	0x4000
 #define INTRAMSIZE	0x2000

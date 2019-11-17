@@ -123,12 +123,11 @@ int main(void)
 
   	while (1) {
   		char sym = '\0';
-  		cpmdisp_puts("\n\n    Press <6> for ZX Spectrum\n");
-  		cpmdisp_puts("    Press <7> for CP/M\n");
-  		cpmdisp_puts("    Press <8> for ZX memory test\n");
-  		cpmdisp_puts("    Press <9> for SD dir\n");
-  		cpmdisp_puts("    Press <0> for brightness\n");
-  		cpmdisp_puts("    >");
+  		cpmdisp_puts("\nPress <6> for ZX Spectrum\n" \
+  								 "Press <7> for CP/M\n" \
+  		             "Press <8> for ZX memory test\n" \
+  		             "Press <9> for SD dir\n" \
+  		             "Press <0> for brightness\n>");
 
   		do { sym = cpmkbd_read(); } while('\0' == sym);
   		cpmdisp_putc(sym);
