@@ -105,59 +105,61 @@ int main(void)
   MX_SPI2_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-  cpmdisp_Init();
-
+  ILI9341_Init();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   char buf[20];
+  cpmdisp_init();
 
   	retUSER = f_mount(&USERFatFS, "0", 1);
   	if(retUSER != FR_OK) {
-  		cpmdisp_puts("Error mount drive: ");
-  		cpmdisp_puts(utoa(retUSER, buf, 10));
-  		cpmdisp_putc('\n');
+  		cpmdisp_errmsg(retUSER, "mount drive");
   	}
 
   	while (1) {
   		char sym = '\0';
   		cpmdisp_puts("\nPress <6> for ZX Spectrum\n" \
-  								 "Press <7> for CP/M\n" \
-  		             "Press <8> for ZX memory test\n" \
+  					 "Press <7> for CP/M\n" \
+/*  		             "Press <8> for ZX memory test\n" \*/
   		             "Press <9> for SD dir\n" \
   		             "Press <0> for brightness\n>");
 
   		do { sym = cpmkbd_read(); } while('\0' == sym);
   		cpmdisp_putc(sym);
   		if(sym == '6') {
+  			cpmdisp_deinit();
   			zxsys_Run();
-  			ILI9341_clear(BG_COLOR);
+  			cpmdisp_init();
   		}
   		else if(sym == '7') {
+  			cpmdisp_deinit();
   			cpmsys_Run();
-  			ILI9341_clear(BG_COLOR);
+  			cpmdisp_init();
   		}
-  		else if(sym == '8') {
-  			mem_Init(MEMTYPE_ZX);
-
-  			uint16_t errors = mem_test();
-  			cpmdisp_puts("\n\n\n\n\n    Linear memory test: ");
-  			if(0 == errors) cpmdisp_puts("successfully");
-  			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
-  			cpmdisp_puts("!\n\nPress any key for continue\n");
-  			do { sym = cpmkbd_read(); } while('\0' == sym);
-
-  			errors = mem_rnd_test();
-  			cpmdisp_puts("\n\n    Random memory test: ");
-  			if(0 == errors) cpmdisp_puts("successfully");
-  			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
-  			cpmdisp_puts("!\n");
-
-  			mem_deInit();
-  		}
+//  		else if(sym == '8') {
+//				//TODO for test only - remove
+//  			mem_Init(MEMTYPE_ZX);
+//
+//  			uint16_t errors = mem_test();
+//  			cpmdisp_puts("\n\n\n\n\n    Linear memory test: ");
+//  			if(0 == errors) cpmdisp_puts("successfully");
+//  			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
+//  			cpmdisp_puts("!\n\nPress any key for continue\n");
+//  			do { sym = cpmkbd_read(); } while('\0' == sym);
+//
+//  			errors = mem_rnd_test();
+//  			cpmdisp_puts("\n\n    Random memory test: ");
+//  			if(0 == errors) cpmdisp_puts("successfully");
+//  			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
+//  			cpmdisp_puts("!\n");
+//
+//  			mem_deInit();
+//  		}
   		else if(sym == '9') {
+  			//TODO for test only - remove
   			cpmdisp_puts("\nEnter dir:>");
 
   			sym = '\0';
@@ -179,11 +181,7 @@ int main(void)
 
   			retUSER = f_opendir(&dir, dpath);
   			if(retUSER != FR_OK) {
-  				cpmdisp_puts("Error open dir \"");
-  				cpmdisp_puts(dpath);
-  				cpmdisp_puts("\": ");
-  				cpmdisp_puts(utoa(retUSER, buf, 10));
-  				cpmdisp_putc('\n');
+  				cpmdisp_errmsg(retUSER, "open dir");
   			}
 
   			do {
@@ -202,6 +200,9 @@ int main(void)
   					cpmdisp_puts("b\n");
   				}
   			} while(retUSER == FR_OK);
+
+  			if(retUSER != FR_OK)
+  				cpmdisp_errmsg(retUSER, "read dir");
 
   			f_closedir(&dir);
   		}

@@ -14,8 +14,8 @@ uint8_t zxsys_isrun = 0;
 
 void zxsys_Run() {
 	mem_Init(MEMTYPE_ZX);
+	zxdisp_init();
 	z80_Init(zxports_out, zxports_in);
-	ZXdisp_Init();
 
 	zxsys_isrun = 1;
 
@@ -34,7 +34,7 @@ void zxsys_Run() {
 //		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 #endif
 
-		ZXdisp_drawnextline();
+		zxdisp_drawnextline();
 
 		if(lines++ == 192*16/50) {//50Hz interrupt
 			req_int(32);
@@ -45,31 +45,31 @@ void zxsys_Run() {
 			tstates -= 1140;
 	}
 
-	mem_deInit();
+//	mem_deInit();
 }
 
 void zxports_out(uint16_t addr, uint8_t data) {
 	if((addr & 0x00ff) == 0x00fe) {
 		zx_border_color = (((data << 10) & 0x0800) | ((data << 4) & 0x0040) | (data & 0x0001)) * 0x18;
 	}
-	else if((addr == 0x00ff) & (data == 0x00)) {
-		//exit from ZX spectrum emulator
-		zxsys_isrun = 0;
-		cpmdisp_Init();
-	}
-	else if((addr == 0x00ff) & (data == 0x01)) {
-		//load Z80 snapshot
-		z80_load();
-	}
+//	else if((addr == 0x00ff) & (data == 0x00)) {
+//		//exit from ZX spectrum emulator
+//		zxsys_isrun = 0;
+//		cpmdisp_init();
+//	}
+//	else if((addr == 0x00ff) & (data == 0x01)) {
+//		//load Z80 snapshot
+//		z80_load();
+//	}
 }
 
 uint8_t zxports_in(uint16_t addr) {
 	register uint8_t res = 0xff;
 	if((addr & 0x00ff) == 0x00fe) {
 		res = zxkbd_scan(addr>>8);
-		if(((addr>>8) == 0x7f) && ((res & 0x03) == 0 )) {
-			zxsys_isrun = 0;
-			cpmdisp_Init();
+		if(((addr>>8) == 0x7f) && ((res & 0x1f) == 0x1c)) {//SS+Break
+			z80_load();
+			return 0xff;
 		}
 
 		return res;

@@ -9,21 +9,18 @@
 #include "stdlib.h"
 #include "memory.h"
 
-uint16_t linebuf[304];
+uint16_t* linebuf;
 
 static uint8_t *ZXvideomem;
-static uint8_t lnum;
-static uint8_t frnum;
+static uint8_t lnum = 0;
+static uint8_t frnum = 0;
 uint8_t zx_newline_flag;
-uint16_t zx_border_color;
+uint16_t zx_border_color = 0;
 
-void ZXdisp_Init() {
+void zxdisp_init() {
+	linebuf = malloc(304*2);
 	ZXvideomem = get_ZX_videomem();
-	ILI9341_Init();
-	ILI9341_clear(BLACK);
-	lnum = 0;
-	frnum = 0;
-	zx_border_color = 0;
+	ILI9341_fillArea(ZXD_START_POS, ZXD_START_LINE, ZXD_END_POS, ZXD_END_LINE, BLACK);
 
 #ifndef __SIMULATION
 	LL_TIM_EnableUpdateEvent(TIM3);
@@ -31,14 +28,15 @@ void ZXdisp_Init() {
 	LL_TIM_EnableIT_UPDATE(TIM3);
 #endif
 }
-void ZXdisp_deInit() {
+void zxdisp_deinit() {
 #ifndef __SIMULATION
 	LL_TIM_DisableIT_UPDATE(TIM3);
 	LL_TIM_DisableCounter(TIM3);
 #endif
+	free(linebuf);
 }
 
-void ZXdisp_drawnextline() {
+void zxdisp_drawnextline() {
 	register uint8_t *attraddr = ZXvideomem+0x1800+(lnum/8)*32;
 	register uint8_t *lineaddr = ZXvideomem+(((uint16_t)lnum & 0x00c0)<<5)+(((uint16_t)lnum & 0x0038)<<2)+(((uint16_t)lnum & 0x0007)<<8);
 	register uint32_t attr;

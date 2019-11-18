@@ -57,13 +57,10 @@ void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf, uint16_t len);
 //void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf, uint16_t len);
 void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
-void ILI9341_clear(uint16_t color);
 
 void ILI9341_setLEDpwm(uint16_t val);
 
-#ifdef __SIMULATION
-void ILI9341_readPix(uint16_t x, uint16_t y, uint8_t *r, uint8_t *g, uint8_t *b);
+void ILI9341_readPix(uint16_t x, uint16_t y, uint16_t *pix);
 void ILI9341_writePix(uint16_t x, uint16_t y, uint16_t color);
-#endif
 
 #endif /* ILI9341DRIVER_H_ */

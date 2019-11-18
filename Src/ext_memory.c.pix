@@ -127,3 +127,6 @@ void extmem_Init() {
 	bl_straddr[3] = bl_endaddr[2]+1;
 	bl_endaddr[3]=bl_straddr[3]+(br[3]-bl[3]+1)*(bb[3]-bt[3]+1)*2-1;
 }
+
+void extmem_deInit() {
+}

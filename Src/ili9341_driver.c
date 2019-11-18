@@ -29,20 +29,55 @@ void ILI9341_setLEDpwm(uint16_t val) {
 #endif
 }
 
-#ifdef __SIMULATION
-void ILI9341_readPix(uint16_t x, uint16_t y, uint8_t *r, uint8_t *g, uint8_t *b) {
+void ILI9341_readPix(uint16_t x, uint16_t y, uint16_t *pix) {
+	register uint8_t r, g, b;
 
-	*r = ili9341_image[(y*320+x)*3  ];
-	*g = ili9341_image[(y*320+x)*3+1];
-	*b = ili9341_image[(y*320+x)*3+2];
+#ifdef __SIMULATION
+	r = ili9341_image[(y*320+x)*3  ];
+	g = ili9341_image[(y*320+x)*3+1];
+	b = ili9341_image[(y*320+x)*3+2];
+#else
+	ILI9341_WAIT_DMA();
+	ILI9341_setFrame(x, y, x, y);
+	ILI9341_sendCommand(ILI9341_RAMRD);
+	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV8);
+	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
+	r=LL_SPI_ReceiveData8(ILI9341_SPI);//read dummy byte
+	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
+	r=LL_SPI_ReceiveData8(ILI9341_SPI);
+	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
+	g=LL_SPI_ReceiveData8(ILI9341_SPI);
+	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
+	b=LL_SPI_ReceiveData8(ILI9341_SPI);
+	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
+	ILI9341_CS_SET;
+	ILI9341_CS_RESET;
+	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV2);
+#endif
+
+	*pix=(((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u));
 }
 
 void ILI9341_writePix(uint16_t x, uint16_t y, uint16_t color) {
+#ifdef __SIMULATION
 	ili9341_image[(y*320+x)*3  ] = (color >> 8) & 0xf8;
 	ili9341_image[(y*320+x)*3+1] = (color >> 3) & 0xfc;
 	ili9341_image[(y*320+x)*3+2] = (color << 3) & 0xf8;
-}
+#else
+	ILI9341_WAIT_DMA();
+	ILI9341_sendCommand(ILI9341_GRAM);
+	LL_SPI_TransmitData8(ILI9341_SPI, color>>8);
+	LL_SPI_TransmitData8(ILI9341_SPI, color);
 #endif
+}
 
 void ILI9341_sendCommand(uint8_t com) {
 #ifndef __SIMULATION
@@ -170,7 +205,8 @@ void ILI9341_Init() {
 	ILI9341_sendCommand(ILI9341_DISPLAY_ON);
 #endif
 
-	ILI9341_clear(BLACK);
+	ILI9341_fillArea(0,0,ILI9341_PWIDTH-1,ILI9341_PHEIGHT/2-1,BLACK);
+	ILI9341_fillArea(0,ILI9341_PHEIGHT/2,ILI9341_PWIDTH-1,ILI9341_PHEIGHT-1,BLACK);
 
 	is_inited = 1;
 }
@@ -351,9 +387,4 @@ void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16
 			ILI9341_writePix(x, y, fcolor);
 		}
 #endif
-}
-
-void ILI9341_clear(uint16_t color) {
-	ILI9341_fillArea(0,0,ILI9341_PWIDTH-1,ILI9341_PHEIGHT/2-1,color);
-	ILI9341_fillArea(0,ILI9341_PHEIGHT/2,ILI9341_PWIDTH-1,ILI9341_PHEIGHT-1,color);
 }

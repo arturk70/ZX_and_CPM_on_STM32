@@ -276,7 +276,7 @@ uint8_t SD_readblock(uint32_t bnum, uint8_t *buf) {
 
 	return error;
 #else
-	fseek(imgf, bnum*512, 0);
+	fseek(imgf, bnum*512, SEEK_SET);
 	fread(buf, sizeof(uint8_t), 512, imgf);
 	return 0;
 #endif

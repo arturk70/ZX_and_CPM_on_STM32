@@ -91,3 +91,6 @@ void extmem_Init() {
 			cache[i].writed = 0;
 	}
 }
+
+void extmem_deInit() {
+}

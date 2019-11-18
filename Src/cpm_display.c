@@ -11,8 +11,8 @@
 
 static uint8_t cpos[2] = {0,0};
 static uint8_t escmode = 0;
-static uint16_t chbuf[FNT_WIDTH*FNT_HEIGHT];
-static uint8_t scrbuf[SCR_HEIGHT][SCR_WIDTH];
+static uint16_t* chbuf;
+static uint8_t* scrbuf;
 
 //s - index in font table
 static void drawsymbol(uint8_t row, uint8_t col, uint8_t inv) {
@@ -20,7 +20,7 @@ static void drawsymbol(uint8_t row, uint8_t col, uint8_t inv) {
 	register uint32_t fonts;
 	register uint16_t fg, bg;
 
-	s = scrbuf[row][col];
+	s = scrbuf[row*SCR_WIDTH+col];
 	if(s != 0x00)
 		s -= 0x20;
 	fonts = font[s];
@@ -61,7 +61,6 @@ static void drawsymbol(uint8_t row, uint8_t col, uint8_t inv) {
 }
 
 static void setcursor(uint8_t row, uint8_t col) {
-
 	drawsymbol(cpos[ROW], cpos[COL], 0);
 	if(row >= SCR_HEIGHT)
 		row = SCR_HEIGHT-1;
@@ -74,151 +73,166 @@ static void setcursor(uint8_t row, uint8_t col) {
 void cpmdisp_scroll(uint8_t lnum) {
 	for(register uint8_t i=0; i< SCR_HEIGHT-lnum; i++) {
 		for(register uint8_t j=0; j< SCR_WIDTH; j++) {
-			scrbuf[i][j] = scrbuf[i+lnum][j];
+			scrbuf[i*SCR_WIDTH+j] = scrbuf[(i+lnum)*SCR_WIDTH+j];
 			drawsymbol(i, j, 0);
 		}
 	}
 	for(register uint8_t i=SCR_HEIGHT-lnum; i< SCR_HEIGHT; i++)
 		for(register uint8_t j=0; j< SCR_WIDTH; j++)
-			scrbuf[i][j] = 0x00;
+			scrbuf[i*SCR_WIDTH+j] = 0x00;
 
 	ILI9341_fillArea(CPMD_START_POS, CPMD_END_LINE-FNT_HEIGHT*lnum+1, CPMD_END_POS, CPMD_END_LINE, BG_COLOR);
-	setcursor(SCR_HEIGHT-lnum, 0);
 }
 
-void cpmdisp_Init() {
-	ILI9341_Init();
-	ILI9341_clear(BG_COLOR);
+void cpmdisp_init() {
+	scrbuf = malloc(SCR_HEIGHT*SCR_WIDTH);
+	chbuf = malloc(FNT_WIDTH*FNT_HEIGHT*2);
+	cpmdisp_clear();
 	for(register uint8_t i=0;i<SCR_HEIGHT;i++)
 		for(register uint8_t j=0; j< SCR_WIDTH; j++)
-			scrbuf[i][j]=0x00;
+			scrbuf[i*SCR_WIDTH+j]=0x00;
 	setcursor(0, 0);
 }
 
-//void cpmdisp_deInit() {
-//	ILI9341_clear(BG_COLOR);
-//}
+void cpmdisp_deinit() {
+	free(scrbuf);
+	free(chbuf);
+}
+
+void cpmdisp_clear() {
+	ILI9341_fillArea(CPMD_START_POS-2, CPMD_START_LINE, CPMD_END_POS+2, CPMD_END_LINE, BG_COLOR);
+}
 
 void cpmdisp_putc(char c) {
 	c &= 0x7f;
+	register uint8_t newrow = cpos[ROW], newcol = cpos[COL];
 
 	if(escmode) {
 		if(escmode == 2) {
-			register uint8_t newrow = c - 31;
+			newrow = c - 0x20;
 			if(newrow >= SCR_HEIGHT)
 				newrow = SCR_HEIGHT-1;
-			setcursor(newrow, cpos[COL]);
 			escmode = 3;
-			return;
 		}
 		else if(escmode == 3) {
-			register uint8_t newcol = c - 31;
+			newcol = c - 0x20;
 			if(newcol >= SCR_WIDTH)
 				newcol = SCR_WIDTH-1;
-			setcursor(cpos[ROW], newcol);
+			escmode = 1;
 		}
 		else if(c == 'Y') {
 			escmode = 2;
-			return;
 		}
 		else if(c == 'A') {
 			if(cpos[ROW] > 0)
-				setcursor(cpos[ROW]-1, cpos[COL]);
+				newrow = cpos[ROW]-1;
 		}
 		else if(c == 'B') {
 			if(cpos[ROW] < SCR_HEIGHT-1)
-				setcursor(cpos[ROW]+1, cpos[COL]);
+				newrow = cpos[ROW]+1;
 		}
 		else if(c == 'C') {
 			if(cpos[COL] < SCR_WIDTH-1)
-				setcursor(cpos[ROW], cpos[COL]+1);
+				newcol = cpos[COL]+1;
 		}
 		else if(c == 'D') {
 			if(cpos[COL] > 0)
-				setcursor(cpos[ROW], cpos[COL]-1);
+				newcol = cpos[COL]-1;
 		}
 		else if(c == 'H') {
-			setcursor(0, 0);
+			newrow = 0; newcol = 0;
 		}
 		else if(c == 'J') {
 			for(register uint8_t i=cpos[COL]; i<SCR_WIDTH; i++) {
-				scrbuf[cpos[ROW]][i] = 0x00;
+				scrbuf[cpos[ROW]*SCR_WIDTH+i] = 0x00;
 				drawsymbol(cpos[ROW], i, 0);
 			}
 			for(register uint8_t i=cpos[ROW]+1; i<SCR_HEIGHT; i++)
 				for(register uint8_t j=0; j<SCR_WIDTH; j++) {
-					scrbuf[i][j] = 0x00;
+					scrbuf[i*SCR_WIDTH+j] = 0x00;
 					drawsymbol(i, j, 0);
 				}
-			setcursor(cpos[ROW], cpos[COL]);
 		}
 		else if(c == 'K') {
 			for(register uint8_t i=cpos[COL]; i<SCR_WIDTH; i++) {
-				scrbuf[cpos[ROW]][i] = 0x00;
+				scrbuf[cpos[ROW]*SCR_WIDTH+i] = 0x00;
 				drawsymbol(cpos[ROW], i, 0);
 			}
-			setcursor(cpos[ROW], cpos[COL]);
 		}
 
-		escmode = 0;
-		return;
+		if(escmode == 1)
+			escmode = 0;
 	}
-
-	if(c == 0x07) {//Bell
+	else if(c == 0x07) {//Bell
 	}
 	else if(c == '\b') {//Backspace
 		for(register uint8_t i=cpos[COL]; i<SCR_WIDTH; i++) {
-			scrbuf[cpos[ROW]][i-1] = scrbuf[cpos[ROW]][i];
+			scrbuf[cpos[ROW]*SCR_WIDTH+(i-1)] = scrbuf[cpos[ROW]*SCR_WIDTH+i];
 			drawsymbol(cpos[ROW], i-1, 0);
 		}
-		scrbuf[cpos[ROW]][SCR_WIDTH-1] = 0x00;
+		scrbuf[cpos[ROW]*SCR_WIDTH+(SCR_WIDTH-1)] = 0x00;
 		drawsymbol(cpos[ROW], SCR_WIDTH-1, 0);
 		if(cpos[COL] > 0) {
-			setcursor(cpos[ROW], cpos[COL]-1);
+			newcol = cpos[COL]-1;
 		}
 		else {
 			if(cpos[ROW] > 0) {
-				setcursor(cpos[ROW]-1, SCR_WIDTH - 1);
+				newrow = cpos[ROW]-1; newcol = SCR_WIDTH - 1;
 			}
 		}
 	}
 	else if(c == '\t') {//Tab
-		register uint8_t newcol = (cpos[ROW] & 0xf8) + 8;
+		newcol = (cpos[COL] & 0xf8) + 8;
 		if(newcol >= SCR_WIDTH)
 			newcol = SCR_WIDTH-1;
-		setcursor(cpos[ROW], newcol);
 	}
 	else if(c == '\n') {//LineFeed
-		if(cpos[ROW] == SCR_HEIGHT-1)
+		if(cpos[ROW] == SCR_HEIGHT-1) {
 			cpmdisp_scroll(1);
-		else
-			setcursor(cpos[ROW]+1, 0);
+			newrow = SCR_HEIGHT-1; newcol = 0;
+		}
+		else {
+			newrow = cpos[ROW]+1; newcol = 0;
+		}
 	}
 	else if(c == '\r') {//CarriageReturn
-		setcursor(cpos[ROW], 0);
+		newcol = 0;
 	}
 	else if(c == 0x1b) {//ESC
 		escmode = 1;
 	}
 	else if(c < 0x20 || c == 0x7f)
 		return;
-	else {
-		//draw ASCII symbol
-		scrbuf[cpos[ROW]][cpos[COL]] = (uint8_t)c;
+	else {//draw ASCII symbol
+		scrbuf[cpos[ROW]*SCR_WIDTH+cpos[COL]] = (uint8_t)c;
 		drawsymbol(cpos[ROW], cpos[COL], 0);
 
 		if(cpos[COL] == SCR_WIDTH-1) {
-			if(cpos[ROW] == SCR_HEIGHT-1)
+			if(cpos[ROW] == SCR_HEIGHT-1) {
 				cpmdisp_scroll(1);
-			else
-				setcursor(cpos[ROW]+1, 0);
+				newrow = SCR_HEIGHT-1; newcol = 0;
+			}
+			else {
+				newrow = cpos[ROW]+1; newcol = 0;
+			}
 		}
 		else
-			setcursor(cpos[ROW], cpos[COL]+1);
+			newcol = cpos[COL]+1;
 	}
+
+	setcursor(newrow, newcol);
 }
 
-void cpmdisp_puts(char *s) {
+void cpmdisp_puts(const char *s) {
 	for(register uint16_t i=0;s[i]!='\0';i++)
 		cpmdisp_putc(s[i]);
+}
+
+void cpmdisp_errmsg(uint8_t errno, const char *s) {
+	char buf[4];
+	cpmdisp_puts("Error #");
+	cpmdisp_puts(utoa(errno, buf, 10));
+	cpmdisp_putc(' ');
+	cpmdisp_puts(s);
+	cpmdisp_putc('\n');
 }

@@ -10,7 +10,7 @@
 #include "ZXROM.h"
 
 #define ZXROMSIZE	0x4000
-#define INTRAMSIZE	0x2000
+#define INTRAMSIZE	0x2c00
 #define INTRAMSIZE2	0x0400
 
 static uint8_t mem_type;
@@ -28,7 +28,7 @@ uint8_t mem_read(uint16_t addr) {
 		else if(addr > (0xffff - INTRAMSIZE2))
 					return mem2[addr - (0xffff - INTRAMSIZE2 + 1)];
 		else
-			return extmem_read(addr);
+			return extmem_read(addr - (ZXROMSIZE + INTRAMSIZE));
 	}
 	else {
 		if(addr < INTRAMSIZE2)
@@ -36,7 +36,7 @@ uint8_t mem_read(uint16_t addr) {
 		else if(addr > (0xffff - INTRAMSIZE))
 			return mem[addr - (0xffff - INTRAMSIZE + 1)];
 		else
-			return extmem_read(addr);
+			return extmem_read(addr - INTRAMSIZE2);
 	}
 }
 
@@ -49,7 +49,7 @@ void mem_write(uint16_t addr, uint8_t data) {
 			else if(addr > (0xffff - INTRAMSIZE2))
 				mem2[addr - (0xffff - INTRAMSIZE2 + 1)] = data;
 			else
-				extmem_write(addr, data);
+				extmem_write(addr - (ZXROMSIZE + INTRAMSIZE), data);
 		}
 		else {
 			if(addr < INTRAMSIZE2)
@@ -57,7 +57,7 @@ void mem_write(uint16_t addr, uint8_t data) {
 			else if(addr > (0xffff - INTRAMSIZE))
 				mem[addr - (0xffff - INTRAMSIZE + 1)] = data;
 			else
-				extmem_write(addr, data);
+				extmem_write(addr - INTRAMSIZE2, data);
 		}
 }
 
@@ -67,9 +67,9 @@ void mem_Init(uint8_t type) {
 	extmem_Init();
 }
 
-void mem_deInit() {
-	extmem_deInit();
-}
+//void mem_deInit() {
+//	extmem_deInit();
+//}
 
 //void mem_clear() {
 //	for(uint16_t i=0; i< INTRAMSIZE;i++) mem[i] = 0;
@@ -79,58 +79,60 @@ void mem_deInit() {
 //	ILI9341_fillArea(312, 24, ILI9341_PWIDTH-1, 215, BLACK);
 //}
 
-uint16_t mem_test() {
-	register uint16_t errcount = 0;
-	register uint16_t straddr, endaddr = 0xffff;
-	if(mem_type == MEMTYPE_ZX) {
-		straddr = ZXROMSIZE;
-	} else {
-		straddr = 0;
-	}
-
-	uint8_t tst[50];
-	register uint8_t i;
-	for(i=0;i<50;i++)
-		tst[i] = (uint8_t)rand();
-
-	i = 0;
-	for(register uint32_t addr=straddr; addr<=endaddr; addr++) {
-		mem_write(addr, tst[i++]);
-		if(i == 50) i = 0;
-	}
-
-	i = 0;
-	for(register uint32_t addr=straddr; addr<=endaddr; addr++) {
-		if(tst[i++] != mem_read(addr)) errcount++;
-		if(i == 50) i = 0;
-	}
-//	mem_clear();
-
-	return errcount;
-}
-uint16_t mem_rnd_test() {
-	register uint8_t tmp;
-	register uint16_t errcount = 0;
-	register uint16_t straddr, endaddr = 0xffff;
-	if(mem_type == MEMTYPE_ZX) {
-		straddr = ZXROMSIZE;
-	} else {
-		straddr = 0;
-	}
-
-#ifndef __SIMULATION
-	srand(SysTick->VAL);
-#endif
-	register uint16_t addr;
-	for(register uint16_t i=0; i<0x0fff; i++) {
-		tmp = (uint8_t)rand();
-		addr = (uint16_t)rand();
-		if((addr >= straddr) && (addr <= endaddr)) {
-			mem_write(addr, tmp);
-			if(tmp != mem_read(addr)) errcount++;
-		}
-	}
-//	mem_clear();
-
-	return errcount;
-}
+//uint16_t mem_test() {
+//	register uint16_t errcount = 0;
+//	register uint16_t straddr, endaddr = 0xffff;
+//	if(mem_type == MEMTYPE_ZX) {
+//		straddr = ZXROMSIZE;
+//	} else {
+//		straddr = 0;
+//		endaddr = 0xbfff;
+//	}
+//
+//	uint8_t tst[50];
+//	register uint8_t i;
+//	for(i=0;i<50;i++)
+//		tst[i] = (uint8_t)rand();
+//
+//	i = 0;
+//	for(register uint32_t addr=straddr; addr<=endaddr; addr++) {
+//		mem_write(addr, tst[i++]);
+//		if(i == 50) i = 0;
+//	}
+//
+//	i = 0;
+//	for(register uint32_t addr=straddr; addr<=endaddr; addr++) {
+//		if(tst[i++] != mem_read(addr)) errcount++;
+//		if(i == 50) i = 0;
+//	}
+////	mem_clear();
+//
+//	return errcount;
+//}
+//uint16_t mem_rnd_test() {
+//	register uint8_t tmp;
+//	register uint16_t errcount = 0;
+//	register uint16_t straddr, endaddr = 0xffff;
+//	if(mem_type == MEMTYPE_ZX) {
+//		straddr = ZXROMSIZE;
+//	} else {
+//		straddr = 0;
+//		endaddr = 0xbfff;
+//	}
+//
+//#ifndef __SIMULATION
+//	srand(SysTick->VAL);
+//#endif
+//	register uint16_t addr;
+//	for(register uint16_t i=0; i<0x0fff; i++) {
+//		tmp = (uint8_t)rand();
+//		addr = (uint16_t)rand();
+//		if((addr >= straddr) && (addr <= endaddr)) {
+//			mem_write(addr, tmp);
+//			if(tmp != mem_read(addr)) errcount++;
+//		}
+//	}
+////	mem_clear();
+//
+//	return errcount;
+//}

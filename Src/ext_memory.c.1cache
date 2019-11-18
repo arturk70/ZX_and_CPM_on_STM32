@@ -80,3 +80,6 @@ void extmem_Init() {
 	writed = 0;
 	ILI9341_readBuf(0, 0, 0, 0, (uint16_t*)cache, CACHE_SIZE/2);
 }
+
+void extmem_deInit() {
+}

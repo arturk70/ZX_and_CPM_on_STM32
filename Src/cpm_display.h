@@ -10,8 +10,8 @@
 
 #include "ili9341_driver.h"
 
-#define SCR_WIDTH	52
-#define SCR_HEIGHT	30
+#define SCR_WIDTH	50
+#define SCR_HEIGHT	24
 
 #define FNT_WIDTH	6
 #define FNT_HEIGHT	8
@@ -28,10 +28,12 @@
 #define ROW	1
 #define CURSOR_CHAR	0x5f
 
-void cpmdisp_Init();
-//void cpmdisp_deInit();
+void cpmdisp_init();
+void cpmdisp_clear();
+void cpmdisp_deinit();
 void cpmdisp_putc(char c);
-void cpmdisp_puts(char *s);
+void cpmdisp_puts(const char *s);
+void cpmdisp_errmsg(uint8_t errno, const char *s);
 
 
 #endif /* CPM_DISPLAY_H_ */

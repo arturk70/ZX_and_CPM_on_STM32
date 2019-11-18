@@ -8,20 +8,29 @@
 #include "stdlib.h"
 #include "cpm_system.h"
 
+static void cpmsys_load() {
+
+}
+
 void cpmsys_Run() {
-	cpmdisp_Init();
 	mem_Init(MEMTYPE_CPM);
+	cpmdisp_init();
+	z80_Init(cpmports_out, cpmports_in);
 
-	char buf[10];
-	uint8_t reg[2];
-	*((uint16_t*)reg) = 0x3311;
-	cpmdisp_puts("Test: ");
-	cpmdisp_puts(utoa(*((uint16_t*)reg), buf, 16));
-	cpmdisp_putc(' ');
-	cpmdisp_puts(utoa(reg[0], buf, 16));
-	cpmdisp_putc(' ');
-	cpmdisp_puts(utoa(reg[1], buf, 16));
-	cpmdisp_putc('\n');
+	cpmsys_load();
 
-	mem_deInit();
+	while(1) {
+		z80_step();
+	}
+
+//	mem_deInit();
+	cpmdisp_deinit();
+}
+
+void cpmports_out(uint16_t addr, uint8_t data) {
+
+}
+
+uint8_t cpmports_in(uint16_t addr) {
+	return 0xff;
 }

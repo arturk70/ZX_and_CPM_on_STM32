@@ -30,9 +30,9 @@
 extern uint8_t zx_newline_flag;
 extern uint16_t zx_border_color;
 
-void ZXdisp_Init();
-void ZXdisp_deInit();
-void ZXdisp_drawnextline();
+void zxdisp_init();
+void zxdisp_deinit();
+void zxdisp_drawnextline();
 
 
 #endif /* ZX_DISPLAY_H_ */
