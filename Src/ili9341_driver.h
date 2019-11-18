@@ -55,7 +55,7 @@ void ILI9341_sendCommand(uint8_t com);
 void ILI9341_sendData(uint8_t data);
 void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf, uint16_t len);
-//void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf, uint16_t len);
+void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf, uint16_t len);
 void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
 
 void ILI9341_setLEDpwm(uint16_t val);
