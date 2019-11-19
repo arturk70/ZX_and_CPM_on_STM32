@@ -76,7 +76,7 @@ char cpmkbd_read() {
 			}
 			else {
 				if(res == ' ')
-					res = (char)0x1b;//Escape
+					res = '\e';//Escape
 				else if(res == '0')
 					res = '\b';//Backspace
 				else
