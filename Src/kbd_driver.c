@@ -73,11 +73,11 @@ char cpmkbd_read() {
 				else {
 					res = keytable[i][j];
 					sres = skeytable[i][j];
-					break;
+//					break;
 				}
 			}
 		}
-		if(res) break;
+//		if(res) break;
 	}
 
 	if(res) {
