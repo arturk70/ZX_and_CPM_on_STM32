@@ -13,7 +13,7 @@
 static void z80_loadfile(const char *fname) {
 	retUSER = f_open(&USERFile, fname, FA_READ);
 	if(retUSER != FR_OK) {
-		cpmdisp_errmsg(retUSER, "open file");
+		cpmcons_errmsg(retUSER, "open file");
 	}
 	else {
 		uint8_t buf[BUFSIZE], b12;
@@ -21,7 +21,7 @@ static void z80_loadfile(const char *fname) {
 
 		retUSER = f_read(&USERFile, buf, 30, &size);
 		if(retUSER != FR_OK) {
-			cpmdisp_errmsg(retUSER, "read file");
+			cpmcons_errmsg(retUSER, "read file");
 		}
 		else {
 			A = buf[0];
@@ -70,9 +70,7 @@ static void z80_loadfile(const char *fname) {
 					}
 
 					if(addr == 0) { //end of memory reached
-#ifdef	__SIMULATION
-						printf("Error while load Z80 snapshot: end of memory.");
-#endif
+						cpmcons_errmsg(0xff, "load: end of memory.");
 					}
 
 					if(rle) {
@@ -87,9 +85,7 @@ static void z80_loadfile(const char *fname) {
 						else {
 							num = buf[i];
 							if(num < 0x05 && !(num == 0x02 && buf[i+1] == 0xed)) {
-#ifdef	__SIMULATION
-								printf("Error while load Z80 snapshot: incorrect number in RLE block");
-#endif
+								cpmcons_errmsg(0xff, "load: incorrect num in RLE block.");
 								return;
 							}
 						}
@@ -124,19 +120,20 @@ static void z80_loadfile(const char *fname) {
 	f_close(&USERFile);
 }
 
-void z80_load() {
+void z80_menu() {
 	register char sym = '\0';
 	char fname[22] = "0:/ZX/Z80";
 
-	cpmdisp_init();
+	zxdisp_deinit();
+	cpmcons_init();
 
 	while(1) {
 		while(cpmkbd_read() != '\0');
 
-		cpmdisp_puts("\n[d]ir, [l]oad, [r]eturn, [e]xit\n>");
-		do { sym = cpmkbd_read(); } while('\0' == sym);
-		cpmdisp_putc(sym);
-		cpmdisp_putc('\n');
+		cpmcons_puts("\n[d]ir, [l]oad, [r]eturn, [e]xit\n>");
+		sym = cpmcons_getc();
+		cpmcons_putc(sym);
+		cpmcons_putc('\n');
 
 		if(sym == 'e') {//exit
 			zxsys_isrun = 0;
@@ -150,7 +147,7 @@ void z80_load() {
 
 			retUSER = f_opendir(&dir, fname);
 			if(retUSER != FR_OK)
-				cpmdisp_errmsg(retUSER, "open dir");
+				cpmcons_errmsg(retUSER, "open dir");
 			else {
 				register uint8_t pos = 0;
 				do {
@@ -159,43 +156,32 @@ void z80_load() {
 						break;
 
 					if(!(fi.fattrib & (AM_DIR | AM_HID | AM_SYS))) {
-						cpmdisp_puts(fi.fname);
+						cpmcons_puts(fi.fname);
 						if(++pos > 2) {
-							cpmdisp_putc('\n');
+							cpmcons_putc('\n');
 							pos = 0;
 						}
 						else
-							cpmdisp_putc('\t');
+							cpmcons_putc('\t');
 					}
 				} while(retUSER == FR_OK);
 
 				if(retUSER != FR_OK)
-					cpmdisp_errmsg(retUSER, "read dir");
+					cpmcons_errmsg(retUSER, "read dir");
 			}
 
 			f_closedir(&dir);
+
+			cpmcons_putc('\n');
 		}
 		else if(sym == 'l') {//load file
-			cpmdisp_puts("Enter file name w/o ext>");
+			cpmcons_puts("Enter file name w/o ext>");
 
 			char strbuf[9];
 			register uint8_t inpptr = 0, fnptr = 9;
-			while(1) {
-				do { sym = cpmkbd_read(); } while('\0' == sym);
-
-				if('\n' == sym)
-					break;
-				else {
-					if(inpptr < 8) {
-						strbuf[inpptr] = sym;
-						inpptr++;
-						strbuf[inpptr] = '\0';
-					}
-				}
-				cpmdisp_putc(sym);
-			}
+			cpmcons_gets(strbuf, 8);
+			cpmcons_putc('\n');
 			fname[fnptr++] = '/';
-			inpptr = 0;
 			while(strbuf[inpptr] != '\0') {
 				fname[fnptr++] = strbuf[inpptr++];
 			}
@@ -210,5 +196,6 @@ void z80_load() {
 		}
 	}
 
-	cpmdisp_deinit();
+	cpmcons_deinit();
+	zxdisp_init();
 }

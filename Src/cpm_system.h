@@ -9,8 +9,9 @@
 #define CPM_SYSTEM_H_
 
 #include "main.h"
+
+#include "cpm_console.h"
 #include "memory.h"
-#include "cpm_display.h"
 #include "z80.h"
 #include "kbd_driver.h"
 

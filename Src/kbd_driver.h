@@ -10,8 +10,8 @@
 
 #include "main.h"
 
-#define IS_SHIFT	(kbdscans[0] & 0x01)
-#define IS_CONTROL	(kbdscans[7] & 0x02)
+//#define IS_SHIFT	(kbdscans[0] & 0x01)
+//#define IS_CONTROL	(kbdscans[7] & 0x02)
 
 #ifdef __SIMULATION
 extern uint8_t ext_kbdscans[8];

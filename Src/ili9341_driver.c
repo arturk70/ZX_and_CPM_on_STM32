@@ -29,56 +29,6 @@ void ILI9341_setLEDpwm(uint16_t val) {
 #endif
 }
 
-void ILI9341_readPix(uint16_t x, uint16_t y, uint16_t *pix) {
-	register uint8_t r, g, b;
-
-#ifdef __SIMULATION
-	r = ili9341_image[(y*320+x)*3  ];
-	g = ili9341_image[(y*320+x)*3+1];
-	b = ili9341_image[(y*320+x)*3+2];
-#else
-	ILI9341_WAIT_DMA();
-	ILI9341_setFrame(x, y, x, y);
-	ILI9341_sendCommand(ILI9341_RAMRD);
-	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV8);
-	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
-	r=LL_SPI_ReceiveData8(ILI9341_SPI);//read dummy byte
-	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
-	r=LL_SPI_ReceiveData8(ILI9341_SPI);
-	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
-	g=LL_SPI_ReceiveData8(ILI9341_SPI);
-	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
-	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
-	b=LL_SPI_ReceiveData8(ILI9341_SPI);
-	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
-	ILI9341_CS_SET;
-	ILI9341_CS_RESET;
-	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV2);
-#endif
-
-	*pix=(((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u));
-}
-
-void ILI9341_writePix(uint16_t x, uint16_t y, uint16_t color) {
-#ifdef __SIMULATION
-	ili9341_image[(y*320+x)*3  ] = (color >> 8) & 0xf8;
-	ili9341_image[(y*320+x)*3+1] = (color >> 3) & 0xfc;
-	ili9341_image[(y*320+x)*3+2] = (color << 3) & 0xf8;
-#else
-	ILI9341_WAIT_DMA();
-	ILI9341_sendCommand(ILI9341_GRAM);
-	LL_SPI_TransmitData8(ILI9341_SPI, color>>8);
-	LL_SPI_TransmitData8(ILI9341_SPI, color);
-#endif
-}
-
 void ILI9341_sendCommand(uint8_t com) {
 #ifndef __SIMULATION
 	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
@@ -233,6 +183,56 @@ void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) {
 #endif
 }
 
+void ILI9341_readPix(uint16_t x, uint16_t y, uint16_t *pix) {
+	register uint8_t r, g, b;
+
+#ifdef __SIMULATION
+	r = ili9341_image[(y*320+x)*3  ] & 0xf8;
+	g = ili9341_image[(y*320+x)*3+1] & 0xfc;
+	b = ili9341_image[(y*320+x)*3+2] & 0xf8;
+#else
+	ILI9341_WAIT_DMA();
+	ILI9341_setFrame(x, y, x, y);
+	ILI9341_sendCommand(ILI9341_RAMRD);
+	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV8);
+	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
+	r=LL_SPI_ReceiveData8(ILI9341_SPI);//read dummy byte
+	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
+	r=LL_SPI_ReceiveData8(ILI9341_SPI);
+	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
+	g=LL_SPI_ReceiveData8(ILI9341_SPI);
+	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
+	b=LL_SPI_ReceiveData8(ILI9341_SPI);
+	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
+	ILI9341_CS_SET;
+	ILI9341_CS_RESET;
+	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV2);
+#endif
+
+	*pix=(((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u));
+}
+
+void ILI9341_writePix(uint16_t x, uint16_t y, uint16_t color) {
+#ifdef __SIMULATION
+	ili9341_image[(y*320+x)*3  ] = (color >> 8) & 0xf8;
+	ili9341_image[(y*320+x)*3+1] = (color >> 3) & 0xfc;
+	ili9341_image[(y*320+x)*3+2] = (color << 3) & 0xf8;
+#else
+	ILI9341_WAIT_DMA();
+	ILI9341_sendCommand(ILI9341_GRAM);
+	LL_SPI_TransmitData8(ILI9341_SPI, color>>8);
+	LL_SPI_TransmitData8(ILI9341_SPI, color);
+#endif
+}
+
 //note: (x2-x1+1)*(y2-y1+1) must be less then 65536
 void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *data, uint16_t len) {
 #ifndef __SIMULATION
@@ -289,7 +289,6 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 	r=LL_SPI_ReceiveData8(ILI9341_SPI);//read dummy byte
 #else
-	uint8_t r,g,b;
 	uint16_t x = x1, y = y1;
 #endif
 
@@ -307,15 +306,17 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 		LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
 		while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 		b=LL_SPI_ReceiveData8(ILI9341_SPI);
+
+		buf[i]=(((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u));//RGB565 to uint16
 #else
-		ILI9341_readPix(x, y, &r, &g, &b);
+		ILI9341_readPix(x, y, &buf[i]);
 		if(++x > x2) {
 			x = x1;
 			if(++y > y2)
 				y = y1;
 		}
 #endif
-		buf[i]=(((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u));//RGB565 to uint16
+
 	}
 #ifndef __SIMULATION
 	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);

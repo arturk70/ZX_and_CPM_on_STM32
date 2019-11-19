@@ -14,7 +14,7 @@ static void cpmsys_load() {
 
 void cpmsys_Run() {
 	mem_Init(MEMTYPE_CPM);
-	cpmdisp_init();
+	cpmcons_clear();
 	z80_Init(cpmports_out, cpmports_in);
 
 	cpmsys_load();
@@ -22,9 +22,6 @@ void cpmsys_Run() {
 	while(1) {
 		z80_step();
 	}
-
-//	mem_deInit();
-	cpmdisp_deinit();
 }
 
 void cpmports_out(uint16_t addr, uint8_t data) {

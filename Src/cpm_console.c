@@ -5,8 +5,9 @@
  *      Author: Artur
  */
 
+#include "cpm_console.h"
+
 #include "stdlib.h"
-#include "cpm_display.h"
 #include "cpm_font.h"
 
 static uint8_t cpos[2] = {0,0};
@@ -70,7 +71,7 @@ static void setcursor(uint8_t row, uint8_t col) {
 	drawsymbol(row, col, 1);
 }
 
-void cpmdisp_scroll(uint8_t lnum) {
+void cpmcons_scroll(uint8_t lnum) {
 	for(register uint8_t i=0; i< SCR_HEIGHT-lnum; i++) {
 		for(register uint8_t j=0; j< SCR_WIDTH; j++) {
 			scrbuf[i*SCR_WIDTH+j] = scrbuf[(i+lnum)*SCR_WIDTH+j];
@@ -84,26 +85,26 @@ void cpmdisp_scroll(uint8_t lnum) {
 	ILI9341_fillArea(CPMD_START_POS, CPMD_END_LINE-FNT_HEIGHT*lnum+1, CPMD_END_POS, CPMD_END_LINE, BG_COLOR);
 }
 
-void cpmdisp_init() {
+void cpmcons_init() {
 	scrbuf = malloc(SCR_HEIGHT*SCR_WIDTH);
 	chbuf = malloc(FNT_WIDTH*FNT_HEIGHT*2);
-	cpmdisp_clear();
+	cpmcons_clear();
 	for(register uint8_t i=0;i<SCR_HEIGHT;i++)
 		for(register uint8_t j=0; j< SCR_WIDTH; j++)
 			scrbuf[i*SCR_WIDTH+j]=0x00;
 	setcursor(0, 0);
 }
 
-void cpmdisp_deinit() {
+void cpmcons_deinit() {
 	free(scrbuf);
 	free(chbuf);
 }
 
-void cpmdisp_clear() {
+void cpmcons_clear() {
 	ILI9341_fillArea(CPMD_START_POS-2, CPMD_START_LINE, CPMD_END_POS+2, CPMD_END_LINE, BG_COLOR);
 }
 
-void cpmdisp_putc(char c) {
+void cpmcons_putc(char c) {
 	c &= 0x7f;
 	register uint8_t newrow = cpos[ROW], newcol = cpos[COL];
 
@@ -188,7 +189,7 @@ void cpmdisp_putc(char c) {
 	}
 	else if(c == '\n') {//LineFeed
 		if(cpos[ROW] == SCR_HEIGHT-1) {
-			cpmdisp_scroll(1);
+			cpmcons_scroll(1);
 			newrow = SCR_HEIGHT-1; newcol = 0;
 		}
 		else {
@@ -209,7 +210,7 @@ void cpmdisp_putc(char c) {
 
 		if(cpos[COL] == SCR_WIDTH-1) {
 			if(cpos[ROW] == SCR_HEIGHT-1) {
-				cpmdisp_scroll(1);
+				cpmcons_scroll(1);
 				newrow = SCR_HEIGHT-1; newcol = 0;
 			}
 			else {
@@ -223,16 +224,42 @@ void cpmdisp_putc(char c) {
 	setcursor(newrow, newcol);
 }
 
-void cpmdisp_puts(const char *s) {
+void cpmcons_puts(const char *s) {
 	for(register uint16_t i=0;s[i]!='\0';i++)
-		cpmdisp_putc(s[i]);
+		cpmcons_putc(s[i]);
 }
 
-void cpmdisp_errmsg(uint8_t errno, const char *s) {
+void cpmcons_errmsg(uint8_t errno, const char *s) {
 	char buf[4];
-	cpmdisp_puts("Error #");
-	cpmdisp_puts(utoa(errno, buf, 10));
-	cpmdisp_putc(' ');
-	cpmdisp_puts(s);
-	cpmdisp_putc('\n');
+	cpmcons_puts("Error #");
+	cpmcons_puts(utoa(errno, buf, 10));
+	cpmcons_putc(' ');
+	cpmcons_puts(s);
+	cpmcons_putc('\n');
+}
+
+char cpmcons_getc() {
+	register char sym = '\0';
+	do {
+		sym = cpmkbd_read();
+	} while('\0' == sym);
+
+	return sym;
+}
+
+void cpmcons_gets(char* buf, uint8_t num) {
+	register uint8_t ptr = 0;
+	register char sym;
+	do {
+		sym = cpmcons_getc();
+		cpmcons_putc(sym);
+		if(sym == '\n')
+			break;
+		else if(sym == '\b') {
+			ptr--;
+		}
+		else
+			buf[ptr++] = sym;
+	} while(ptr < num);
+	buf[ptr] = '\0';
 }

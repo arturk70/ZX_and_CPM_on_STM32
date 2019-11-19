@@ -9,6 +9,17 @@
 
 static char prvchar;
 
+static const char keytable[8][5] = {
+		{'\0','z','x','c','v'},
+		{'a','s','d','f','g'},
+		{'q','w','e','r','t'},
+		{'1','2','3','4','5'},
+		{'0','9','8','7','6'},
+		{'p','o','i','u','y'},
+		{'\n','l','k','j','h'},
+		{' ','\0','m','n','b'}
+};
+
 #ifdef __SIMULATION
 uint8_t ext_kbdscans[8];
 #endif
@@ -39,89 +50,78 @@ uint8_t zxkbd_scan(uint8_t addr) {
 char cpmkbd_read() {
 	//TODO optimize algorithm
 	register char res='\0';
-	uint8_t kbdscans[8];
+	register uint8_t kbdscan, is_cs = 0, is_ss = 0;
 
-	for(register uint8_t i=0; i<8; i++)
-		kbdscans[i] = ~zxkbd_scan(~(0x01<<i));
-
-	if(kbdscans[6] & 0x01)
-		res = '\n';//Enter
-	else  if(kbdscans[7] & 0x01) {//Space
-		res = ' ';
-	}
-	else {
-		res = (kbdscans[3] & 0x01) ? '1' : ((kbdscans[3] & 0x02) ? '2' : ((kbdscans[3] & 0x04) ? '3' : ((kbdscans[3] & 0x08) ? '4' : ((kbdscans[3] & 0x10) ? '5' : res))));
-		res = (kbdscans[4] & 0x01) ? '0' : ((kbdscans[4] & 0x02) ? '9' : ((kbdscans[4] & 0x04) ? '8' : ((kbdscans[4] & 0x08) ? '7' : ((kbdscans[4] & 0x10) ? '6' : res))));
-		if(res != '\0') {
-			if(IS_SHIFT) {
-				if(res == '0')
-					res = (char)0x08;//backspace
-				else if(res == '1')
-					res = (char)0x1b;//ESC
-				else
-					res = '\0';
+	for(register uint8_t i=0; i<8; i++) {
+		kbdscan = ~zxkbd_scan(~(0x01<<i));
+		for(register uint8_t j=0; j<5; j++) {
+			if(kbdscan & (0x01<<j)) {
+				if(i == 0 && j == 0)
+					is_cs = 1;
+				else if(i == 7 && j == 1)
+					is_ss = 1;
+				else {
+					res = keytable[i][j];
+					break;
+				}
 			}
-			else if(IS_CONTROL) {
-					switch (res) {
-					case '1': res = '!'; break;
-					case '2': res = '@'; break;
-					case '3': res = '#'; break;
-					case '4': res = '$'; break;
-					case '5': res = '%'; break;
-					case '6': res = '&'; break;
-					case '7': res = '\''; break;
-					case '8': res = '('; break;
-					case '9': res = ')'; break;
-					case '0': res = '_'; break;
-					}
+		}
+		if(res) break;
+	}
+
+	if(res) {
+		if(is_cs) {
+			if(is_ss) {
+				res = res - 0x60; //CTRL codes
+			}
+			else {
+				if(res == ' ')
+					res = (char)0x1b;//Escape
+				else if(res == '0')
+					res = '\b';//Backspace
+				else
+					res = res - 0x20; //Upper case
 			}
 		}
 		else {
-			res =                           	(kbdscans[0] & 0x02) ? 'z' : ((kbdscans[0] & 0x04) ? 'x' : ((kbdscans[0] & 0x08) ? 'c' : ((kbdscans[0] & 0x10) ? 'v' : res)));
-			res = (kbdscans[1] & 0x01) ? 'a' : ((kbdscans[1] & 0x02) ? 's' : ((kbdscans[1] & 0x04) ? 'd' : ((kbdscans[1] & 0x08) ? 'f' : ((kbdscans[1] & 0x10) ? 'g' : res))));
-			res = (kbdscans[2] & 0x01) ? 'q' : ((kbdscans[2] & 0x02) ? 'w' : ((kbdscans[2] & 0x04) ? 'e' : ((kbdscans[2] & 0x08) ? 'r' : ((kbdscans[2] & 0x10) ? 't' : res))));
-			res = (kbdscans[5] & 0x01) ? 'p' : ((kbdscans[5] & 0x02) ? 'o' : ((kbdscans[5] & 0x04) ? 'i' : ((kbdscans[5] & 0x08) ? 'u' : ((kbdscans[5] & 0x10) ? 'y' : res))));
-			res =                           	(kbdscans[6] & 0x02) ? 'l' : ((kbdscans[6] & 0x04) ? 'k' : ((kbdscans[6] & 0x08) ? 'j' : ((kbdscans[6] & 0x10) ? 'h' : res)));
-			res =                                                     		  (kbdscans[7] & 0x04) ? 'm' : ((kbdscans[7] & 0x08) ? 'n' : ((kbdscans[7] & 0x10) ? 'b' : res));
-			if(res != '\0') {
-				if(IS_SHIFT) {
-					if(IS_CONTROL) {
-						res = res - 0x60; //CTRL codes
-					}
-					else {
-						res = res - 0x20; //Upper case
-					}
-				}
-				else {
-					if(IS_CONTROL) {
-						switch (res) {
-						case 'r': res = '<'; break;
-						case 't': res = '>'; break;
-						case 'y': res = '['; break;
-						case 'u': res = ']'; break;
-						case 'o': res = ';'; break;
-						case 'p': res = '"'; break;
+			if(is_ss) {
+				switch (res) {
+				case '1': res = '!'; break;
+				case '2': res = '@'; break;
+				case '3': res = '#'; break;
+				case '4': res = '$'; break;
+				case '5': res = '%'; break;
+				case '6': res = '&'; break;
+				case '7': res = '\''; break;
+				case '8': res = '('; break;
+				case '9': res = ')'; break;
+				case '0': res = '_'; break;
 
-						case 'a': res = '~'; break;
-						case 's': res = '|'; break;
-						case 'd': res = '\\'; break;
-						case 'f': res = '{'; break;
-						case 'g': res = '}'; break;
-						case 'h': res = '^'; break;
-						case 'j': res = '-'; break;
-						case 'k': res = '+'; break;
-						case 'l': res = '='; break;
+				case 'r': res = '<'; break;
+				case 't': res = '>'; break;
+				case 'y': res = '['; break;
+				case 'u': res = ']'; break;
+				case 'o': res = ';'; break;
+				case 'p': res = '"'; break;
 
-						case 'z': res = ':'; break;
-						case 'x': res = '`'; break;
-						case 'c': res = '?'; break;
-						case 'v': res = '/'; break;
-						case 'b': res = '*'; break;
-						case 'n': res = ','; break;
-						case 'm': res = '.'; break;
-						default: res = '\0';
-						}
-					}
+				case 'a': res = '~'; break;
+				case 's': res = '|'; break;
+				case 'd': res = '\\'; break;
+				case 'f': res = '{'; break;
+				case 'g': res = '}'; break;
+				case 'h': res = '^'; break;
+				case 'j': res = '-'; break;
+				case 'k': res = '+'; break;
+				case 'l': res = '='; break;
+
+				case 'z': res = ':'; break;
+				case 'x': res = '`'; break;
+				case 'c': res = '?'; break;
+				case 'v': res = '/'; break;
+				case 'b': res = '*'; break;
+				case 'n': res = ','; break;
+				case 'm': res = '.'; break;
+				default: res = '\0';
 				}
 			}
 		}

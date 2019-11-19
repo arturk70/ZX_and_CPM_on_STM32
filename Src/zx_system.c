@@ -44,23 +44,12 @@ void zxsys_Run() {
 		if(tstates >= 1140)
 			tstates -= 1140;
 	}
-
-//	mem_deInit();
 }
 
 void zxports_out(uint16_t addr, uint8_t data) {
 	if((addr & 0x00ff) == 0x00fe) {
 		zx_border_color = (((data << 10) & 0x0800) | ((data << 4) & 0x0040) | (data & 0x0001)) * 0x18;
 	}
-//	else if((addr == 0x00ff) & (data == 0x00)) {
-//		//exit from ZX spectrum emulator
-//		zxsys_isrun = 0;
-//		cpmdisp_init();
-//	}
-//	else if((addr == 0x00ff) & (data == 0x01)) {
-//		//load Z80 snapshot
-//		z80_load();
-//	}
 }
 
 uint8_t zxports_in(uint16_t addr) {
@@ -68,7 +57,7 @@ uint8_t zxports_in(uint16_t addr) {
 	if((addr & 0x00ff) == 0x00fe) {
 		res = zxkbd_scan(addr>>8);
 		if(((addr>>8) == 0x7f) && ((res & 0x1f) == 0x1c)) {//SS+Break
-			z80_load();
+			z80_menu();
 			return 0xff;
 		}
 

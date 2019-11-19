@@ -5,10 +5,11 @@
  *      Author: Artur
  */
 
-#ifndef CPM_DISPLAY_H_
-#define CPM_DISPLAY_H_
+#ifndef CPM_CONSOLE_H_
+#define CPM_CONSOLE_H_
 
 #include "ili9341_driver.h"
+#include "kbd_driver.h"
 
 #define SCR_WIDTH	50
 #define SCR_HEIGHT	24
@@ -28,12 +29,14 @@
 #define ROW	1
 #define CURSOR_CHAR	0x5f
 
-void cpmdisp_init();
-void cpmdisp_clear();
-void cpmdisp_deinit();
-void cpmdisp_putc(char c);
-void cpmdisp_puts(const char *s);
-void cpmdisp_errmsg(uint8_t errno, const char *s);
+void cpmcons_init();
+void cpmcons_clear();
+void cpmcons_deinit();
+void cpmcons_putc(char c);
+void cpmcons_puts(const char *s);
+void cpmcons_errmsg(uint8_t errno, const char *s);
+char cpmcons_getc();
+void cpmcons_gets(char *, uint8_t num);
 
 
-#endif /* CPM_DISPLAY_H_ */
+#endif /* CPM_CONSOLE_H_ */

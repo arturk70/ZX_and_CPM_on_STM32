@@ -24,11 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stdlib.h"
-#include "cpm_system.h"
-#include "zx_system.h"
-#include "memory.h"
-#include "kbd_driver.h"
+#include "mainfnc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -104,129 +100,19 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_SPI2_Init();
-  MX_USART1_UART_Init();
   MX_FATFS_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  ILI9341_Init();
+  main_init();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  char buf[20];
-  cpmdisp_init();
 
-  	retUSER = f_mount(&USERFatFS, "0", 1);
-  	if(retUSER != FR_OK) {
-  		cpmdisp_errmsg(retUSER, "mount drive");
-  	}
 
   	while (1) {
-  		char sym = '\0';
-  		cpmdisp_puts("\nPress <6> for ZX Spectrum\n" \
-  					 "Press <7> for CP/M\n" \
-/*  		             "Press <8> for ZX memory test\n" \*/
-  		             "Press <9> for SD dir\n" \
-  		             "Press <0> for brightness\n>");
-
-  		do {
-  			sym = cpmkbd_read();
-  			uint8_t u = 0;
-  			if(LL_USART_IsActiveFlag_RXNE(USART1)) {
-  				u=LL_USART_ReceiveData8(USART1);
-  				while (!LL_USART_IsActiveFlag_TXE(USART1));
-  				LL_USART_TransmitData8(USART1, u);
-  			}
-  		} while('\0' == sym);
-  		cpmdisp_putc(sym);
-  		if(sym == '6') {
-  			cpmdisp_deinit();
-  			zxsys_Run();
-  			cpmdisp_init();
-  		}
-  		else if(sym == '7') {
-  			cpmdisp_deinit();
-  			cpmsys_Run();
-  			cpmdisp_init();
-  		}
-//  		else if(sym == '8') {
-//				//TODO for test only - remove
-//  			mem_Init(MEMTYPE_ZX);
-//
-//  			uint16_t errors = mem_test();
-//  			cpmdisp_puts("\n\n\n\n\n    Linear memory test: ");
-//  			if(0 == errors) cpmdisp_puts("successfully");
-//  			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
-//  			cpmdisp_puts("!\n\nPress any key for continue\n");
-//  			do { sym = cpmkbd_read(); } while('\0' == sym);
-//
-//  			errors = mem_rnd_test();
-//  			cpmdisp_puts("\n\n    Random memory test: ");
-//  			if(0 == errors) cpmdisp_puts("successfully");
-//  			else { cpmdisp_puts(utoa(errors, buf, 10));cpmdisp_puts(" errors"); }
-//  			cpmdisp_puts("!\n");
-//
-//  			mem_deInit();
-//  		}
-  		else if(sym == '9') {
-  			//TODO for test only - remove
-  			cpmdisp_puts("\nEnter dir:>");
-
-  			sym = '\0';
-  			char dpath[100];
-  			dpath[0] = '0';
-  			dpath[1] = ':';
-  			dpath[2] = '\0';
-  			uint8_t dpptr = 2;
-  			while(1) {
-  				do { sym = cpmkbd_read(); } while('\0' == sym);
-  				cpmdisp_putc(sym);
-  				if('\n' == sym) break;
-  				dpath[dpptr] = sym;
-  				dpath[++dpptr] = '\0';
-  			}
-
-  			DIR dir;
-  			FILINFO fi;
-
-  			retUSER = f_opendir(&dir, dpath);
-  			if(retUSER != FR_OK) {
-  				cpmdisp_errmsg(retUSER, "open dir");
-  			}
-
-  			do {
-  				retUSER = f_readdir(&dir, &fi);
-  				if(fi.fname[0] == '\0')
-  					break;
-
-  				if(fi.fattrib & AM_DIR)
-  					cpmdisp_putc('/');
-  				cpmdisp_puts(fi.fname);
-  				cpmdisp_putc(' ');
-  				if(fi.fattrib & AM_DIR)
-  					cpmdisp_putc('\n');
-  				else {
-  					cpmdisp_puts(utoa(fi.fsize, buf, 10));
-  					cpmdisp_puts("b\n");
-  				}
-  			} while(retUSER == FR_OK);
-
-  			if(retUSER != FR_OK)
-  				cpmdisp_errmsg(retUSER, "read dir");
-
-  			f_closedir(&dir);
-  		}
-  		else if(sym == '0') {
-  			cpmdisp_puts("\n\nEnter brightness[1-0]=[10%-100%]>");
-  			do { sym = cpmkbd_read(); } while('\0' == sym);
-  			cpmdisp_putc(sym);
-  			if('0' == sym)
-  				ILI9341_setLEDpwm(1000);
-  			else if((sym >= '1') &(sym <= '9'))
-  				ILI9341_setLEDpwm((sym-'1')*100+100);
-  		}
-
-  		cpmdisp_puts("\n\n");
+  		main_loop();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
