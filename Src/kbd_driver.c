@@ -19,6 +19,16 @@ static const char keytable[8][5] = {
 		{'\n','l','k','j','h'},
 		{' ','\0','m','n','b'}
 };
+static const char skeytable[8][5] = {
+		{'\0',':','`','?','/'},
+		{'~','|','\\','{','}'},
+		{'\0','\0','\0','<','>'},
+		{'!','@','#','$','%'},
+		{'_',')','(','\'','&'},
+		{'"',';','i',']','['},
+		{'\r','=','+','-','^'},
+		{' ','\0','.',',','*'}
+};
 
 #ifdef __SIMULATION
 uint8_t ext_kbdscans[8];
@@ -49,7 +59,7 @@ uint8_t zxkbd_scan(uint8_t addr) {
 
 char cpmkbd_read() {
 	//TODO optimize algorithm
-	register char res='\0';
+	register char res='\0', sres='\0';
 	register uint8_t kbdscan, is_cs = 0, is_ss = 0;
 
 	for(register uint8_t i=0; i<8; i++) {
@@ -62,6 +72,7 @@ char cpmkbd_read() {
 					is_ss = 1;
 				else {
 					res = keytable[i][j];
+					sres = skeytable[i][j];
 					break;
 				}
 			}
@@ -85,44 +96,7 @@ char cpmkbd_read() {
 		}
 		else {
 			if(is_ss) {
-				switch (res) {
-				case '1': res = '!'; break;
-				case '2': res = '@'; break;
-				case '3': res = '#'; break;
-				case '4': res = '$'; break;
-				case '5': res = '%'; break;
-				case '6': res = '&'; break;
-				case '7': res = '\''; break;
-				case '8': res = '('; break;
-				case '9': res = ')'; break;
-				case '0': res = '_'; break;
-
-				case 'r': res = '<'; break;
-				case 't': res = '>'; break;
-				case 'y': res = '['; break;
-				case 'u': res = ']'; break;
-				case 'o': res = ';'; break;
-				case 'p': res = '"'; break;
-
-				case 'a': res = '~'; break;
-				case 's': res = '|'; break;
-				case 'd': res = '\\'; break;
-				case 'f': res = '{'; break;
-				case 'g': res = '}'; break;
-				case 'h': res = '^'; break;
-				case 'j': res = '-'; break;
-				case 'k': res = '+'; break;
-				case 'l': res = '='; break;
-
-				case 'z': res = ':'; break;
-				case 'x': res = '`'; break;
-				case 'c': res = '?'; break;
-				case 'v': res = '/'; break;
-				case 'b': res = '*'; break;
-				case 'n': res = ','; break;
-				case 'm': res = '.'; break;
-				default: res = '\0';
-				}
+				res = sres;
 			}
 		}
 	}
