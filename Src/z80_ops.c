@@ -624,55 +624,55 @@ void NEG_(uint8_t code, int8_t *tstates) {
 
 void SBCx(uint8_t code, int8_t *tstates) {
 	register uint32_t tmp;
-	register uint16_t reg;
+	register uint8_t reg;
 
 	switch ((code & 0x30) >> 4) {
 	case 0x00://SBC HL, BC
 		tmp = HL - BC - (F & FLAG_C);
-		reg = BC;
+		reg = B;
 		break;
 	case 0x01://SBC HL, DE
 		tmp = HL - DE - (F & FLAG_C);
-		reg = DE;
+		reg = D;
 		break;
 	case 0x02://SBC HL, HL
 		tmp = HL - HL - (F & FLAG_C);
-		reg = HL;
+		reg = H;
 		break;
 	case 0x03://SBC HL, SP
 		tmp = HL - SP - (F & FLAG_C);
-		reg = SP;
+		reg = SPH;
 		break;
 	}
 
-	F = (calc_F(H, (reg >> 8), (tmp >> 8), 1) & ~FLAG_Z)  | ((tmp & 0xffff) ? 0 : FLAG_Z);
+	F = (calc_F(H, reg, (tmp >> 8), 1) & ~FLAG_Z)  | ((tmp & 0xffff) ? 0 : FLAG_Z);
 	HL = (uint16_t)tmp;
 }
 
 void ADCx(uint8_t code, int8_t *tstates) {
 	register uint32_t tmp;
-	register uint16_t reg;
+	register uint8_t reg;
 
 	switch ((code & 0x30) >> 4) {
 	case 0x00://ADC HL, BC
 		tmp = HL + BC + (F & FLAG_C);
-		reg = BC;
+		reg = B;
 		break;
 	case 0x01://ADC HL, DE
 		tmp = HL + DE + (F & FLAG_C);
-		reg = DE;
+		reg = D;
 		break;
 	case 0x02://ADC HL, HL
 		tmp = HL + HL + (F & FLAG_C);
-		reg = HL;
+		reg = H;
 		break;
 	case 0x03://ADC HL, SP
 		tmp = HL + SP + (F & FLAG_C);
-		reg = SP;
+		reg = SPH;
 		break;
 	}
 
-	F = (calc_F(H, (reg >> 8), (tmp >> 8), 0) & ~FLAG_Z)  | ((tmp & 0xffff) ? 0 : FLAG_Z);
+	F = (calc_F(H, reg, (tmp >> 8), 0) & ~FLAG_Z)  | ((tmp & 0xffff) ? 0 : FLAG_Z);
 	HL = (uint16_t)tmp;
 }
 
