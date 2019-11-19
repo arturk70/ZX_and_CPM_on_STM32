@@ -487,6 +487,18 @@ void ALx(uint8_t code, int8_t *tstates) {
 	HLIXIY_REG = tmp;
 }
 
+static uint8_t calc_F(uint8_t src1, uint8_t src2, uint16_t res, uint8_t op) {
+	if(op == 0) {//ADD
+		return CALC_C(res) | CALC_ADD_H(src1, src2, res) | CALC_ADD_V(src1, src2, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+	}
+	else if(op == 1) {//SUB
+		return CALC_C(res) | FLAG_N | CALC_SUB_H(src1, src2, res) | CALC_SUB_V(src1, src2, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+	}
+	else {//CP
+		return CALC_C(res) | FLAG_N | CALC_SUB_H(src1, src2, res) | CALC_SUB_V(src1, src2, res) | (src2 & (FLAG_3 | FLAG_5)) | (res & FLAG_S) | CALC_Z(res);
+	}
+}
+
 void ALn(uint8_t code, int8_t *tstates) {
 	//TODO optimize F settings
 	register uint8_t src = mem_read(PC++);
@@ -494,12 +506,14 @@ void ALn(uint8_t code, int8_t *tstates) {
 	switch ((code & 0x38) >> 3) {
 	case 0x00://ADD A,*
 		res = A + src;
-		F = CALC_C(res) | CALC_ADD_H(A, src, res) | CALC_ADD_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+		F = calc_F(A, src, res, 0);
+//		F = CALC_C(res) | CALC_ADD_H(A, src, res) | CALC_ADD_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
 		A = res;
 		break;
 	case 0x02://SUB A,*
 		res = A - src;
-		F = CALC_C(res) | FLAG_N |	CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+		F = calc_F(A, src, res, 1);
+//		F = CALC_C(res) | FLAG_N |	CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
 		A = res;
 		break;
 	case 0x04://AND *
@@ -512,12 +526,14 @@ void ALn(uint8_t code, int8_t *tstates) {
 		break;
 	case 0x01://ADC A,*
 		res = A + src + (F & FLAG_C);
-		F = CALC_C(res) | CALC_ADD_H(A, src, res) | CALC_ADD_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+		F = calc_F(A, src, res, 0);
+//		F = CALC_C(res) | CALC_ADD_H(A, src, res) | CALC_ADD_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
 		A = res;
 		break;
 	case 0x03://SBC A,*
 		res = A - src - (F & FLAG_C);
-		F = CALC_C(res) | FLAG_N |	CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+		F = calc_F(A, src, res, 1);
+//		F = CALC_C(res) | FLAG_N |	CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
 		A = res;
 		break;
 	case 0x05://XOR *
@@ -526,7 +542,8 @@ void ALn(uint8_t code, int8_t *tstates) {
 		break;
 	case 0x07://CP *
 		res = A - src;
-		F = CALC_C(res) | FLAG_N | CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (src & (FLAG_3 | FLAG_5)) | (res & FLAG_S) | CALC_Z(res);
+		F = calc_F(A, src, res, 2);
+//		F = CALC_C(res) | FLAG_N | CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (src & (FLAG_3 | FLAG_5)) | (res & FLAG_S) | CALC_Z(res);
 		break;
 	}
 }
@@ -557,24 +574,28 @@ void ALU(uint8_t code, int8_t *tstates) {
 	if((code & 0xf0) == 0x80) {
 		if(code & 0x08) {//ADC
 			res = A + src + (F & FLAG_C);
-			F = CALC_C(res) | CALC_ADD_H(A, src, res) | CALC_ADD_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+			F = calc_F(A, src, res, 0);
+//			F = CALC_C(res) | CALC_ADD_H(A, src, res) | CALC_ADD_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
 			A = res;
 		}
 		else {//ADD
 			res = A + src;
-			F = CALC_C(res) | CALC_ADD_H(A, src, res) | CALC_ADD_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+			F = calc_F(A, src, res, 0);
+//			F = CALC_C(res) | CALC_ADD_H(A, src, res) | CALC_ADD_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
 			A = res;
 		}
 	}
 	else if((code & 0xf0) == 0x90) {
 		if(code & 0x08) {//SBC
 			res = A - src - (F & FLAG_C);
-			F = CALC_C(res) | FLAG_N |	CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+			F = calc_F(A, src, res, 1);
+//			F = CALC_C(res) | FLAG_N |	CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
 			A = res;
 		}
 		else {//SUB
 			res = A - src;
-			F = CALC_C(res) | FLAG_N |	CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+			F = calc_F(A, src, res, 1);
+//			F = CALC_C(res) | FLAG_N |	CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
 			A = res;
 		}
 	}
@@ -591,7 +612,8 @@ void ALU(uint8_t code, int8_t *tstates) {
 	else if((code & 0xf0) == 0xb0) {
 		if(code & 0x08) {//CP
 			res = A - src;
-			F = CALC_C(res) | FLAG_N | CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (src & (FLAG_3 | FLAG_5)) | (res & FLAG_S) | CALC_Z(res);
+			F = calc_F(A, src, res, 2);
+//			F = CALC_C(res) | FLAG_N | CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (src & (FLAG_3 | FLAG_5)) | (res & FLAG_S) | CALC_Z(res);
 		}
 		else {//OR
 			A |= src;
@@ -606,7 +628,8 @@ void NEG_(uint8_t code, int8_t *tstates) {
 	src = A;
 	A = 0;
 	res = A-src;
-	F = CALC_C(res) | FLAG_N |	CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
+	F = calc_F(A, src, res, 1);
+//	F = CALC_C(res) | FLAG_N |	CALC_SUB_H(A, src, res) | CALC_SUB_V(A, src, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
 	A = res;
 }
 
