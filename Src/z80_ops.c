@@ -487,7 +487,7 @@ void ALx(uint8_t code, int8_t *tstates) {
 	HLIXIY_REG = tmp;
 }
 
-static uint8_t calc_F(uint8_t src1, uint8_t src2, uint16_t res, uint8_t op) {
+static uint8_t calc_F(uint8_t src1, uint8_t src2, int16_t res, uint8_t op) {
 	if(op == 0) {//ADD
 		return CALC_C(res) | CALC_ADD_H(src1, src2, res) | CALC_ADD_V(src1, src2, res) | (sz53p_table[(res & 0x00ff)] & ~FLAG_P);
 	}
@@ -500,7 +500,6 @@ static uint8_t calc_F(uint8_t src1, uint8_t src2, uint16_t res, uint8_t op) {
 }
 
 void ALn(uint8_t code, int8_t *tstates) {
-	//TODO optimize F settings
 	register uint8_t src = mem_read(PC++);
 	register int16_t res;
 	switch ((code & 0x38) >> 3) {
@@ -546,7 +545,7 @@ void ALn(uint8_t code, int8_t *tstates) {
 void ALU(uint8_t code, int8_t *tstates) {
 	register int8_t ixiyshift = 0;
 	register uint8_t src;
-	register uint16_t res;
+	register int16_t res;
 
 	switch(code & 0x07) {
 	case 0x07://A
@@ -614,7 +613,7 @@ void ALU(uint8_t code, int8_t *tstates) {
 
 void NEG_(uint8_t code, int8_t *tstates) {
 	register uint8_t src;
-	register uint16_t res;
+	register int16_t res;
 	src = A;
 	A = 0;
 	res = A-src;
@@ -624,55 +623,55 @@ void NEG_(uint8_t code, int8_t *tstates) {
 
 void SBCx(uint8_t code, int8_t *tstates) {
 	register uint32_t tmp;
-	register uint16_t reg;
+	register uint8_t reg;
 
 	switch ((code & 0x30) >> 4) {
 	case 0x00://SBC HL, BC
 		tmp = HL - BC - (F & FLAG_C);
-		reg = BC;
+		reg = B;
 		break;
 	case 0x01://SBC HL, DE
 		tmp = HL - DE - (F & FLAG_C);
-		reg = DE;
+		reg = D;
 		break;
 	case 0x02://SBC HL, HL
 		tmp = HL - HL - (F & FLAG_C);
-		reg = HL;
+		reg = H;
 		break;
 	case 0x03://SBC HL, SP
 		tmp = HL - SP - (F & FLAG_C);
-		reg = SP;
+		reg = SPH;
 		break;
 	}
 
-	F = (calc_F(H, (reg >> 8), (tmp >> 8), 1) & ~FLAG_Z)  | ((tmp & 0xffff) ? 0 : FLAG_Z);
+	F = (calc_F(H, reg, (tmp >> 8), 1) & ~FLAG_Z)  | ((tmp & 0xffff) ? 0 : FLAG_Z);
 	HL = (uint16_t)tmp;
 }
 
 void ADCx(uint8_t code, int8_t *tstates) {
 	register uint32_t tmp;
-	register uint16_t reg;
+	register uint8_t reg;
 
 	switch ((code & 0x30) >> 4) {
 	case 0x00://ADC HL, BC
 		tmp = HL + BC + (F & FLAG_C);
-		reg = BC;
+		reg = B;
 		break;
 	case 0x01://ADC HL, DE
 		tmp = HL + DE + (F & FLAG_C);
-		reg = DE;
+		reg = D;
 		break;
 	case 0x02://ADC HL, HL
 		tmp = HL + HL + (F & FLAG_C);
-		reg = HL;
+		reg = H;
 		break;
 	case 0x03://ADC HL, SP
 		tmp = HL + SP + (F & FLAG_C);
-		reg = SP;
+		reg = SPH;
 		break;
 	}
 
-	F = (calc_F(H, (reg >> 8), (tmp >> 8), 0) & ~FLAG_Z)  | ((tmp & 0xffff) ? 0 : FLAG_Z);
+	F = (calc_F(H, reg, (tmp >> 8), 0) & ~FLAG_Z)  | ((tmp & 0xffff) ? 0 : FLAG_Z);
 	HL = (uint16_t)tmp;
 }
 
