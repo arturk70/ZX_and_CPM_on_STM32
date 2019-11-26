@@ -13,8 +13,7 @@
 static uint8_t z80_loadfile(const char *fname) {
 	retUSER = f_open(&USERFile, fname, FA_READ);
 	if(retUSER != FR_OK) {
-		cpmcons_errmsg(retUSER, "open file");
-		return 1;
+		return retUSER;
 	}
 	else {
 		uint8_t buf[BUFSIZE], b12;
@@ -22,8 +21,7 @@ static uint8_t z80_loadfile(const char *fname) {
 
 		retUSER = f_read(&USERFile, buf, 30, &size);
 		if(retUSER != FR_OK) {
-			cpmcons_errmsg(retUSER, "read file");
-			return 1;
+			return retUSER;
 		}
 		else {
 			A = buf[0];
@@ -57,8 +55,6 @@ static uint8_t z80_loadfile(const char *fname) {
 			IFF2 = buf[28];
 			IM = buf[29] & 0x03;
 
-//					if(b12 == 0xff)
-//						b12 = 0x01;
 			R = (R & 0x7f) | (b12 << 7);
 			zx_border_color = (((b12 << 9) & 0x0800) | ((b12 << 3) & 0x0040) | ((b12 >> 1) & 0x0001)) * 0x18;
 			// (b12 & 0x20) --- RLE compression used
@@ -72,8 +68,7 @@ static uint8_t z80_loadfile(const char *fname) {
 					}
 
 					if(addr == 0) { //end of memory reached
-						cpmcons_errmsg(0xff, "load: end of memory.");
-						return 1;
+						return 0xff;
 					}
 
 					if(rle) {
@@ -88,8 +83,7 @@ static uint8_t z80_loadfile(const char *fname) {
 						else {
 							num = buf[i];
 							if(num < 0x05 && !(num == 0x02 && buf[i+1] == 0xed)) {
-								cpmcons_errmsg(0xff, "load: incorrect num in RLE block.");
-								return 1;
+								return 0xfe;
 							}
 						}
 
@@ -196,8 +190,10 @@ void z80_menu() {
 			fname[fnptr++] = '0';
 			fname[fnptr] = '\0';
 
-			if(z80_loadfile(fname) == 0)
+			if((retUSER = z80_loadfile(fname)) == 0)
 				break;
+			else
+				cpmcons_errmsg(retUSER, "load .z80 file");
 		}
 	}
 
