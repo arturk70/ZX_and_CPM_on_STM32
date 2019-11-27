@@ -196,19 +196,19 @@ void ILI9341_readPix(uint16_t x, uint16_t y, uint16_t *pix) {
 	ILI9341_sendCommand(ILI9341_RAMRD);
 	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV8);
 	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
 	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 	r=LL_SPI_ReceiveData8(ILI9341_SPI);//read dummy byte
 	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
 	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 	r=LL_SPI_ReceiveData8(ILI9341_SPI);
 	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
 	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 	g=LL_SPI_ReceiveData8(ILI9341_SPI);
 	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
 	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 	b=LL_SPI_ReceiveData8(ILI9341_SPI);
 	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
@@ -285,7 +285,7 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV8);
 
 	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-	LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+	LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
 	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 	r=LL_SPI_ReceiveData8(ILI9341_SPI);//read dummy byte
 #else
@@ -295,15 +295,15 @@ void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_
 	for(register uint16_t i=0; i<len;i++) {
 #ifndef __SIMULATION
 		while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-		LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+		LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
 		while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 		r=LL_SPI_ReceiveData8(ILI9341_SPI);
 		while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-		LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+		LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
 		while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 		g=LL_SPI_ReceiveData8(ILI9341_SPI);
 		while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
-		LL_SPI_TransmitData8(ILI9341_SPI, 0xaa);
+		LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
 		while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
 		b=LL_SPI_ReceiveData8(ILI9341_SPI);
 
