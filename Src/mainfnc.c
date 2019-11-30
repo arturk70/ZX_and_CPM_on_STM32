@@ -28,8 +28,6 @@ void main_loop() {
 	register char sym = '\0';
 	cpmcons_puts("\nPress <6> for ZX Spectrum\n" \
 			"Press <7> for CP/M\n" \
-			"Press <8> for UART test\n" \
-			"Press <9> for SD dir\n" \
 			"Press <0> for brightness\n>");
 
 	sym = cpmcons_getc();
@@ -42,18 +40,7 @@ void main_loop() {
 	else if(sym == '7') {
 		cpmsys_Run();
 	}
-	else if(sym == '8') {
-//				//TODO for test only - remove
-#ifndef __SIMULATION
-		register uint8_t u = 0;
-		if(LL_USART_IsActiveFlag_RXNE(USART1)) {
-			u=LL_USART_ReceiveData8(USART1);
-			while (!LL_USART_IsActiveFlag_TXE(USART1));
-			LL_USART_TransmitData8(USART1, u);
-		}
-#endif
-	}
-	else if(sym == '9') {
+//	else if(sym == '9') {
 //  			//TODO for test only - remove
 //  			cpmcons_puts("\nEnter dir:>");
 //
@@ -94,7 +81,7 @@ void main_loop() {
 //  				cpmcons_errmsg(retUSER, "read dir");
 //
 //  			f_closedir(&dir);
-	}
+//	}
 	else if(sym == '0') {
 		cpmcons_puts("\n\nEnter brightness[1-0]=[10%-100%]>");
 		sym = cpmcons_getc();

@@ -15,6 +15,9 @@ static uint8_t escmode = 0;
 static uint16_t* chbuf;
 static uint8_t* scrbuf;
 
+uint8_t cpmconsst = 0x00;
+char cpmconsch = '\0';
+
 //s - index in font table
 static void drawsymbol(uint8_t row, uint8_t col, uint8_t inv) {
 	register uint8_t s;
@@ -125,39 +128,39 @@ void cpmcons_putc(char c) {
 			escmode = 2;
 		}
 		else if(c == 'A') {
-			if(cpos[ROW] > 0)
-				newrow = cpos[ROW]-1;
+			if(newrow > 0)
+				newrow--;
 		}
 		else if(c == 'B') {
-			if(cpos[ROW] < SCR_HEIGHT-1)
-				newrow = cpos[ROW]+1;
+			if(newrow < SCR_HEIGHT-1)
+				newrow++;
 		}
 		else if(c == 'C') {
-			if(cpos[COL] < SCR_WIDTH-1)
-				newcol = cpos[COL]+1;
+			if(newcol < SCR_WIDTH-1)
+				newcol++;
 		}
 		else if(c == 'D') {
-			if(cpos[COL] > 0)
-				newcol = cpos[COL]-1;
+			if(newcol > 0)
+				newcol--;
 		}
 		else if(c == 'H') {
 			newrow = 0; newcol = 0;
 		}
 		else if(c == 'J') {
-			for(register uint8_t i=cpos[COL]; i<SCR_WIDTH; i++) {
-				scrbuf[cpos[ROW]*SCR_WIDTH+i] = 0x00;
-				drawsymbol(cpos[ROW], i, 0);
+			for(register uint8_t i=newcol; i<SCR_WIDTH; i++) {
+				scrbuf[newrow*SCR_WIDTH+i] = 0x00;
+				drawsymbol(newrow, i, 0);
 			}
-			for(register uint8_t i=cpos[ROW]+1; i<SCR_HEIGHT; i++)
+			for(register uint8_t i=newrow+1; i<SCR_HEIGHT; i++)
 				for(register uint8_t j=0; j<SCR_WIDTH; j++) {
 					scrbuf[i*SCR_WIDTH+j] = 0x00;
 					drawsymbol(i, j, 0);
 				}
 		}
 		else if(c == 'K') {
-			for(register uint8_t i=cpos[COL]; i<SCR_WIDTH; i++) {
-				scrbuf[cpos[ROW]*SCR_WIDTH+i] = 0x00;
-				drawsymbol(cpos[ROW], i, 0);
+			for(register uint8_t i=newcol; i<SCR_WIDTH; i++) {
+				scrbuf[newrow*SCR_WIDTH+i] = 0x00;
+				drawsymbol(newrow, i, 0);
 			}
 		}
 
@@ -167,33 +170,33 @@ void cpmcons_putc(char c) {
 	else if(c == 0x07) {//Bell
 	}
 	else if(c == '\b') {//Backspace
-		for(register uint8_t i=cpos[COL]; i<SCR_WIDTH; i++) {
-			scrbuf[cpos[ROW]*SCR_WIDTH+(i-1)] = scrbuf[cpos[ROW]*SCR_WIDTH+i];
-			drawsymbol(cpos[ROW], i-1, 0);
+		for(register uint8_t i=newcol; i<SCR_WIDTH; i++) {
+			scrbuf[newrow*SCR_WIDTH+(i-1)] = scrbuf[newrow*SCR_WIDTH+i];
+			drawsymbol(newrow, i-1, 0);
 		}
-		scrbuf[cpos[ROW]*SCR_WIDTH+(SCR_WIDTH-1)] = 0x00;
-		drawsymbol(cpos[ROW], SCR_WIDTH-1, 0);
-		if(cpos[COL] > 0) {
-			newcol = cpos[COL]-1;
+		scrbuf[newrow*SCR_WIDTH+(SCR_WIDTH-1)] = 0x00;
+		drawsymbol(newrow, SCR_WIDTH-1, 0);
+		if(newcol > 0) {
+			newcol--;
 		}
 		else {
-			if(cpos[ROW] > 0) {
-				newrow = cpos[ROW]-1; newcol = SCR_WIDTH - 1;
+			if(newrow > 0) {
+				newrow--; newcol = SCR_WIDTH - 1;
 			}
 		}
 	}
 	else if(c == '\t') {//Tab
-		newcol = (cpos[COL] & 0xf8) + 8;
+		newcol = (newcol & 0xf8) + 8;
 		if(newcol >= SCR_WIDTH)
 			newcol = SCR_WIDTH-1;
 	}
 	else if(c == '\n') {//LineFeed
-		if(cpos[ROW] == SCR_HEIGHT-1) {
+		if(newrow == SCR_HEIGHT-1) {
 			cpmcons_scroll(1);
 			newrow = SCR_HEIGHT-1; newcol = 0;
 		}
 		else {
-			newrow = cpos[ROW]+1; newcol = 0;
+			newrow++; newcol = 0;
 		}
 	}
 	else if(c == '\r') {//CarriageReturn
@@ -205,20 +208,20 @@ void cpmcons_putc(char c) {
 	else if(c < 0x20 || c == 0x7f)
 		return;
 	else {//draw ASCII symbol
-		scrbuf[cpos[ROW]*SCR_WIDTH+cpos[COL]] = (uint8_t)c;
-		drawsymbol(cpos[ROW], cpos[COL], 0);
+		scrbuf[newrow*SCR_WIDTH+newcol] = (uint8_t)c;
+		drawsymbol(newrow, newcol, 0);
 
-		if(cpos[COL] == SCR_WIDTH-1) {
-			if(cpos[ROW] == SCR_HEIGHT-1) {
+		if(newcol == SCR_WIDTH-1) {
+			if(newrow == SCR_HEIGHT-1) {
 				cpmcons_scroll(1);
 				newrow = SCR_HEIGHT-1; newcol = 0;
 			}
 			else {
-				newrow = cpos[ROW]+1; newcol = 0;
+				newrow++; newcol = 0;
 			}
 		}
 		else
-			newcol = cpos[COL]+1;
+			newcol++;
 	}
 
 	setcursor(newrow, newcol);
@@ -230,21 +233,34 @@ void cpmcons_puts(const char *s) {
 }
 
 void cpmcons_errmsg(uint8_t errno, const char *s) {
-	char buf[4];
+	//char buf[4];
 	cpmcons_puts("Error #");
-	cpmcons_puts(utoa(errno, buf, 10));
+	cpmcons_putc('0'+errno);
+	//cpmcons_puts(utoa(errno, buf, 10));
 	cpmcons_putc(' ');
 	cpmcons_puts(s);
 	cpmcons_putc('\n');
 }
 
-char cpmcons_getc() {
+void cpmcons_getkey() {
 	register char sym = '\0';
-	do {
-		sym = cpmkbd_read();
-	} while('\0' == sym);
+	sym = cpmkbd_read();
+	if(sym != '\0') {
+		cpmconsst = 0xff;
+		cpmconsch = sym;
+	}
+	else {
+		cpmconsst = 0x00;
+		cpmconsch = '\0';
+	}
+}
 
-	return sym;
+char cpmcons_getc() {
+	do {
+		cpmcons_getkey();
+	} while(cpmconsst == 0x00);
+
+	return cpmconsch;
 }
 
 void cpmcons_gets(char* buf, uint8_t num) {

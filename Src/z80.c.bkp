@@ -103,7 +103,7 @@ void req_int(uint32_t tstates) {if(state.int_req >0) state.int_req += tstates; e
 void req_nmi(uint32_t tstates) {if(state.nmi_req >0) state.nmi_req += tstates; else state.nmi_req = tstates;}
 
 uint8_t z80_step() {
-	register int8_t tstates = 0;
+	int8_t tstates = 0;
 
 	if((state.nmi_req>0) && !state.int_blocked) {
 #ifdef __SIMULATION
@@ -147,15 +147,15 @@ uint8_t z80_step() {
 
 		if(IS_ED_PREFIX) {
 			if((code < 0x40) || (code > 0xbf) || (code > 0x7f && code < 0xa0))
-				tstates += NONI(code); //incorrect op NONI
+				NONI(code, &tstates); //incorrect op NONI
 			else {
 				if(code < 0x80) {
 					tstates += edoptstates[code-0x40];
-					tstates += z80edops[code-0x40](code);
+					z80edops[code-0x40](code, &tstates);
 				}
 				else {
 					tstates += edoptstates[code-0x60];
-					tstates += z80edops[code-0x60](code);
+					z80edops[code-0x60](code, &tstates);
 				}
 			}
 
@@ -164,18 +164,18 @@ uint8_t z80_step() {
 		else if(IS_CB_PREFIX) {
 			if(code < 0x40) {
 				tstates += 4;
-				tstates += CBSFT(code);
+				CBSFT(code, &tstates);
 			}
 			else {
 				tstates += 4;
-				tstates += BIT(code);
+				BIT(code, &tstates);
 			}
 
 			CLR_PREFIX();
 		}
 		else {
 			tstates += optstates[code];
-			tstates += z80ops[code](code);
+			z80ops[code](code, &tstates);
 
 			if(IS_PREFIX && !((code == 0xcb) | (code == 0xdd) | (code == 0xfd) | (code == 0xed)))
 				CLR_PREFIX();

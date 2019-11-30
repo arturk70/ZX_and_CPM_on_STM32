@@ -29,12 +29,17 @@
 #define ROW	1
 #define CURSOR_CHAR	0x5f
 
+extern uint8_t cpmconsst;
+extern char cpmconsch;
+
+
 void cpmcons_init();
 void cpmcons_clear();
 void cpmcons_deinit();
 void cpmcons_putc(char c);
 void cpmcons_puts(const char *s);
 void cpmcons_errmsg(uint8_t errno, const char *s);
+void cpmcons_getkey();
 char cpmcons_getc();
 void cpmcons_gets(char *, uint8_t num);
 
