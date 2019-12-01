@@ -26,26 +26,30 @@ static void cpmdsk_rwsec(uint8_t op) {// op=0 for read, op=1 for write
 	register uint8_t st = 0x00;
 
 	retUSER = f_open(&USERFile, fname, op+1);
-	if(retUSER != FR_OK)
+	if(retUSER != FR_OK) {
 		st = 0x01;
+	}
 	else {
 		retUSER = f_lseek(&USERFile, ((uint32_t)dsktrk*64+dsksec-1)*128);
-		if(retUSER != FR_OK)
+		if(retUSER != FR_OK) {
 			st = 0x01;
+		}
 		else {
-			if(op) {
+			if(op) {//write
 				for(register uint8_t i=0; i<128; i++)
 					buf[i] = mem_read(dskdma+i);
 				retUSER = f_write(&USERFile, buf, 128, &num);
 			}
-			else {
+			else {//read
 				retUSER = f_read(&USERFile, buf, 128, &num);
-				for(register uint8_t i=0; i<128; i++)
+				for(register uint8_t i=0; i<128; i++) {
 					mem_write(dskdma+i, buf[i]);
+				}
 			}
 
-			if(retUSER != FR_OK || num != 128)
+			if(retUSER != FR_OK || num != 128) {
 				st = 0x01;
+			}
 		}
 	}
 
@@ -54,15 +58,23 @@ static void cpmdsk_rwsec(uint8_t op) {// op=0 for read, op=1 for write
 }
 
 static void cpmsys_load() {
+	cpmcons_puts("Loading CP/M\n");
+
 	dskdsk = 0x00;
 	dsktrk = 0x0000;
-	dsksec = 0x02;
+	dsksec = 0x0002;
 	dskdma = 0xa400;
 	do {
 		cpmdsk_rwsec(0);
 		dsksec++;
 		dskdma += 128;
+		if(dskst) {
+			cpmcons_errmsg(retUSER, "load CP/M");
+			return;
+		}
 	} while(dsksec < 53);
+
+	cpmcons_puts("CP/M Loaded\n");
 }
 
 void cpmsys_Run() {
@@ -73,7 +85,10 @@ void cpmsys_Run() {
 	cpmsys_load();
 	PC = 0xba00;
 
+//	char cbuf[10];
 	while(1) {
+//		cpmcons_puts(utoa(PC, cbuf, 16));
+//		cpmcons_putc(' ');
 		z80_step();
 	}
 }

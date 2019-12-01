@@ -91,9 +91,6 @@ void cpmcons_scroll(uint8_t lnum) {
 void cpmcons_init() {
 	scrbuf = malloc(SCR_HEIGHT*SCR_WIDTH);
 	chbuf = malloc(FNT_WIDTH*FNT_HEIGHT*2);
-	for(register uint8_t i=0;i<SCR_HEIGHT;i++)
-		for(register uint8_t j=0; j< SCR_WIDTH; j++)
-			scrbuf[i*SCR_WIDTH+j]=0x00;
 	cpmcons_clear();
 }
 
@@ -103,6 +100,9 @@ void cpmcons_deinit() {
 }
 
 void cpmcons_clear() {
+	for(register uint8_t i=0;i<SCR_HEIGHT;i++)
+		for(register uint8_t j=0; j< SCR_WIDTH; j++)
+			scrbuf[i*SCR_WIDTH+j]=0x00;
 	ILI9341_fillArea(CPMD_START_POS-2, CPMD_START_LINE, CPMD_END_POS+2, CPMD_END_LINE, BG_COLOR);
 	setcursor(0, 0);
 }

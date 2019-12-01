@@ -33,8 +33,8 @@ uint8_t mem_read(uint16_t addr) {
 	else {
 		if(addr < INTRAMSIZE2)
 			return mem2[addr];
-		else if(addr > (0xffff - INTRAMSIZE))
-			return mem[addr - (0xffff - INTRAMSIZE + 1)];
+		else if(addr > (0xbfff - INTRAMSIZE))
+			return mem[addr - (0xbfff - INTRAMSIZE + 1)];
 		else
 			return extmem_read(addr - INTRAMSIZE2);
 	}
@@ -42,23 +42,23 @@ uint8_t mem_read(uint16_t addr) {
 
 void mem_write(uint16_t addr, uint8_t data) {
 	if(mem_type == MEMTYPE_ZX) {
-			if(addr < ZXROMSIZE)
-				return;
-			else if(addr < (ZXROMSIZE + INTRAMSIZE))
-				mem[addr - ZXROMSIZE] = data;
-			else if(addr > (0xffff - INTRAMSIZE2))
-				mem2[addr - (0xffff - INTRAMSIZE2 + 1)] = data;
-			else
-				extmem_write(addr - (ZXROMSIZE + INTRAMSIZE), data);
-		}
-		else {
-			if(addr < INTRAMSIZE2)
-				mem2[addr] = data;
-			else if(addr > (0xffff - INTRAMSIZE))
-				mem[addr - (0xffff - INTRAMSIZE + 1)] = data;
-			else
-				extmem_write(addr - INTRAMSIZE2, data);
-		}
+		if(addr < ZXROMSIZE)
+			return;
+		else if(addr < (ZXROMSIZE + INTRAMSIZE))
+			mem[addr - ZXROMSIZE] = data;
+		else if(addr > (0xffff - INTRAMSIZE2))
+			mem2[addr - (0xffff - INTRAMSIZE2 + 1)] = data;
+		else
+			extmem_write(addr - (ZXROMSIZE + INTRAMSIZE), data);
+	}
+	else {
+		if(addr < INTRAMSIZE2)
+			mem2[addr] = data;
+		else if(addr > (0xbfff - INTRAMSIZE))
+			mem[addr - (0xbfff - INTRAMSIZE + 1)] = data;
+		else
+			extmem_write(addr - INTRAMSIZE2, data);
+	}
 }
 
 void mem_Init(uint8_t type) {
