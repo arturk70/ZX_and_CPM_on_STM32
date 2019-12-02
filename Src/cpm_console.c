@@ -260,6 +260,8 @@ char cpmcons_getc() {
 		cpmcons_getkey();
 	} while(cpmconsst == 0x00);
 
+	cpmconsst = 0x00;
+
 	return cpmconsch;
 }
 

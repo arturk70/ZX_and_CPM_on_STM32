@@ -9,9 +9,11 @@
 #include "fatfs.h"
 #include "cpm_system.h"
 
+static uint8_t cpmsys_isrun = 0;
+
 static uint8_t dskdsk = 0x00;
-static uint16_t dsktrk = 0x0000;
-static uint16_t dsksec = 0x0000;
+static uint8_t dsktrk = 0x00;
+static uint8_t dsksec = 0x00;
 static uint16_t dskdma = 0x0000;
 static uint8_t dskst = 0x00;
 
@@ -30,7 +32,7 @@ static void cpmdsk_rwsec(uint8_t op) {// op=0 for read, op=1 for write
 		st = 0x01;
 	}
 	else {
-		retUSER = f_lseek(&USERFile, ((uint32_t)dsktrk*64+dsksec-1)*128);
+		retUSER = f_lseek(&USERFile, ((uint32_t)dsktrk*64+dsksec)*128);
 		if(retUSER != FR_OK) {
 			st = 0x01;
 		}
@@ -58,23 +60,21 @@ static void cpmdsk_rwsec(uint8_t op) {// op=0 for read, op=1 for write
 }
 
 static void cpmsys_load() {
-	cpmcons_puts("Loading CP/M\n");
+//	cpmcons_puts("Loading CP/M\n");
 
 	dskdsk = 0x00;
-	dsktrk = 0x0000;
-	dsksec = 0x0002;
-	dskdma = 0xa400;
-	do {
+	dsktrk = 0x00;
+	for(register uint8_t i=0; i<51; i++) {
+		dsksec = 0x01 + i;
+		dskdma = 0xa400 + i*128;
 		cpmdsk_rwsec(0);
-		dsksec++;
-		dskdma += 128;
 		if(dskst) {
 			cpmcons_errmsg(retUSER, "load CP/M");
 			return;
 		}
-	} while(dsksec < 53);
+	}
 
-	cpmcons_puts("CP/M Loaded\n");
+//	cpmcons_puts("CP/M Loaded\n");
 }
 
 void cpmsys_Run() {
@@ -85,12 +85,13 @@ void cpmsys_Run() {
 	cpmsys_load();
 	PC = 0xba00;
 
-//	char cbuf[10];
-	while(1) {
-//		cpmcons_puts(utoa(PC, cbuf, 16));
-//		cpmcons_putc(' ');
+	cpmsys_isrun = 1;
+
+	while(cpmsys_isrun) {
 		z80_step();
 	}
+
+	cpmcons_clear();
 }
 
 void cpmports_out(uint16_t addr, uint8_t data) {
@@ -98,58 +99,67 @@ void cpmports_out(uint16_t addr, uint8_t data) {
 		cpmcons_putc(data);
 	}
 	else if((addr & 0x00ff) == 0x0003) {//siop
+#ifndef __SIMULATION
 		LL_USART_TransmitData8(USART1, data);
+#endif
 	}
 	else if((addr & 0x00ff) == 0x0008) {//ddskp
 		dskdsk = data;
 	}
 	else if((addr & 0x00ff) == 0x0009) {//dtrkp
-		if(dsktrk)
-			dsktrk |= ((uint16_t)data) << 8;
-		else
-			dsktrk = data;
+		dsktrk = data;
 	}
 	else if((addr & 0x00ff) == 0x000a) {//dsecp
-		if(dsksec)
-			dsksec |= ((uint16_t)data) << 8;
-		else
-			dsksec = data;
+		dsksec = data;
 	}
-	else if((addr & 0x00ff) == 0x000b) {//ddmap
-		if(dskdma)
-			dskdma |= ((uint16_t)data) << 8;
-		else
-			dskdma = data;
+	else if((addr & 0x00ff) == 0x000b) {//ddmalp
+		dskdma = data;
 
 	}
-	else if((addr & 0x00ff) == 0x000c) {//dcmdp
+	else if((addr & 0x00ff) == 0x000c) {//ddmahp
+		dskdma |= ((uint16_t)data) << 8;
+
+	}
+	else if((addr & 0x00ff) == 0x000d) {//dcmdp
 		if(data < 0x02)//read/write
 			cpmdsk_rwsec(data);
 
-		dsktrk = 0x0000;
-		dsksec = 0x0000;
+		dsktrk = 0x00;
+		dsksec = 0x00;
 		dskdma = 0x0000;
+	}
+	else if((addr & 0x00ff) == 0x000f) {//exit
+		cpmsys_isrun = 0;
 	}
 }
 
 uint8_t cpmports_in(uint16_t addr) {
 	if((addr & 0x00ff) == 0x0000) {//cstp
+		cpmcons_getkey();
+
 		return cpmconsst;
 	}
 	else if((addr & 0x00ff) == 0x0001) {//ciop
+		cpmconsst = 0x00;
+
 		return cpmconsch;
 	}
 	else if((addr & 0x00ff) == 0x0002) {//sstp
 		register uint8_t status = 0x00;
+#ifndef __SIMULATION
 		if(LL_USART_IsActiveFlag_RXNE(USART1))//ready for Rx
 			status |= 0x02;
 		if(LL_USART_IsActiveFlag_TXE(USART1))//ready for Tx
 			status |= 0x01;
-
+#endif
 		return status;
 	}
 	else if((addr & 0x00ff) == 0x0003) {//siop
+#ifndef __SIMULATION
 		return LL_USART_ReceiveData8(USART1);
+#else
+		return 0x00;
+#endif
 	}
 	else if((addr & 0x00ff) == 0x000d) {//dcmdp
 		return dskst;
