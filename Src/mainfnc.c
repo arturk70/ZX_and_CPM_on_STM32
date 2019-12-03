@@ -26,9 +26,9 @@ void main_init() {
 
 void main_loop() {
 	register char sym = '\0';
-	cpmcons_puts("\nPress <6> for ZX Spectrum\n" \
-			"Press <7> for CP/M\n" \
-			"Press <0> for brightness\n>");
+	cpmcons_puts("\n<6> for ZX Spectrum\n" \
+			"<7> for CP/M\n" \
+			"<0> for brightness\n>");
 
 	sym = cpmcons_getc();
 	cpmcons_putc(sym);
@@ -40,56 +40,16 @@ void main_loop() {
 	else if(sym == '7') {
 		cpmsys_Run();
 	}
-//	else if(sym == '9') {
-//  			//TODO for test only - remove
-//  			cpmcons_puts("\nEnter dir:>");
-//
-//  			sym = '\0';
-//  			char dpath[100];
-//  			dpath[0] = '0';
-//  			dpath[1] = ':';
-//  			dpath[2] = '\0';
-//  			uint8_t dpptr = 2;
-//  			cpmcons_gets(&dpath[2], 97);
-//
-//  			DIR dir;
-//  			FILINFO fi;
-//
-//  			retUSER = f_opendir(&dir, dpath);
-//  			if(retUSER != FR_OK) {
-//  				cpmcons_errmsg(retUSER, "open dir");
-//  			}
-//
-//  			do {
-//  				retUSER = f_readdir(&dir, &fi);
-//  				if(fi.fname[0] == '\0')
-//  					break;
-//
-//  				if(fi.fattrib & AM_DIR)
-//  					cpmcons_putc('/');
-//  				cpmcons_puts(fi.fname);
-//  				cpmcons_putc(' ');
-//  				if(fi.fattrib & AM_DIR)
-//  					cpmcons_putc('\n');
-//  				else {
-//  					cpmcons_puts(utoa(fi.fsize, buf, 10));
-//  					cpmcons_puts("b\n");
-//  				}
-//  			} while(retUSER == FR_OK);
-//
-//  			if(retUSER != FR_OK)
-//  				cpmcons_errmsg(retUSER, "read dir");
-//
-//  			f_closedir(&dir);
-//	}
 	else if(sym == '0') {
-		cpmcons_puts("\n\nEnter brightness[1-0]=[10%-100%]>");
+		cpmcons_puts("\n\nBrightness[1-0]=[10%-100%]>");
 		sym = cpmcons_getc();
 		cpmcons_putc(sym);
-		if('0' == sym)
-			ILI9341_setLEDpwm(1000);
-		else if((sym >= '1') &(sym <= '9'))
-			ILI9341_setLEDpwm((sym-'1')*100+100);
+		sym -= '0';
+		if(sym >=0 && sym <=9) {
+			if(0 == sym)
+				sym = 10;
+			ILI9341_setLEDpwm(sym*100);
+		}
 	}
 
 	cpmcons_puts("\n\n");

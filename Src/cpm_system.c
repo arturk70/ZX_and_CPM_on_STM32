@@ -9,6 +9,12 @@
 #include "fatfs.h"
 #include "cpm_system.h"
 
+#define	MEMSIZE		(48*1024)
+#define CCPADDR		(MEMSIZE-7*1024)
+#define BIOSADDR	(CCPADDR+0x1600)
+#define DSKSECSIZE	128
+#define	DSKSECTRK	256
+
 static uint8_t cpmsys_isrun = 0;
 
 static uint8_t dskdsk = 0x00;
@@ -18,7 +24,7 @@ static uint16_t dskdma = 0x0000;
 static uint8_t dskst = 0x00;
 
 static void cpmdsk_rwsec(uint8_t op) {// op=0 for read, op=1 for write
-	uint8_t buf[128];
+	uint8_t buf[DSKSECSIZE];
 	UINT num;
 	char fname[22] = "0:/CPM/DISK_";
 	fname[12] = '0'+dskdsk;
@@ -32,19 +38,19 @@ static void cpmdsk_rwsec(uint8_t op) {// op=0 for read, op=1 for write
 		st = 0x01;
 	}
 	else {
-		retUSER = f_lseek(&USERFile, ((uint32_t)dsktrk*64+dsksec)*128);
+		retUSER = f_lseek(&USERFile, ((uint32_t)dsktrk*DSKSECTRK+dsksec)*DSKSECSIZE);
 		if(retUSER != FR_OK) {
 			st = 0x01;
 		}
 		else {
 			if(op) {//write
-				for(register uint8_t i=0; i<128; i++)
+				for(register uint8_t i=0; i<DSKSECSIZE; i++)
 					buf[i] = mem_read(dskdma+i);
-				retUSER = f_write(&USERFile, buf, 128, &num);
+				retUSER = f_write(&USERFile, buf, DSKSECSIZE, &num);
 			}
 			else {//read
-				retUSER = f_read(&USERFile, buf, 128, &num);
-				for(register uint8_t i=0; i<128; i++) {
+				retUSER = f_read(&USERFile, buf, DSKSECSIZE, &num);
+				for(register uint8_t i=0; i<DSKSECSIZE; i++) {
 					mem_write(dskdma+i, buf[i]);
 				}
 			}
@@ -66,7 +72,7 @@ static void cpmsys_load() {
 	dsktrk = 0x00;
 	for(register uint8_t i=0; i<51; i++) {
 		dsksec = 0x01 + i;
-		dskdma = 0xa400 + i*128;
+		dskdma = CCPADDR + i*DSKSECSIZE;
 		cpmdsk_rwsec(0);
 		if(dskst) {
 			cpmcons_errmsg(retUSER, "load CP/M");
@@ -83,7 +89,7 @@ void cpmsys_Run() {
 	z80_Init(cpmports_out, cpmports_in);
 
 	cpmsys_load();
-	PC = 0xba00;
+	PC = BIOSADDR;
 
 	cpmsys_isrun = 1;
 
