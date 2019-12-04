@@ -12,8 +12,8 @@
 uint16_t* linebuf;
 
 static uint8_t *ZXvideomem;
-static uint8_t lnum = 0;
 static uint8_t frnum = 0;
+uint8_t zxlnum = 0;
 uint8_t zx_newline_flag;
 uint16_t zx_border_color = 0;
 
@@ -37,8 +37,14 @@ void zxdisp_deinit() {
 }
 
 void zxdisp_drawnextline() {
-	register uint8_t *attraddr = ZXvideomem+0x1800+(lnum/8)*32;
-	register uint8_t *lineaddr = ZXvideomem+(((uint16_t)lnum & 0x00c0)<<5)+(((uint16_t)lnum & 0x0038)<<2)+(((uint16_t)lnum & 0x0007)<<8);
+	if(zxlnum >= ZX_LINES) {
+		zxlnum = 0;
+		frnum++;
+		if(frnum > 0x0f) frnum = 0;
+	}
+
+	register uint8_t *attraddr = ZXvideomem+0x1800+(zxlnum/8)*32;
+	register uint8_t *lineaddr = ZXvideomem+(((uint16_t)zxlnum & 0x00c0)<<5)+(((uint16_t)zxlnum & 0x0038)<<2)+(((uint16_t)zxlnum & 0x0007)<<8);
 	register uint32_t attr;
 	register uint32_t fgbgcolor;
 	register uint16_t bufshft;
@@ -61,14 +67,9 @@ void zxdisp_drawnextline() {
 	for(register uint8_t i = 0; i< BORDER_WIDTH; i++)
 		linebuf[i] = linebuf[BORDER_WIDTH+ZX_PIXELS+i] = zx_border_color;
 
-	ILI9341_sendBuf(ZXD_START_POS-BORDER_WIDTH, ZXD_START_LINE+lnum, ZXD_END_POS+BORDER_WIDTH, ZXD_START_LINE+lnum, linebuf, (ZX_PIXELS+BORDER_WIDTH*2));
+	ILI9341_sendBuf(ZXD_START_POS-BORDER_WIDTH, ZXD_START_LINE+zxlnum, ZXD_END_POS+BORDER_WIDTH, ZXD_START_LINE+zxlnum, linebuf, (ZX_PIXELS+BORDER_WIDTH*2));
 
-	lnum++;
-	if(lnum >= ZX_LINES) {
-		lnum = 0;
-		frnum++;
-		if(frnum > 0x0f) frnum = 0;
-	}
+	zxlnum++;
 
 	ZX_NEWLINE_RESET;
 }

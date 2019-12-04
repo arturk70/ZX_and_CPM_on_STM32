@@ -12,6 +12,8 @@ static uint16_t bl_straddr[4], bl_endaddr[4];
 static uint32_t cstraddr;
 static uint8_t cache[CACHE_SIZE], writed;
 
+uint32_t mem_time = 0;
+
 static uint16_t calc_cache_block(uint16_t addr, uint16_t *x1, uint16_t *y1, uint16_t *x2, uint16_t *y2) {
 	register uint16_t straddr = addr & ~((uint16_t)CACHE_SIZE-1);
 

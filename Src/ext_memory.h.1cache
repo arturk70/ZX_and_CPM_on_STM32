@@ -13,6 +13,8 @@
 
 #define CACHE_SIZE	128
 
+extern uint32_t mem_time;
+
 uint8_t extmem_read(uint16_t addr);
 void extmem_write(uint16_t addr, uint8_t data);
 void extmem_Init();
