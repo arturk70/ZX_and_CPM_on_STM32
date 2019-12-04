@@ -10,6 +10,8 @@
 static uint16_t bl[4], br[4], bt[4], bb[4]; // 0-top bar, 1 - left bar, 2 - right bar, 3 - bottom bar
 static uint16_t bl_straddr[4], bl_endaddr[4];
 
+uint32_t mem_time = 0;
+
 uint8_t extmem_read(uint16_t addr) {
 	register uint16_t x, y, pixnum;
 	register uint8_t blnum = 0;
