@@ -24,10 +24,26 @@
 #define ZX_NEWLINE_SET {zx_newline_flag = 1;}
 #define ZX_NEWLINE_RESET {zx_newline_flag = 0;}
 
+<<<<<<< HEAD
 #ifndef __SIMULATION
 #define TIM3_IRQ_HANDLER()	{if(LL_TIM_IsActiveFlag_UPDATE(TIM3)) {LL_TIM_ClearFlag_UPDATE(TIM3);ZX_NEWLINE_SET;mem_time++;}}
+=======
+#ifdef __SIMULATION
+#define LL_TIM_IsActiveFlag_UPDATE(timer) (0xff)
+#define LL_TIM_ClearFlag_UPDATE(timer) {}
+>>>>>>> 55a0fad17dc2066b159a5225286914e41ddab0d0
 #endif
 
+#define TIM3_IRQ_HANDLER()	{ \
+	if(LL_TIM_IsActiveFlag_UPDATE(TIM3)) \
+		{ \
+			LL_TIM_ClearFlag_UPDATE(TIM3); \
+			ZX_NEWLINE_SET; \
+			mem_time++; \
+		} \
+	}
+
+extern uint8_t zxlnum;
 extern uint8_t zx_newline_flag;
 extern uint16_t zx_border_color;
 

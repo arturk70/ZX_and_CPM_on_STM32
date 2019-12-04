@@ -1070,6 +1070,7 @@ uint8_t BIT(uint8_t code) {
 	}
 	else if(regnum == 0x06) {//(HL)
 		tmpres = mem_read(HL);
+		hidden = H;
 		tstates += 7;
 	}
 	else
@@ -1077,15 +1078,19 @@ uint8_t BIT(uint8_t code) {
 
 	switch (code & 0xc0) {
 	case 0x40: //BIT
-		tmpres &= bitmask;
 		F = (F & FLAG_C) | FLAG_H;
 		if(regnum == 0x06)//(HL)
-			F |= (hidden & (FLAG_3 | FLAG_5));
+			F |= (hidden & (FLAG_5 | FLAG_3));
 		else
 			F |= (tmpres & (FLAG_5 | FLAG_3));
 
-		if(!(tmpres)) F |= FLAG_P | FLAG_Z;
-		if(tmpres & 0x80) F |= FLAG_S;
+		tmpres &= bitmask;
+
+		if(tmpres)
+			F |= (tmpres & FLAG_S);
+		else
+			F |= FLAG_P | FLAG_Z;
+
 		return tstates;//not need write back result
 		break;
 	case 0x80: //RES
