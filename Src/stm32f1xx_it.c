@@ -24,7 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "ili9341_driver.h"
-#include "zx_display.h"
+#include "mainfnc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

@@ -15,6 +15,11 @@
 #include "kbd_driver.h"
 
 void main_init() {
+#ifndef __SIMULATION
+	LL_TIM_EnableUpdateEvent(TIM3);
+	LL_TIM_EnableCounter(TIM3);
+	LL_TIM_EnableIT_UPDATE(TIM3);
+#endif
 	ILI9341_Init();
 	cpmcons_init();
 
@@ -36,6 +41,48 @@ void main_loop() {
 		cpmcons_deinit();
 		zxsys_Run();
 		cpmcons_init();
+
+////memory test
+//		extmem_Init();
+//
+//		uint16_t addr[200];
+//		register uint16_t gaddr;
+//		register uint8_t rd;
+//		char buf[10];
+//
+//		cpmcons_putc('\n');
+//		for(register uint8_t i=0;i<=200;i++) {
+//			register uint8_t j;
+//			do {
+//				gaddr = (uint16_t)rand() & 0x3fff;
+//				for(j=0;j<i;j++) {
+//					if(addr[j] == gaddr)
+//						break;
+//				}
+//			} while(j != i);
+//
+//			addr[i] = gaddr;
+//			cpmcons_puts(utoa(gaddr, buf, 16));
+//			cpmcons_putc(' ');
+//		}
+//		cpmcons_puts("\nPrepared\n");
+//		for(register uint8_t i=0;i<=200;i++) {
+//			extmem_write(addr[i], i);
+//		}
+//		cpmcons_puts("Writed\n");
+//		for(register uint8_t i=0;i<=200;i++) {
+//			rd = extmem_read(addr[i]);
+//			if(rd != i) {
+//				cpmcons_puts("Error ");
+//				cpmcons_puts(utoa(addr[i], buf, 16));
+//				cpmcons_putc(' ');
+//				cpmcons_puts(utoa(i, buf, 16));
+//				cpmcons_putc(' ');
+//				cpmcons_puts(utoa(rd, buf, 16));
+//				cpmcons_putc('\n');
+//			}
+//		}
+//		cpmcons_puts("Readed\n");
 	}
 	else if(sym == '7') {
 		cpmsys_Run();

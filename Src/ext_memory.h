@@ -11,6 +11,16 @@
 #include "main.h"
 #include "ili9341_driver.h"
 
+#define CACHE_BLOCK_SIZE	64
+#define CACHE_BLOCKS_NUM	32
+
+typedef struct {
+	uint16_t straddr;
+	uint32_t usaget; //last read or write time
+	uint8_t writed; //write flag
+	uint8_t data[CACHE_BLOCK_SIZE];
+} cache_t;
+
 extern uint32_t mem_time;
 
 uint8_t extmem_read(uint16_t addr);

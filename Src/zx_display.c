@@ -21,18 +21,8 @@ void zxdisp_init() {
 	linebuf = malloc(304*2);
 	ZXvideomem = get_ZX_videomem();
 	ILI9341_fillArea(ZXD_START_POS, ZXD_START_LINE, ZXD_END_POS, ZXD_END_LINE, BLACK);
-
-#ifndef __SIMULATION
-	LL_TIM_EnableUpdateEvent(TIM3);
-	LL_TIM_EnableCounter(TIM3);
-	LL_TIM_EnableIT_UPDATE(TIM3);
-#endif
 }
 void zxdisp_deinit() {
-#ifndef __SIMULATION
-	LL_TIM_DisableIT_UPDATE(TIM3);
-	LL_TIM_DisableCounter(TIM3);
-#endif
 	free(linebuf);
 }
 
