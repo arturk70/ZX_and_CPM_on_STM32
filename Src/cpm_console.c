@@ -109,6 +109,9 @@ void cpmcons_clear() {
 
 void cpmcons_putc(char c) {
 	c &= 0x7f;
+
+//	printf("%02x \'%c\'\n", c, (c > ' ' && c < '~') ? c : ' ');
+
 	register uint8_t newrow = cpos[ROW], newcol = cpos[COL];
 
 	if(escmode) {
@@ -271,8 +274,10 @@ void cpmcons_gets(char* buf, uint8_t num) {
 	do {
 		sym = cpmcons_getc();
 		cpmcons_putc(sym);
-		if(sym == '\n')
+		if(sym == '\r') {
+			cpmcons_putc('\n');
 			break;
+		}
 		else if(sym == '\b') {
 			ptr--;
 		}
