@@ -246,15 +246,10 @@ void cpmcons_errmsg(uint8_t errno, const char *s) {
 }
 
 void cpmcons_getkey() {
-	register char sym = '\0';
-	sym = cpmkbd_read();
+	register char sym = cpmkbd_read();
 	if(sym != '\0') {
 		cpmconsst = 0xff;
 		cpmconsch = sym;
-	}
-	else {
-		cpmconsst = 0x00;
-		cpmconsch = '\0';
 	}
 }
 
