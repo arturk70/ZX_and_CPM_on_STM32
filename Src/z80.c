@@ -11,10 +11,10 @@
 z80_registers_t regs;
 z80_state_t state;
 
-void (*port_out)(uint16_t addr, uint8_t data);
-uint8_t (*port_in)(uint16_t addr);
+void (*port_out)(register uint16_t addr, register uint8_t data);
+uint8_t (*port_in)(register uint16_t addr);
 
-void z80_Init(void (*outfn)(uint16_t addr, uint8_t data), uint8_t (*infn)(uint16_t addr)) {
+void z80_Init(void (*outfn)(register uint16_t addr, register uint8_t data), uint8_t (*infn)(register uint16_t addr)) {
 	port_out = outfn;
 	port_in = infn;
 
@@ -99,8 +99,19 @@ uint8_t z80_nmi() {
 }
 
 //set interrupt requests for tstates time
-void req_int(uint32_t tstates) {if(state.int_req >0) state.int_req += tstates; else state.int_req = tstates;}
-void req_nmi(uint32_t tstates) {if(state.nmi_req >0) state.nmi_req += tstates; else state.nmi_req = tstates;}
+void req_int(register uint32_t tstates) {
+	if(state.int_req > 0)
+		state.int_req += tstates;
+	else
+		state.int_req = tstates;
+}
+
+void req_nmi(register uint32_t tstates) {
+	if(state.nmi_req > 0)
+		state.nmi_req += tstates;
+	else
+		state.nmi_req = tstates;
+}
 
 uint8_t z80_step() {
 	register int8_t tstates = 0;

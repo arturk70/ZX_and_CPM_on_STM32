@@ -18,7 +18,7 @@ extern uint8_t ext_kbdscans[8];
 #endif
 
 
-uint8_t zxkbd_scan(uint8_t addr);
+uint8_t zxkbd_scan(register uint8_t addr);
 
 char cpmkbd_read();
 

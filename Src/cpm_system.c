@@ -23,13 +23,12 @@ static uint8_t dsksec = 0x00;
 static uint16_t dskdma = 0x0000;
 static uint8_t dskst = 0x00;
 
-static void cpmdsk_rwsec(uint8_t op) {// op=0 for read, op=1 for write
+static void cpmdsk_rwsec(register uint8_t op) {// op=0 for read, op=1 for write
 	uint8_t buf[DSKSECSIZE];
 	UINT num;
-	char fname[22] = "0:/CPM/DISK_";
+	char fname[14] = "0:/CPM/DISK_";
 	fname[12] = '0'+dskdsk;
 	fname[13] = '\0';
-	//utoa(dskdsk, &fname[12], 16);
 
 	register uint8_t st = 0x00;
 
@@ -100,7 +99,7 @@ void cpmsys_Run() {
 	cpmcons_clear();
 }
 
-void cpmports_out(uint16_t addr, uint8_t data) {
+void cpmports_out(register uint16_t addr, register uint8_t data) {
 	if((addr & 0x00ff) == 0x0001) {//ciop
 		cpmcons_putc(data);
 	}
@@ -139,7 +138,7 @@ void cpmports_out(uint16_t addr, uint8_t data) {
 	}
 }
 
-uint8_t cpmports_in(uint16_t addr) {
+uint8_t cpmports_in(register uint16_t addr) {
 	if((addr & 0x00ff) == 0x0000) {//cstp
 		cpmcons_getkey();
 

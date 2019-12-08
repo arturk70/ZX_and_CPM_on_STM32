@@ -17,7 +17,7 @@
 extern uint8_t zxsys_isrun;
 
 void zxsys_Run();
-void zxports_out(uint16_t addr, uint8_t data);
-uint8_t zxports_in(uint16_t addr);
+void zxports_out(register uint16_t addr, register uint8_t data);
+uint8_t zxports_in(register uint16_t addr);
 
 #endif /* ZX_SYSTEM_H_ */

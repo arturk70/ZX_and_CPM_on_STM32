@@ -22,7 +22,6 @@
 		{ \
 			LL_TIM_ClearFlag_UPDATE(TIM3); \
 			ZX_NEWLINE_SET; \
-			mem_time++; \
 		} \
 	}
 

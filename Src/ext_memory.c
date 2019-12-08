@@ -13,7 +13,7 @@ static cache_t cache[CACHE_BLOCKS_NUM];
 
 uint32_t mem_time = 0;
 
-static uint16_t calc_cache_block(uint16_t addr, uint16_t *x1, uint16_t *y1, uint16_t *x2, uint16_t *y2) {
+static uint16_t calc_cache_block(register uint16_t addr, uint16_t *x1, uint16_t *y1, uint16_t *x2, uint16_t *y2) {
 	register uint16_t straddr = addr & ~((uint16_t)CACHE_BLOCK_SIZE-1);
 
 	register uint8_t blnum = 0;
@@ -33,45 +33,45 @@ static uint16_t calc_cache_block(uint16_t addr, uint16_t *x1, uint16_t *y1, uint
 	return straddr;
 }
 
-static uint8_t search_cache(uint16_t addr) {//return index of appropriate cache block, update if need
-	register uint8_t lru_num = 0;
+static cache_t* search_cache(register uint16_t addr) {//return index of appropriate cache block, update if need
+	register cache_t* lru_cache = cache;
 
 	for(register uint8_t i=0; i<CACHE_BLOCKS_NUM;i++) {
 		if((addr >= cache[i].straddr) && (addr <= (cache[i].straddr+CACHE_BLOCK_SIZE-1)))
-			return i;
-		if(cache[i].usaget < cache[lru_num].usaget) lru_num = i;
+			return &cache[i];
+		if(cache[i].usaget < lru_cache->usaget) lru_cache = &cache[i];
 	}
 
 	uint16_t x1, y1, x2, y2;
 
-	if(cache[lru_num].writed) {
-		calc_cache_block(cache[lru_num].straddr, &x1, &y1, &x2, &y2);
-		ILI9341_sendBuf(x1, y1, x2, y2, (uint16_t*)cache[lru_num].data, CACHE_BLOCK_SIZE/2);
+	if(lru_cache->writed) {
+		calc_cache_block(lru_cache->straddr, &x1, &y1, &x2, &y2);
+		ILI9341_sendBuf(x1, y1, x2, y2, (uint16_t*)(lru_cache->data), CACHE_BLOCK_SIZE/2);
 	}
 
-	cache[lru_num].straddr = calc_cache_block(addr, &x1, &y1, &x2, &y2);
-	cache[lru_num].writed = 0;
-	ILI9341_readBuf(x1, y1, x2, y2, (uint16_t*)cache[lru_num].data, CACHE_BLOCK_SIZE/2);
+	lru_cache->straddr = calc_cache_block(addr, &x1, &y1, &x2, &y2);
+	lru_cache->writed = 0;
+	ILI9341_readBuf(x1, y1, x2, y2, (uint16_t*)(lru_cache->data), CACHE_BLOCK_SIZE/2);
 
-	return lru_num;
+	return lru_cache;
 }
 
-uint8_t extmem_read(uint16_t addr) {
-	register uint8_t blocknum = search_cache(addr);
+uint8_t extmem_read(register uint16_t addr) {
+	register cache_t* block = search_cache(addr);
 
-	cache[blocknum].usaget = mem_time;
+	block->usaget = mem_time++;
 
-	return cache[blocknum].data[addr - cache[blocknum].straddr];
+	return block->data[addr - block->straddr];
 
 }
 
-void extmem_write(uint16_t addr, uint8_t data) {
-	register uint8_t blocknum = search_cache(addr);
+void extmem_write(register uint16_t addr, register uint8_t data) {
+	register cache_t* block = search_cache(addr);
 
-	cache[blocknum].usaget = mem_time;
-	cache[blocknum].writed = 1;
+	block->usaget = mem_time++;
+	block->writed = 1;
 
-	cache[blocknum].data[addr - cache[blocknum].straddr] = data;
+	block->data[addr - block->straddr] = data;
 }
 
 void extmem_Init() {

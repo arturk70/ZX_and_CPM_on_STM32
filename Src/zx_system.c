@@ -20,14 +20,13 @@ void zxsys_Run() {
 	zxsys_isrun = 1;
 
 	register uint16_t tstates = 0;
-	register uint8_t lines = 0;
 	while(zxsys_isrun) {
 
 #ifndef __SIMULATION
 //		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
 #endif
-		while(!zx_newline_flag || ILI9341_DMA_busy) {
-			if(tstates < 1140) // 3500000/192/16 = 1140 - number of tstates for one line drawing
+		while(!zx_newline_flag/* || ILI9341_DMA_busy*/) {
+//			if(tstates < 1140) // 3500000/192/16 = 1140 - number of tstates for one line drawing
 				tstates += z80_step();
 		}
 #ifndef __SIMULATION
@@ -36,23 +35,21 @@ void zxsys_Run() {
 
 		zxdisp_drawnextline();
 
-		if(lines++ == 192*16/50) {//50Hz interrupt
+		if(!(zxlnum & 0x3f))
 			req_int(32);
-			lines = 0;
-		}
 
 		if(tstates >= 1140)
 			tstates -= 1140;
 	}
 }
 
-void zxports_out(uint16_t addr, uint8_t data) {
+void zxports_out(register uint16_t addr, register uint8_t data) {
 	if((addr & 0x00ff) == 0x00fe) {
 		zx_border_color = (((data << 10) & 0x0800) | ((data << 4) & 0x0040) | (data & 0x0001)) * 0x18;
 	}
 }
 
-uint8_t zxports_in(uint16_t addr) {
+uint8_t zxports_in(register uint16_t addr) {
 	register uint8_t res = 0xff;
 	if((addr & 0x00ff) == 0x00fe) {
 		res = zxkbd_scan(addr>>8);

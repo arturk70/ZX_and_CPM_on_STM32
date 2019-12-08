@@ -36,12 +36,12 @@ extern char cpmconsch;
 void cpmcons_init();
 void cpmcons_clear();
 void cpmcons_deinit();
-void cpmcons_putc(char c);
-void cpmcons_puts(const char *s);
-void cpmcons_errmsg(uint8_t errno, const char *s);
+void cpmcons_putc(register char c);
+void cpmcons_puts(register const char *s);
+void cpmcons_errmsg(register uint8_t errno, register const char *s);
 void cpmcons_getkey();
 char cpmcons_getc();
-void cpmcons_gets(char *, uint8_t num);
+void cpmcons_gets(register char *, register uint8_t num);
 
 
 #endif /* CPM_CONSOLE_H_ */

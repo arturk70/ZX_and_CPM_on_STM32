@@ -16,7 +16,7 @@
 #include "kbd_driver.h"
 
 void cpmsys_Run();
-void cpmports_out(uint16_t addr, uint8_t data);
-uint8_t cpmports_in(uint16_t addr);
+void cpmports_out(register uint16_t addr, register uint8_t data);
+uint8_t cpmports_in(register uint16_t addr);
 
 #endif /* CPM_SYSTEM_H_ */

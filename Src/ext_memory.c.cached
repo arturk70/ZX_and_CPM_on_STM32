@@ -50,7 +50,6 @@ static uint8_t search_cache(uint16_t addr) {//return index of appropriate cache 
 	}
 
 	cache[lru_num].straddr = calc_cache_block(addr, &x1, &y1, &x2, &y2);
-	cache[lru_num].usaget = mem_time;
 	cache[lru_num].writed = 0;
 	ILI9341_readBuf(x1, y1, x2, y2, (uint16_t*)cache[lru_num].data, CACHE_BLOCK_SIZE/2);
 
@@ -60,7 +59,7 @@ static uint8_t search_cache(uint16_t addr) {//return index of appropriate cache 
 uint8_t extmem_read(uint16_t addr) {
 	register uint8_t blocknum = search_cache(addr);
 
-	cache[blocknum].usaget = mem_time;
+	cache[blocknum].usaget = mem_time++;
 
 	return cache[blocknum].data[addr - cache[blocknum].straddr];
 
@@ -69,7 +68,7 @@ uint8_t extmem_read(uint16_t addr) {
 void extmem_write(uint16_t addr, uint8_t data) {
 	register uint8_t blocknum = search_cache(addr);
 
-	cache[blocknum].usaget = mem_time;
+	cache[blocknum].usaget = mem_time++;
 	cache[blocknum].writed = 1;
 
 	cache[blocknum].data[addr - cache[blocknum].straddr] = data;

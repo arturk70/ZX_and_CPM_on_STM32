@@ -20,7 +20,6 @@
 
 #define ILI9341_SPI				SPI1
 #define ILI9341_DMA				DMA1
-#define ILI9341_DMA_RX_CH		LL_DMA_CHANNEL_2
 #define ILI9341_DMA_TX_CH		LL_DMA_CHANNEL_3
 #define ILI9341_LED_PWM_TIM		TIM2
 #define ILI9341_LED_PWM_CH		LL_TIM_CHANNEL_CH2
@@ -35,15 +34,6 @@
 		while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0); \
 		LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_8BIT); \
 		ILI9341_DMA_busy = 0; }
-#define RX_DMA_IRQ_HANDLER() 	{ LL_SPI_DisableDMAReq_RX(ILI9341_SPI); \
-	    LL_DMA_DisableChannel(ILI9341_DMA, ILI9341_DMA_RX_CH); \
-		while(LL_DMA_IsEnabledChannel(ILI9341_DMA, ILI9341_DMA_RX_CH)); \
-	    if(LL_DMA_IsActiveFlag_TE2(ILI9341_DMA)) { \
-	    	LL_DMA_ClearFlag_TE2(ILI9341_DMA);} \
-		LL_DMA_ClearFlag_TC2(ILI9341_DMA); \
-		while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0); \
-		LL_SPI_SetDataWidth(ILI9341_SPI, LL_SPI_DATAWIDTH_8BIT); \
-		ILI9341_DMA_busy = 0; }
 #else
 extern uint8_t ili9341_image[ILI9341_PWIDTH*ILI9341_PHEIGHT*3];
 #endif
@@ -51,16 +41,17 @@ extern uint8_t ili9341_image[ILI9341_PWIDTH*ILI9341_PHEIGHT*3];
 extern uint8_t ILI9341_DMA_busy;
 
 void ILI9341_Init();
-void ILI9341_sendCommand(uint8_t com);
-void ILI9341_sendData(uint8_t data);
-void ILI9341_setFrame(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
-void ILI9341_sendBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf, uint16_t len);
-void ILI9341_readBuf(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t *buf, uint16_t len);
-void ILI9341_fillArea(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
+void ILI9341_sendCommand(register uint8_t com);
+void ILI9341_sendData(register uint8_t data);
+void ILI9341_setFrame(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2);
+void ILI9341_sendBuf(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2, register uint16_t *buf, register uint16_t len);
+void ILI9341_sendDMABuf(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2, register uint16_t *buf, register uint16_t len);
+void ILI9341_readBuf(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2, register uint16_t *buf, register uint16_t len);
+void ILI9341_fillArea(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2, register uint16_t color);
 
-void ILI9341_setLEDpwm(uint16_t val);
+void ILI9341_setLEDpwm(register uint16_t val);
 
-void ILI9341_readPix(uint16_t x, uint16_t y, uint16_t *pix);
-void ILI9341_writePix(uint16_t x, uint16_t y, uint16_t color);
+void ILI9341_readPix(register uint16_t x, register uint16_t y, register uint16_t *pix);
+void ILI9341_writePix(register uint16_t x, register uint16_t y, register uint16_t color);
 
 #endif /* ILI9341DRIVER_H_ */

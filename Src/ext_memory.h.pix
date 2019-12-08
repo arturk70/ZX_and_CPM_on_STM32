@@ -11,8 +11,6 @@
 #include "main.h"
 #include "ili9341_driver.h"
 
-extern uint32_t mem_time;
-
 uint8_t extmem_read(uint16_t addr);
 void extmem_write(uint16_t addr, uint8_t data);
 void extmem_Init();

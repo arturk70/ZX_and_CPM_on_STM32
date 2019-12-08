@@ -19,52 +19,55 @@ uint8_t cpmconsst = 0x00;
 char cpmconsch = '\0';
 
 //s - index in font table
-static void drawsymbol(uint8_t row, uint8_t col, uint8_t inv) {
-	register uint8_t s;
-	register uint32_t fonts;
-	register uint16_t fg, bg;
+static void drawsymbol(register uint8_t row, register uint8_t col, register uint8_t inv) {
+		register uint8_t s;
+		register uint32_t fonts;
+		register uint16_t fg, bg;
 
-	s = scrbuf[row*SCR_WIDTH+col];
-	if(s != 0x00)
-		s -= 0x20;
-	fonts = font[s];
+		s = scrbuf[row*SCR_WIDTH+col];
+		if(s != 0x00)
+			s -= 0x20;
+		fonts = font[s];
 
-	if(inv) {
-		fg = BG_COLOR;
-		bg = FG_COLOR;
-	}
-	else {
-		fg = FG_COLOR;
-		bg = BG_COLOR;
-	}
-
-	for(register uint8_t l=0;l<8;l++) {
-		for(register uint8_t b=0;b<6;b++) {
-			if(b == 5)
-				chbuf[l*6+b] = bg;
-			else {
-				if(l == 0 || l == 7)
-					chbuf[l*6+b] = bg;
-				else {
-					if(((fonts>>((l-1)*5+b)) & 0x00000001))
-						chbuf[l*6+b]=fg;
-					else
-						chbuf[l*6+b]=bg;
-				}
-			}
-
+		if(inv) {
+			fg = BG_COLOR;
+			bg = FG_COLOR;
 		}
-	}
+		else {
+			fg = FG_COLOR;
+			bg = BG_COLOR;
+		}
 
-	ILI9341_sendBuf(
-			CPMD_START_POS+col*FNT_WIDTH,
-			CPMD_START_LINE+row*FNT_HEIGHT,
-			CPMD_START_POS+col*FNT_WIDTH+FNT_WIDTH-1,
-			CPMD_START_LINE+row*FNT_HEIGHT+FNT_HEIGHT-1,
-			chbuf, FNT_WIDTH*FNT_HEIGHT);
+		register uint16_t *ptr = chbuf;
+		for(register uint8_t l=0;l<8;l++) {
+			for(register uint8_t b=0;b<6;b++) {
+				if(b == 5)
+					*ptr = bg;
+				else {
+					if(l == 0 || l == 7)
+						*ptr = bg;
+					else {
+						if(((fonts>>((l-1)*5+b)) & 0x00000001))
+							*ptr=fg;
+						else
+							*ptr=bg;
+					}
+				}
+
+				ptr++;
+			}
+		}
+
+		ILI9341_sendBuf(
+				CPMD_START_POS+col*FNT_WIDTH,
+				CPMD_START_LINE+row*FNT_HEIGHT,
+				CPMD_START_POS+col*FNT_WIDTH+FNT_WIDTH-1,
+				CPMD_START_LINE+row*FNT_HEIGHT+FNT_HEIGHT-1,
+				chbuf, FNT_WIDTH*FNT_HEIGHT);
+
 }
 
-static void setcursor(uint8_t row, uint8_t col) {
+static void setcursor(register uint8_t row, register uint8_t col) {
 	drawsymbol(cpos[ROW], cpos[COL], 0);
 	if(row >= SCR_HEIGHT)
 		row = SCR_HEIGHT-1;
@@ -74,18 +77,23 @@ static void setcursor(uint8_t row, uint8_t col) {
 	drawsymbol(row, col, 1);
 }
 
-void cpmcons_scroll(uint8_t lnum) {
-	for(register uint8_t i=0; i< SCR_HEIGHT-lnum; i++) {
+static void cpmcons_scroll() {
+	register uint8_t *buf, *bufo, *bufe;
+	buf = scrbuf;
+	bufo = buf + SCR_WIDTH;
+	bufe = buf + SCR_HEIGHT*SCR_WIDTH;
+
+	for(register uint8_t i=0; i< SCR_HEIGHT-1; i++) {
 		for(register uint8_t j=0; j< SCR_WIDTH; j++) {
-			scrbuf[i*SCR_WIDTH+j] = scrbuf[(i+lnum)*SCR_WIDTH+j];
+			*buf++ = *bufo++;
 			drawsymbol(i, j, 0);
 		}
 	}
-	for(register uint8_t i=SCR_HEIGHT-lnum; i< SCR_HEIGHT; i++)
-		for(register uint8_t j=0; j< SCR_WIDTH; j++)
-			scrbuf[i*SCR_WIDTH+j] = 0x00;
 
-	ILI9341_fillArea(CPMD_START_POS, CPMD_END_LINE-FNT_HEIGHT*lnum+1, CPMD_END_POS, CPMD_END_LINE, BG_COLOR);
+	while(buf < bufe)
+		*buf++ = 0x00;
+
+	ILI9341_fillArea(CPMD_START_POS, CPMD_END_LINE-FNT_HEIGHT+1, CPMD_END_POS, CPMD_END_LINE, BG_COLOR);
 }
 
 void cpmcons_init() {
@@ -107,7 +115,7 @@ void cpmcons_clear() {
 	setcursor(0, 0);
 }
 
-void cpmcons_putc(char c) {
+void cpmcons_putc(register char c) {
 	c &= 0x7f;
 
 //	printf("%02x \'%c\'\n", c, (c > ' ' && c < '~') ? c : ' ');
@@ -195,7 +203,7 @@ void cpmcons_putc(char c) {
 	}
 	else if(c == '\n') {//LineFeed
 		if(newrow == SCR_HEIGHT-1) {
-			cpmcons_scroll(1);
+			cpmcons_scroll();
 			newrow = SCR_HEIGHT-1; newcol = 0;
 		}
 		else {
@@ -216,7 +224,7 @@ void cpmcons_putc(char c) {
 
 		if(newcol == SCR_WIDTH-1) {
 			if(newrow == SCR_HEIGHT-1) {
-				cpmcons_scroll(1);
+				cpmcons_scroll();
 				newrow = SCR_HEIGHT-1; newcol = 0;
 			}
 			else {
@@ -230,12 +238,12 @@ void cpmcons_putc(char c) {
 	setcursor(newrow, newcol);
 }
 
-void cpmcons_puts(const char *s) {
-	for(register uint16_t i=0;s[i]!='\0';i++)
-		cpmcons_putc(s[i]);
+void cpmcons_puts(register const char *s) {
+	while(*s)
+		cpmcons_putc(*s++);
 }
 
-void cpmcons_errmsg(uint8_t errno, const char *s) {
+void cpmcons_errmsg(register uint8_t errno, register const char *s) {
 	//char buf[4];
 	cpmcons_puts("Error #");
 	cpmcons_putc('0'+errno);
@@ -263,7 +271,7 @@ char cpmcons_getc() {
 	return cpmconsch;
 }
 
-void cpmcons_gets(char* buf, uint8_t num) {
+void cpmcons_gets(register char* buf, register uint8_t num) {
 	register uint8_t ptr = 0;
 	register char sym;
 	do {

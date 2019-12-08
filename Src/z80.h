@@ -122,15 +122,15 @@ typedef struct {
 extern z80_registers_t regs;
 extern z80_state_t state;
 
-extern void (*port_out)(uint16_t addr, uint8_t data);
-extern uint8_t (*port_in)(uint16_t addr);
+extern void (*port_out)(register uint16_t addr, register uint8_t data);
+extern uint8_t (*port_in)(register uint16_t addr);
 
-void z80_Init(void (*outfn)(uint16_t addr, uint8_t data), uint8_t (*infn)(uint16_t addr));
+void z80_Init(void (*outfn)(register uint16_t addr, register uint8_t data), uint8_t (*infn)(register uint16_t addr));
 void z80_reset();
 uint8_t z80_interrupt();
 uint8_t z80_nmi();
-void req_int(uint32_t tstates);
-void req_nmi(uint32_t tstates);
+void req_int(register uint32_t tstates);
+void req_nmi(register uint32_t tstates);
 uint8_t z80_step();
 
 

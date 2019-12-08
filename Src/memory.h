@@ -13,13 +13,15 @@
 #define MEMTYPE_ZX	0
 #define MEMTYPE_CPM	1
 
-uint8_t mem_read(uint16_t addr);
-void mem_write(uint16_t addr, uint8_t data);
+extern uint8_t mem[];
+
+extern uint8_t (*mem_read)(register uint16_t addr);
+extern void (*mem_write)(register uint16_t addr, register uint8_t data);
+
+uint8_t zxmem_read(register uint16_t addr);
+void zxmem_write(register uint16_t addr, register uint8_t data);
+uint8_t cpmmem_read(register uint16_t addr);
+void cpmmem_write(register uint16_t addr, register uint8_t data);
 void mem_Init(uint8_t type);
-//void mem_deInit();
-//void mem_clear();
-//uint16_t mem_test();
-//uint16_t mem_rnd_test();
-uint8_t *get_ZX_videomem();
 
 #endif /* MEMORY_H_ */
