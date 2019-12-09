@@ -11,8 +11,8 @@
 #include "main.h"
 #include "ili9341_driver.h"
 
-#define CACHE_BLOCK_SIZE	128
-#define CACHE_BLOCKS_NUM	16
+#define CACHE_BLOCK_SIZE	64
+#define CACHE_BLOCKS_NUM	48
 
 typedef struct {
 	uint16_t straddr;
@@ -21,8 +21,8 @@ typedef struct {
 	uint8_t data[CACHE_BLOCK_SIZE];
 } cache_t;
 
-uint8_t extmem_read(uint16_t addr);
-void extmem_write(uint16_t addr, uint8_t data);
+uint8_t extmem_read(register uint16_t addr);
+void extmem_write(register uint16_t addr, register uint8_t data);
 void extmem_Init();
 //void extmem_deInit();
 
