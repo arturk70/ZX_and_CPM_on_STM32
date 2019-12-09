@@ -85,7 +85,7 @@ uint8_t z80_interrupt() {
 }
 
 uint8_t z80_nmi() {
-	if(state.halted) state.halted = 0;
+	if(state.halted) { PC++; state.halted = 0; }
 
 	IFF1 = 0;
 	INC_R();
