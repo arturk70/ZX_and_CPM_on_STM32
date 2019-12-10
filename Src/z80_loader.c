@@ -8,7 +8,7 @@
 #include "fatfs.h"
 #include "z80_loader.h"
 
-#define BUFSIZE	512
+#define BUFSIZE	128
 
 static uint8_t z80_loadfile(const char *fname) {
 	retUSER = f_open(&USERFile, fname, FA_READ);
