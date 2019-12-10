@@ -10,6 +10,7 @@
 
 z80_registers_t regs;
 z80_state_t state;
+int z80_tstates = 0;
 
 void (*port_out)(register uint16_t addr, register uint8_t data);
 uint8_t (*port_in)(register uint16_t addr);
@@ -41,8 +42,8 @@ void z80_reset() {
 
 }
 
-uint8_t z80_interrupt() {
-	register uint8_t tstates = 13;
+void z80_interrupt() {
+	z80_tstates += 13;
 
 	if( IFF1) {
 
@@ -75,16 +76,14 @@ uint8_t z80_interrupt() {
 		{
 			register uint16_t inttemp=(0x100*I)+0xff;
 			PCL = mem_read(inttemp++); PCH = mem_read(inttemp);
-			tstates = 19;
+			z80_tstates += 6;
 			break;
 		}
 		}
 	}
-
-	return tstates;
 }
 
-uint8_t z80_nmi() {
+void z80_nmi() {
 	if(state.halted) { PC++; state.halted = 0; }
 
 	IFF1 = 0;
@@ -95,7 +94,7 @@ uint8_t z80_nmi() {
 
 	PC = 0x0066;
 
-	return 11;
+	z80_tstates += 11;
 }
 
 //set interrupt requests for tstates time
@@ -113,23 +112,22 @@ void req_nmi(register uint32_t tstates) {
 		state.nmi_req = tstates;
 }
 
-uint8_t z80_step() {
-	register int8_t tstates = 0;
-
+void z80_step() {
+	register int tstates = z80_tstates;
 	if((state.nmi_req>0) && !state.int_blocked) {
 #ifdef __SIMULATION
 //		printf("Process NMI at PC=0x%04x\n", PC);
 #endif
-		tstates += z80_nmi();
+		z80_nmi();
 	}
 	else if((state.int_req>0) && IFF1 && !state.int_blocked) {
 #ifdef __SIMULATION
 //		printf("Process INT at PC=0x%04x, IM=0x%02x\n", PC, IM);
 #endif
-		tstates += z80_interrupt();
+		z80_interrupt();
 	}
 	else if(state.halted) {
-		tstates += 4;
+		z80_tstates += 4;
 		INC_R();
 	}
 	else {
@@ -158,15 +156,15 @@ uint8_t z80_step() {
 
 		if(IS_ED_PREFIX) {
 			if((code < 0x40) || (code > 0xbf) || (code > 0x7f && code < 0xa0))
-				tstates += NONI(code); //incorrect op NONI
+				NONI(code); //incorrect op NONI
 			else {
 				if(code < 0x80) {
-					tstates += edoptstates[code-0x40];
-					tstates += z80edops[code-0x40](code);
+					z80_tstates += edoptstates[code-0x40];
+					z80edops[code-0x40](code);
 				}
 				else {
-					tstates += edoptstates[code-0x60];
-					tstates += z80edops[code-0x60](code);
+					z80_tstates += edoptstates[code-0x60];
+					z80edops[code-0x60](code);
 				}
 			}
 
@@ -174,24 +172,26 @@ uint8_t z80_step() {
 		}
 		else if(IS_CB_PREFIX) {
 			if(code < 0x40) {
-				tstates += 4;
-				tstates += CBSFT(code);
+				z80_tstates += 4;
+				CBSFT(code);
 			}
 			else {
-				tstates += 4;
-				tstates += BIT(code);
+				z80_tstates += 4;
+				BIT(code);
 			}
 
 			CLR_PREFIX();
 		}
 		else {
-			tstates += optstates[code];
-			tstates += z80ops[code](code);
+			z80_tstates += optstates[code];
+			z80ops[code](code);
 
 			if(IS_PREFIX && !((code == 0xcb) | (code == 0xdd) | (code == 0xfd) | (code == 0xed)))
 				CLR_PREFIX();
 		}
 	}
+
+	tstates = z80_tstates - tstates;
 
 	if(state.nmi_req > tstates)
 		state.nmi_req -= tstates;
@@ -202,7 +202,5 @@ uint8_t z80_step() {
 		state.int_req -= tstates;
 	else
 		state.int_req = 0;
-
-	return tstates;
 }
 
