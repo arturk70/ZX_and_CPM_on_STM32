@@ -45,41 +45,29 @@ void z80_reset() {
 void z80_interrupt() {
 	z80_tstates += 13;
 
-	if( IFF1) {
+	if( state.halted ) { PC++; state.halted = 0; }
 
-		if( state.halted ) { PC++; state.halted = 0; }
+	IFF1 = IFF2 = 0;
+	INC_R();
 
-		IFF1 = IFF2 = 0;
-		INC_R();
+	mem_write( --SP, PCH );
+	mem_write( --SP, PCL );
 
-		mem_write( --SP, PCH );
-		mem_write( --SP, PCL );
-
-		switch(IM) {
-		case 0:
-			/* We assume 0xff (RST 38) is on the data bus, as the Spectrum leaves
-		   it pulled high when the end-of-frame interrupt is delivered.  Only
-		   the first byte is provided directly to the Z80: all remaining bytes
-		   of the instruction are fetched from memory using PC, which is
-		   incremented as normal.  As RST 38 takes a single byte, we do not
-		   emulate fetching of additional bytes. */
-			PC = 0x0038;
-			break;
-		case 1:
-			/* RST 38 */
-			PC = 0x0038;
-			break;
-		case 2:
-			/* We assume 0xff is on the data bus, as the Spectrum leaves it pulled
-		   high when the end-of-frame interrupt is delivered.  Our interrupt
-		   vector is therefore 0xff. */
-		{
-			register uint16_t inttemp=(0x100*I)+0xff;
-			PCL = mem_read(inttemp++); PCH = mem_read(inttemp);
-			z80_tstates += 6;
-			break;
-		}
-		}
+	switch(IM) {
+	case 0:
+		PC = 0x0038;
+		break;
+	case 1:
+		/* RST 38 */
+		PC = 0x0038;
+		break;
+	case 2:
+	{
+		register uint16_t inttemp=(0x100*I)+0xff;
+		PCL = mem_read(inttemp++); PCH = mem_read(inttemp);
+		z80_tstates += 6;
+		break;
+	}
 	}
 }
 
