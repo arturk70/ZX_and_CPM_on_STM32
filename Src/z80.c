@@ -48,7 +48,6 @@ void z80_interrupt() {
 	if( state.halted ) { PC++; state.halted = 0; }
 
 	IFF1 = IFF2 = 0;
-	INC_R();
 
 	mem_write( --SP, PCH );
 	mem_write( --SP, PCL );
@@ -75,7 +74,6 @@ void z80_nmi() {
 	if(state.halted) { PC++; state.halted = 0; }
 
 	IFF1 = 0;
-	INC_R();
 
 	mem_write( --SP, PCH );
 	mem_write( --SP, PCL );
@@ -102,6 +100,7 @@ void req_nmi(register uint32_t tstates) {
 
 void z80_step() {
 	register int tstates = z80_tstates;
+	INC_R();
 	if((state.nmi_req>0) && !state.int_blocked) {
 #ifdef __SIMULATION
 //		printf("Process NMI at PC=0x%04x\n", PC);
@@ -116,7 +115,6 @@ void z80_step() {
 	}
 	else if(state.halted) {
 		z80_tstates += 4;
-		INC_R();
 	}
 	else {
 #ifdef __SIMULATION
@@ -124,7 +122,6 @@ void z80_step() {
 #endif
 		state.int_blocked = 0;
 		register uint8_t code = mem_read(PC++);
-		INC_R();
 
 		if(IS_DDFDCB_PREFIX) {
 			regs.ixiyshift = code;
