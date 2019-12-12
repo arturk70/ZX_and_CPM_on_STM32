@@ -256,6 +256,7 @@ uint8_t SD_readblock(uint32_t bnum, uint8_t *buf) {
 
 	if(sd_info.type != SD_SDHC) bnum <<= 9;
 
+	LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
 	SD_CS_RESET;
 
 	if(SD_cmd(CMD17, bnum))
@@ -273,6 +274,7 @@ uint8_t SD_readblock(uint32_t bnum, uint8_t *buf) {
 	}
 
 	SD_CS_SET;
+	LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 
 	return error;
 #else
@@ -289,6 +291,7 @@ uint8_t SD_writeblock(uint32_t bnum, const uint8_t *buf) {
 
 	if(sd_info.type != SD_SDHC) bnum <<= 9;
 
+	LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
 	SD_CS_RESET;
 
 	if(SD_cmd(CMD24, bnum))
@@ -308,6 +311,7 @@ uint8_t SD_writeblock(uint32_t bnum, const uint8_t *buf) {
 	}
 
 	SD_CS_SET;
+	LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 
 	return error;
 #else
