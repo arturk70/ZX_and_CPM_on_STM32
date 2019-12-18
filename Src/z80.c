@@ -8,7 +8,9 @@
 #include "z80_ops.h"
 #include "z80.h"
 
-z80_registers_t regs;
+uint8_t regs[28];
+uint16_t* hlixiyptr;
+int8_t gixiyshift;
 z80_state_t state;
 int z80_tstates = 0;
 
@@ -20,7 +22,6 @@ void z80_Init(void (*outfn)(register uint16_t addr, register uint8_t data), uint
 	port_in = infn;
 
 	state.int_req = 0;
-	state.nmi_req = 0;
 	state.int_blocked = 0;
 
 	BC = DE = HL = 0;
@@ -35,8 +36,8 @@ void z80_reset() {
 	PC = 0;
 	SP = 0xffff;
 	IFF1 = IFF2 = IM = 0;
-	regs.hlixiyptr = &(regs.hl);
-	regs.ixiyshift = 0;
+	hlixiyptr = &(HL);
+	gixiyshift = 0;
 	state.halted = 0;
 	state.prefix = 0;
 
@@ -45,7 +46,7 @@ void z80_reset() {
 void z80_interrupt() {
 	z80_tstates += 13;
 
-	if( state.halted ) { PC++; state.halted = 0; }
+	state.halted = 0;
 
 	IFF1 = IFF2 = 0;
 
@@ -71,7 +72,7 @@ void z80_interrupt() {
 }
 
 void z80_nmi() {
-	if(state.halted) { PC++; state.halted = 0; }
+	state.halted = 0;
 
 	IFF1 = 0;
 
@@ -83,35 +84,20 @@ void z80_nmi() {
 	z80_tstates += 11;
 }
 
-//set interrupt requests for tstates time
-void req_int(register uint32_t tstates) {
-	if(state.int_req > 0)
-		state.int_req += tstates;
-	else
-		state.int_req = tstates;
-}
-
-void req_nmi(register uint32_t tstates) {
-	if(state.nmi_req > 0)
-		state.nmi_req += tstates;
-	else
-		state.nmi_req = tstates;
+//set interrupt requests for type
+void req_int(register uint8_t type) {
+	state.int_req = type;
 }
 
 void z80_step() {
-	register int tstates = z80_tstates;
 	INC_R();
-	if((state.nmi_req>0) && !state.int_blocked) {
-#ifdef __SIMULATION
-//		printf("Process NMI at PC=0x%04x\n", PC);
-#endif
-		z80_nmi();
-	}
-	else if((state.int_req>0) && IFF1 && !state.int_blocked) {
-#ifdef __SIMULATION
-//		printf("Process INT at PC=0x%04x, IM=0x%02x\n", PC, IM);
-#endif
-		z80_interrupt();
+	if((state.int_req) && !state.int_blocked) {
+		if(state.int_req == 1) {
+			if(IFF1)
+				z80_interrupt();
+		}
+		else
+			z80_nmi();
 	}
 	else if(state.halted) {
 		z80_tstates += 4;
@@ -124,7 +110,7 @@ void z80_step() {
 		register uint8_t code = mem_read(PC++);
 
 		if(IS_DDFDCB_PREFIX) {
-			regs.ixiyshift = code;
+			gixiyshift = code;
 			code = mem_read(PC++);
 		}
 
@@ -133,11 +119,11 @@ void z80_step() {
 #endif
 
 		if(IS_DD_PREFIX)
-			regs.hlixiyptr = &(regs.ix);
+			hlixiyptr = &(IX);
 		else if(IS_FD_PREFIX)
-			regs.hlixiyptr = &(regs.iy);
+			hlixiyptr = &(IY);
 		else
-			regs.hlixiyptr = &(regs.hl);
+			hlixiyptr = &(HL);
 
 		if(IS_ED_PREFIX) {
 			if((code < 0x40) || (code > 0xbf) || (code > 0x7f && code < 0xa0))
@@ -176,16 +162,6 @@ void z80_step() {
 		}
 	}
 
-	tstates = z80_tstates - tstates;
-
-	if(state.nmi_req > tstates)
-		state.nmi_req -= tstates;
-	else
-		state.nmi_req = 0;
-
-	if(state.int_req > tstates)
-		state.int_req -= tstates;
-	else
-		state.int_req = 0;
+	state.int_req = 0;
 }
 

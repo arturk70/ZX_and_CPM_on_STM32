@@ -47,7 +47,7 @@ void zxdisp_drawnextline() {
 	register uint8_t *lineaddr;
 	register uint8_t attr;
 	register uint32_t bgfgcolor;
-	register uint8_t is_flash_pos;
+	register uint8_t is_flash;
 	register uint8_t pixline;
 	register uint16_t *bufptr;
 	register uint8_t bnum;
@@ -63,11 +63,11 @@ void zxdisp_drawnextline() {
 		bgfgcolor = zxcolors[attr & 0x3f];
 		if(!(attr & 0x40))
 			bgfgcolor &= 0xc618c618;
-		is_flash_pos = (((attr & 0x80) >> 4) & frnumi) >> 3;
+		is_flash = (((attr & 0x80) >> 4) & frnumi) >> 3;
 
 		pixline = *(lineaddr++);
 		for(register uint8_t pixnum=0; pixnum<8; pixnum++) {
-			if(((pixline >> pixnum) & 0x01) ^ is_flash_pos)
+			if(((pixline >> pixnum) & 0x01) ^ is_flash)
 				*(bufptr-pixnum) = bgfgcolor;
 			else
 				*(bufptr-pixnum) = bgfgcolor >> 16;

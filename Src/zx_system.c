@@ -21,24 +21,17 @@ void zxsys_Run() {
 
 	while(zxsys_isrun) {
 
-#ifndef __SIMULATION
-//		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
-#endif
-		while(!zx_newline_flag/* || ILI9341_DMA_busy*/) {
-			if(z80_tstates < 1140) // 3500000/192/16 = 1140 - number of tstates for one line drawing
+		while(!zx_newline_flag) {
+			if(z80_tstates < 0)
 				z80_step();
 		}
-#ifndef __SIMULATION
-//		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
-#endif
 
 		zxdisp_drawnextline();
 
 		if(!(zxlnum & 0x3f))
-			req_int(32);
+			req_int(INT_REQ);
 
-		if(z80_tstates >= 1140)
-			z80_tstates -= 1140;
+		z80_tstates -= 1140; // 3500000/192/16 = 1140 - number of tstates for one line drawing
 	}
 }
 

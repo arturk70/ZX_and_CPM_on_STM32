@@ -12,65 +12,62 @@
 #include "memory.h"
 
 /* Macros used for accessing the registers */
-#define HBYTE	1
-#define LBYTE	0
+#define B   regs[1]
+#define C   regs[0]
+#define BC  (*(uint16_t*)&regs[0])
 
-#define A   regs.af[HBYTE]
-#define F   regs.af[LBYTE]
-#define AF  (*(uint16_t*)regs.af)
+#define D   regs[3]
+#define E   regs[2]
+#define DE  (*(uint16_t*)&regs[2])
 
-#define B   regs.bc[HBYTE]
-#define C   regs.bc[LBYTE]
-#define BC  (*(uint16_t*)regs.bc)
+#define H   regs[5]
+#define L   regs[4]
+#define HL  (*(uint16_t*)&regs[4])
 
-#define D   regs.de[HBYTE]
-#define E   regs.de[LBYTE]
-#define DE  (*(uint16_t*)regs.de)
+#define A   regs[7]
+#define F   regs[6]
+#define AF  (*(uint16_t*)&regs[6])
 
-#define H   regs.hl[HBYTE]
-#define L   regs.hl[LBYTE]
-#define HL  (*(uint16_t*)regs.hl)
+#define B_   regs[9]
+#define C_   regs[8]
+#define BC_  (*(uint16_t*)&regs[8])
 
-#define A_   regs.af_[HBYTE]
-#define F_   regs.af_[LBYTE]
-#define AF_  (*(uint16_t*)regs.af_)
+#define D_   regs[11]
+#define E_   regs[10]
+#define DE_  (*(uint16_t*)&regs[10])
 
-#define B_   regs.bc_[HBYTE]
-#define C_   regs.bc_[LBYTE]
-#define BC_  (*(uint16_t*)regs.bc_)
+#define H_   regs[13]
+#define L_   regs[12]
+#define HL_  (*(uint16_t*)&regs[12])
 
-#define D_   regs.de_[HBYTE]
-#define E_   regs.de_[LBYTE]
-#define DE_  (*(uint16_t*)regs.de_)
+#define A_   regs[15]
+#define F_   regs[14]
+#define AF_  (*(uint16_t*)&regs[14])
 
-#define H_   regs.hl_[HBYTE]
-#define L_   regs.hl_[LBYTE]
-#define HL_  (*(uint16_t*)regs.hl_)
+#define IXH   regs[17]
+#define IXL   regs[16]
+#define IX  (*(uint16_t*)&regs[16])
 
-#define IXH   regs.ix[HBYTE]
-#define IXL   regs.ix[LBYTE]
-#define IX  (*(uint16_t*)regs.ix)
+#define IYH   regs[19]
+#define IYL   regs[18]
+#define IY  (*(uint16_t*)&regs[18])
 
-#define IYH   regs.iy[HBYTE]
-#define IYL   regs.iy[LBYTE]
-#define IY  (*(uint16_t*)regs.iy)
+#define SPH   regs[21]
+#define SPL   regs[20]
+#define SP  (*(uint16_t*)&regs[20])
 
-#define SPH   regs.sp[HBYTE]
-#define SPL   regs.sp[LBYTE]
-#define SP  (*(uint16_t*)regs.sp)
+#define PCH   regs[23]
+#define PCL   regs[22]
+#define PC  (*(uint16_t*)&regs[22])
 
-#define PCH   regs.pc[HBYTE]
-#define PCL   regs.pc[LBYTE]
-#define PC  (*(uint16_t*)regs.pc)
+#define I  regs[24]
+#define R  regs[25]
 
-#define I  regs.i
-#define R  regs.r
+#define IFF1 regs[26]
+#define IFF2 regs[27]
+#define IM   regs[28]
 
-#define IFF1 regs.iff1
-#define IFF2 regs.iff2
-#define IM   regs.im
-
-#define INC_R()	{regs.r = (regs.r & 0x80) | ((regs.r+1) & 0x7f);}
+#define INC_R()	{R = (R & 0x80) | ((R+1) & 0x7f);}
 
 /* The flags */
 #define FLAG_C	0x01
@@ -83,9 +80,9 @@
 #define FLAG_Z	0x40
 #define FLAG_S	0x80
 
-#define HLIXIY_REG (*((uint16_t*)regs.hlixiyptr))
-#define HLIXIY_REGH ((*(regs.hlixiyptr))[HBYTE])
-#define HLIXIY_REGL ((*(regs.hlixiyptr))[LBYTE])
+#define HLIXIY_REG (*hlixiyptr)
+#define HLIXIY_REGH (*((uint8_t*)hlixiyptr+1))
+#define HLIXIY_REGL (*((uint8_t*)hlixiyptr))
 
 #define IS_PREFIX (state.prefix)
 #define IS_DDFD_PREFIX (state.prefix & 0xff00)
@@ -96,30 +93,20 @@
 #define IS_CB_PREFIX ((state.prefix & 0x00ff) == 0x00cb)
 #define CLR_PREFIX() { state.prefix = 0; }
 
-typedef uint8_t regpair[2];
-
-typedef struct {
-  regpair bc,de,hl,af;
-  regpair bc_,de_,hl_,af_;
-  regpair ix,iy;
-  uint8_t i;
-  uint8_t r;
-  regpair sp,pc;
-  uint8_t iff1, iff2, im;
-  regpair* hlixiyptr; //pointer to HL or IX or IY register for DD/FD prefixes
-  int8_t ixiyshift;
-} z80_registers_t;
+#define INT_REQ	1
+#define NMI_REQ	2
 
 typedef struct {
 	uint8_t halted;
 	uint16_t prefix;
-	int16_t int_req;
-	int16_t nmi_req;
+	int8_t int_req;//= INT_REQ, NMI_REQ
 	uint8_t int_blocked;//interrupt can be blocked for next command by prefixes or EI
 
 } z80_state_t;
 
-extern z80_registers_t regs;
+extern uint8_t regs[28];
+extern uint16_t* hlixiyptr;
+extern int8_t gixiyshift;
 extern z80_state_t state;
 extern int z80_tstates;
 
@@ -130,8 +117,7 @@ void z80_Init(void (*outfn)(register uint16_t addr, register uint8_t data), uint
 void z80_reset();
 void z80_interrupt();
 void z80_nmi();
-void req_int(register uint32_t tstates);
-void req_nmi(register uint32_t tstates);
+void req_int(register uint8_t type);
 void z80_step();
 
 

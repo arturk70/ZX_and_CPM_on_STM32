@@ -250,7 +250,7 @@ void LD_(register uint8_t code) {
 	} else if(srcnum == 0x05) {//L
 		tmp = (code == 0x75) ? L : HLIXIY_REGL;
 	}else {//other reg
-		tmp = *((uint8_t*)(&regs) + (srcnum^1));
+		tmp = *(regs + (srcnum^1));
 	}
 
 	if(dstnum == 0x07) {//A
@@ -268,7 +268,7 @@ void LD_(register uint8_t code) {
 		else
 			HLIXIY_REGL = tmp;
 	} else {//other reg
-		*((uint8_t*)(&regs) + (dstnum^1)) = tmp;
+		*(regs + (dstnum^1)) = tmp;
 	}
 }
 
@@ -565,7 +565,7 @@ void ALU(register uint8_t code) {
 	case 0x04://H
 		src = HLIXIY_REGH; break;
 	default://other registers
-		src = *((uint8_t*)(&regs) + ((code & 0x07)^1));
+		src = *(regs + ((code & 0x07)^1));
 	}
 
 	if((code & 0xf0) == 0x80) {
@@ -887,7 +887,7 @@ void CBSFT(register uint8_t code) {
 	register uint8_t regnum = code & 0x07;
 
 	if(IS_DDFD_PREFIX) {
-		tmpres = mem_read(HLIXIY_REG+regs.ixiyshift);
+		tmpres = mem_read(HLIXIY_REG+gixiyshift);
 		z80_tstates += 15;
 	}
 	else if(regnum == 0x07) {//A
@@ -898,7 +898,7 @@ void CBSFT(register uint8_t code) {
 		z80_tstates += 7;
 	}
 	else
-		tmpres = *((uint8_t*)(&regs) + (regnum^1));
+		tmpres = *(regs + (regnum^1));
 
 	switch ((code & 0x38) >> 3) {
 	case 0x00: //RLC
@@ -939,8 +939,8 @@ void CBSFT(register uint8_t code) {
 	F |= sz53p_table[tmpres];
 
 	if(IS_DDFD_PREFIX) {
-		mem_write(HLIXIY_REG+regs.ixiyshift, tmpres);
-		regs.ixiyshift = 0;
+		mem_write(HLIXIY_REG+gixiyshift, tmpres);
+		gixiyshift = 0;
 	}
 	else if(regnum == 0x07) {//A
 		A = tmpres;
@@ -949,7 +949,7 @@ void CBSFT(register uint8_t code) {
 		mem_write(HL, tmpres);
 	}
 	else
-		*((uint8_t*)(&regs) + (regnum^1)) = tmpres;
+		*(regs + (regnum^1)) = tmpres;
 }
 
 void EDSF(register uint8_t code) {
@@ -975,8 +975,8 @@ void BIT(register uint8_t code) {
 	register uint8_t regnum = code & 0x07;
 
 	if(IS_DDFD_PREFIX) {
-		tmpres = mem_read(HLIXIY_REG+regs.ixiyshift);
-		hidden = ((HLIXIY_REG + regs.ixiyshift) >> 8) & 0x00ff;
+		tmpres = mem_read(HLIXIY_REG+gixiyshift);
+		hidden = ((HLIXIY_REG + gixiyshift) >> 8) & 0x00ff;
 		z80_tstates += 15;
 	}
 	else if(regnum == 0x07) {//A
@@ -988,7 +988,7 @@ void BIT(register uint8_t code) {
 		z80_tstates += 7;
 	}
 	else
-		tmpres = *((uint8_t*)(&regs) + (regnum^1));
+		tmpres = *(regs + (regnum^1));
 
 	switch (code & 0xc0) {
 	case 0x40: //BIT
@@ -1014,8 +1014,8 @@ void BIT(register uint8_t code) {
 	}
 
 	if(IS_DDFD_PREFIX) {
-		mem_write(HLIXIY_REG+regs.ixiyshift, tmpres);
-		regs.ixiyshift = 0;
+		mem_write(HLIXIY_REG+gixiyshift, tmpres);
+		gixiyshift = 0;
 	}
 	else if(regnum == 0x07) {//A
 		A = tmpres;
@@ -1024,7 +1024,7 @@ void BIT(register uint8_t code) {
 		mem_write(HL, tmpres);
 	}
 	else
-		*((uint8_t*)(&regs) + (regnum^1)) = tmpres;
+		*(regs + (regnum^1)) = tmpres;
 }
 
 void EX_(register uint8_t code) {
