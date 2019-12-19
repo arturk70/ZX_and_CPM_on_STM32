@@ -136,9 +136,6 @@ void LDn(register uint8_t code) {
 	register int8_t tmp;
 	register int8_t ixiyshift = 0;
 
-	if((code == 0x36) && IS_DDFD_PREFIX) {
-		ixiyshift = mem_read(PC++);
-	}
 	tmp = mem_read(PC++);
 
 	switch (code >> 3) {
@@ -152,6 +149,10 @@ void LDn(register uint8_t code) {
 		HLIXIY_REGH = tmp;
 		break;
 	case 0x06://LD  (HL),*
+		if(hlixiyptr != &HL) {
+			ixiyshift = tmp;
+			tmp = mem_read(PC++);
+		}
 		mem_write(HLIXIY_REG+ixiyshift, tmp);
 		break;
 	case 0x01://LD  C,*
@@ -235,7 +236,7 @@ void LD_(register uint8_t code) {
 	register int8_t ixiyshift = 0;
 	register uint8_t tmp;
 
-	if(IS_DDFD_PREFIX)
+	if(hlixiyptr != &HL)
 		ixiyshift = mem_read(PC++);
 
 	register uint8_t srcnum = code & 0x07;
@@ -372,7 +373,7 @@ void IC8(register uint8_t code) {
 	case 0x06://INC (HL)
 	{
 		register int8_t ixiyshift = 0;
-		if(IS_DDFD_PREFIX)
+		if(hlixiyptr != &HL)
 			ixiyshift = mem_read(PC++);
 		register uint8_t tmp = mem_read(HLIXIY_REG + ixiyshift);
 		res = ++tmp;
@@ -428,7 +429,7 @@ void DC8(register uint8_t code) {
 	case 0x06://DEC (HL)
 	{
 		register int8_t ixiyshift = 0;
-		if(IS_DDFD_PREFIX)
+		if(hlixiyptr != &HL)
 			ixiyshift = mem_read(PC++);
 		register uint8_t tmp = mem_read(HLIXIY_REG + ixiyshift);
 		res = --tmp;
@@ -554,7 +555,7 @@ void ALU(register uint8_t code) {
 	case 0x07://A
 		src = A; break;
 	case 0x06://(HL)
-		if(IS_DDFD_PREFIX) {
+		if(hlixiyptr != &HL) {
 			ixiyshift = mem_read(PC++);
 			z80_tstates+=8;
 		}
@@ -886,7 +887,7 @@ void CBSFT(register uint8_t code) {
 	register uint8_t tmp, tmpres;
 	register uint8_t regnum = code & 0x07;
 
-	if(IS_DDFD_PREFIX) {
+	if(hlixiyptr != &HL) {
 		tmpres = mem_read(HLIXIY_REG+gixiyshift);
 		z80_tstates += 15;
 	}
@@ -938,7 +939,7 @@ void CBSFT(register uint8_t code) {
 	}
 	F |= sz53p_table[tmpres];
 
-	if(IS_DDFD_PREFIX) {
+	if(hlixiyptr != &HL) {
 		mem_write(HLIXIY_REG+gixiyshift, tmpres);
 		gixiyshift = 0;
 	}
@@ -974,7 +975,7 @@ void BIT(register uint8_t code) {
 	register uint8_t bitmask = 0x01 << ((code & 0x38) >> 3);
 	register uint8_t regnum = code & 0x07;
 
-	if(IS_DDFD_PREFIX) {
+	if(hlixiyptr != &HL) {
 		tmpres = mem_read(HLIXIY_REG+gixiyshift);
 		hidden = ((HLIXIY_REG + gixiyshift) >> 8) & 0x00ff;
 		z80_tstates += 15;
@@ -1013,7 +1014,7 @@ void BIT(register uint8_t code) {
 		tmpres |= bitmask; if(regnum == 0x06) z80_tstates += 3; break;
 	}
 
-	if(IS_DDFD_PREFIX) {
+	if(hlixiyptr != &HL) {
 		mem_write(HLIXIY_REG+gixiyshift, tmpres);
 		gixiyshift = 0;
 	}
@@ -1134,7 +1135,7 @@ void IOBL(register uint8_t code) {
 	}
 
 	F = ((tmp1 & 0x80) ? FLAG_N : 0) | ((tmp2 < tmp1 ) ? FLAG_H | FLAG_C : 0) |
-			((sz53p_table[(tmp2 & 0x07) ^ B] & FLAG_P) ? FLAG_P : 0) | (sz53p_table[B] & ~FLAG_P);
+			(sz53p_table[(tmp2 & 0x07) ^ B] & FLAG_P) | (sz53p_table[B] & ~FLAG_P);
 	if(((code & 0xf0) == 0xb0) && B)
 		PC -= 2;
 }
@@ -1170,7 +1171,7 @@ void DAA(register uint8_t code) {
 void PFX(register uint8_t code) {
 	switch (code) {
 	case 0xed://ED
-		state.prefix = 0x00ed; break;
+		state.prefix = 0x00ed; hlixiyptr = &(HL); break;
 	case 0xcb://CB
 		state.prefix = (state.prefix & 0xff00) | 0x00cb; break;
 	case 0xdd://DD

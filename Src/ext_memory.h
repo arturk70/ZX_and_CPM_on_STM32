@@ -22,9 +22,12 @@ typedef struct {
 	uint16_t x,y;
 } cache_t;
 
-uint8_t extmem_read(register uint16_t addr);
-void extmem_write(register uint16_t addr, register uint8_t data);
+typedef enum {
+	EXTM_READ,
+	EXTM_WRITE
+} extmem_op_t;
+
+uint8_t extmem_rw(register extmem_op_t op, register uint16_t addr, register uint8_t data);
 void extmem_Init();
-//void extmem_deInit();
 
 #endif /* EXT_MEMORY_H_ */

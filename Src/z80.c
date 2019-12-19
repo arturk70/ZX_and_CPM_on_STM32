@@ -109,56 +109,56 @@ void z80_step() {
 		state.int_blocked = 0;
 		register uint8_t code = mem_read(PC++);
 
-		if(IS_DDFDCB_PREFIX) {
-			gixiyshift = code;
-			code = mem_read(PC++);
-		}
-
 #ifdef __SIMULATION
 //		printf("Exec 0x%04x: (0x%04x)0x%02x\n", prvPC, state.prefix, code);
 #endif
 
-		if(IS_DD_PREFIX)
-			hlixiyptr = &(IX);
-		else if(IS_FD_PREFIX)
-			hlixiyptr = &(IY);
-		else
-			hlixiyptr = &(HL);
-
 		if(IS_ED_PREFIX) {
-			if((code < 0x40) || (code > 0xbf) || (code > 0x7f && code < 0xa0))
+			if(code > 0x3f && code < 0x80) {
+				z80_tstates += edoptstates[code-0x40];
+				z80edops[code-0x40](code);
+			}
+			else if(code > 0x9f && code < 0xc0){
+				z80_tstates += edoptstates[code-0x60];
+				z80edops[code-0x60](code);
+			}
+			else
 				NONI(code); //incorrect op NONI
-			else {
-				if(code < 0x80) {
-					z80_tstates += edoptstates[code-0x40];
-					z80edops[code-0x40](code);
-				}
-				else {
-					z80_tstates += edoptstates[code-0x60];
-					z80edops[code-0x60](code);
-				}
-			}
-
-			CLR_PREFIX();
-		}
-		else if(IS_CB_PREFIX) {
-			if(code < 0x40) {
-				z80_tstates += 4;
-				CBSFT(code);
-			}
-			else {
-				z80_tstates += 4;
-				BIT(code);
-			}
 
 			CLR_PREFIX();
 		}
 		else {
-			z80_tstates += optstates[code];
-			z80ops[code](code);
+			if(IS_DD_PREFIX)
+					hlixiyptr = &(IX);
+				else if(IS_FD_PREFIX)
+					hlixiyptr = &(IY);
+				else
+					hlixiyptr = &(HL);
 
-			if(IS_PREFIX && !((code == 0xcb) | (code == 0xdd) | (code == 0xfd) | (code == 0xed)))
+			if(IS_CB_PREFIX) {
+				if(hlixiyptr != &HL) {
+					gixiyshift = code;
+					code = mem_read(PC++);
+				}
+
+				if(code < 0x40) {
+					z80_tstates += 4;
+					CBSFT(code);
+				}
+				else {
+					z80_tstates += 4;
+					BIT(code);
+				}
+
 				CLR_PREFIX();
+			}
+			else {
+				z80_tstates += optstates[code];
+				z80ops[code](code);
+
+				if(IS_PREFIX && !((code == 0xcb) | (code == 0xdd) | (code == 0xfd) | (code == 0xed)))
+					CLR_PREFIX();
+			}
 		}
 	}
 
