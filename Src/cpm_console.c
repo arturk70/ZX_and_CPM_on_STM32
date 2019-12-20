@@ -287,5 +287,7 @@ void cpmcons_gets(register char* buf, register uint8_t num) {
 		else
 			buf[ptr++] = sym;
 	} while(ptr < num);
+	while(sym != '\r')
+		sym = cpmcons_getc();
 	buf[ptr] = '\0';
 }

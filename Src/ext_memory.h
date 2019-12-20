@@ -12,7 +12,7 @@
 #include "ili9341_driver.h"
 
 #define CACHE_BLOCK_SIZE	128
-#define CACHE_BLOCKS_NUM	24
+#define CACHE_BLOCKS_NUM	20
 
 typedef struct {
 	uint16_t straddr;
