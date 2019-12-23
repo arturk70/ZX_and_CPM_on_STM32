@@ -7,79 +7,78 @@
 
 #include "ext_memory.h"
 
-static uint8_t cache_map[288];
+static uint8_t cache_map[289];// 288 = (320*24*2+8*192*2)/64 - number of 128 byte blocks in external memory + 1 fake block
 static cache_t cache[CACHE_BLOCKS_NUM];
 
 uint32_t mem_time = 0;
 
-uint8_t extmem_rw(register extmem_op_t op, register uint16_t addr, register uint8_t data) {
+uint8_t extmem_rw(register extmem_op_t op, register uint32_t addr, register uint32_t data) {
 	register cache_t *cur_cache, *last_cache, *lru_cache;
 	register uint8_t* cmapptr = cache_map;
-	cur_cache = lru_cache = cache;
-	last_cache = cur_cache + CACHE_BLOCKS_NUM;
+	register uint32_t blknum;
+	blknum = addr >> 7;
 
-	register uint16_t straddr = addr >> 7;
-	if(cmapptr[straddr] == 0xff) { //no cache found
+	if(cmapptr[blknum] == 0xff) { //no cache found
+		cur_cache = lru_cache = cache;
+		last_cache = cur_cache + CACHE_BLOCKS_NUM;
+
 		while(cur_cache < last_cache) {
 			if(cur_cache->usaget < lru_cache->usaget) lru_cache = cur_cache;
 			cur_cache++;
 		}
 
-		cmapptr[straddr] = (lru_cache - cache);
-		cmapptr[lru_cache->straddr >> 7] = 0xff;
+		cmapptr[blknum] = (lru_cache - cache);
+		cmapptr[lru_cache->blknum] = 0xff;
 
 		if(lru_cache->writed) {
-			ILI9341_sendBuf(lru_cache->x, lru_cache->y, lru_cache->x + 7, lru_cache->y + 7, (uint16_t*)(lru_cache->data), CACHE_BLOCK_SIZE/2);
+			ILI9341_sendBuf(lru_cache->x, lru_cache->y, lru_cache->x + 7, lru_cache->y + 7, (uint16_t*)(lru_cache->data), 64);
 		}
 
 		register uint16_t xi,yi;
 
-		straddr = straddr << 7;
-		if(straddr < ILI9341_PWIDTH*(ILI9341_PHEIGHT-192)*2) {
-			xi = straddr / CACHE_BLOCK_SIZE;
-			yi = xi / (ILI9341_PWIDTH/8) * 8;
-			xi = xi % (ILI9341_PWIDTH/8) * 8;
+		if(blknum < 240) {
+			yi = (blknum / 40) * 8;
+			xi = (blknum % 40) * 8;
 			if(yi >= 24)
 				yi += 192;
 		}
 		else {
 			xi = 0;
-			yi = 24 + (straddr - ILI9341_PWIDTH*(ILI9341_PHEIGHT-192)*2) / CACHE_BLOCK_SIZE * 8;
+			yi = (blknum - 240) * 8 + 24;
 			if(yi >= 216) {
 				xi = 312;
 				yi -= 192;
 			}
 		}
 
-		lru_cache->straddr = straddr;
+		lru_cache->blknum = blknum;
 		lru_cache->x=xi; lru_cache->y=yi;
 		lru_cache->writed = 0;
 
-		ILI9341_readBuf(xi, yi, xi + 7, yi + 7, (uint16_t*)(lru_cache->data), CACHE_BLOCK_SIZE/2);
+		ILI9341_readBuf(xi, yi, xi + 7, yi + 7, (uint16_t*)(lru_cache->data), 64);
 	}
 	else {
-		lru_cache = &cache[cmapptr[straddr]];
-		straddr = straddr << 7;
+		lru_cache = &cache[cmapptr[blknum]];
 	}
 
 	lru_cache->usaget = mem_time++;
 
 	if(op == EXTM_READ)
-		return lru_cache->data[addr - straddr];
+		return lru_cache->data[addr & 0x007f];
 	else {
 		lru_cache->writed = 1;
-		return lru_cache->data[addr - straddr] = data;
+		return lru_cache->data[addr & 0x007f] = data;
 	}
 }
 
 void extmem_Init() {
 
-	for(int i=0; i<CACHE_BLOCKS_NUM;i++) {
-			cache[i].straddr = 0xffff;
+	for(register int i=0; i<CACHE_BLOCKS_NUM;i++) {
+			cache[i].blknum = 288;//initialize to fake block
 			cache[i].usaget = 0;
 			cache[i].writed = 0;
 	}
-	for(int i=0; i<288; i++)
+	for(register int i=0; i<289; i++)
 		cache_map[i] = 0xff;
 }
 
