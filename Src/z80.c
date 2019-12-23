@@ -8,7 +8,7 @@
 #include "z80_ops.h"
 #include "z80.h"
 
-uint8_t regs[28];
+uint8_t regs[30];
 uint16_t* hlixiyptr;
 int8_t gixiyshift;
 z80_state_t state;
@@ -32,7 +32,7 @@ void z80_Init(void (*outfn)(register uint16_t addr, register uint8_t data), uint
 
 void z80_reset() {
 	AF = AF_ = 0xffff;
-	I= R = 0;
+	I= RR = R8 = 0;
 	PC = 0;
 	SP = 0xffff;
 	IFF1 = IFF2 = IM = 0;
@@ -90,7 +90,8 @@ void req_int(register uint8_t type) {
 }
 
 void z80_step() {
-	INC_R();
+//	INC_R();
+	RR++;
 	if((state.int_req) && !state.int_blocked) {
 		if(state.int_req == 1) {
 			if(IFF1)

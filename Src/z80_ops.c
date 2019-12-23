@@ -295,20 +295,17 @@ void LDBL(register uint8_t code) {
 }
 
 void LDIR(register uint8_t code) {
-	register uint8_t *regptr;
-	if((code & 0x0f) == 0x07) {//r = I
-		regptr = &I;
-	}
-	else {//r = R
-		regptr = &R;
-	}
-
-	if((code & 0xf0) == 0x40) {//LD r, A
-		*regptr = A;
-	}
-	else {//LD A, r
-		A = *regptr;
+	switch(code >> 3) {
+	case 0x08://LD I,A
+		I = A; break;
+	case 0x09://LD R,A
+		RR = A & 0x7f; R8 = A & 0x80; break;
+	case 0x0a://LD A,I
+		A = I; break;
+	case 0x0b://LD A,R
+		A = (RR & 0x7f) | (R8 & 0x80);
 		F = (F & FLAG_C) | (sz53p_table[A] & ~FLAG_P) | (IFF2 ? FLAG_V : 0);
+		break;
 	}
 }
 

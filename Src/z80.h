@@ -61,13 +61,14 @@
 #define PC  (*(uint16_t*)&regs[22])
 
 #define I  regs[24]
-#define R  regs[25]
+#define RR  regs[25]
+#define R8 regs[26]
 
-#define IFF1 regs[26]
-#define IFF2 regs[27]
-#define IM   regs[28]
+#define IFF1 regs[27]
+#define IFF2 regs[28]
+#define IM   regs[29]
 
-#define INC_R()	{R = (R & 0x80) | ((R+1) & 0x7f);}
+//#define INC_R()	{R = (R & 0x80) | ((R+1) & 0x7f);}
 
 /* The flags */
 #define FLAG_C	0x01
@@ -104,7 +105,7 @@ typedef struct {
 
 } z80_state_t;
 
-extern uint8_t regs[28];
+extern uint8_t regs[30];
 extern uint16_t* hlixiyptr;
 extern int8_t gixiyshift;
 extern z80_state_t state;

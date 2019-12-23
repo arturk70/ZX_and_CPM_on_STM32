@@ -35,7 +35,7 @@ static uint8_t z80_loadfile(const char *fname) {
 			SPL = buf[8];
 			SPH = buf[9];
 			I = buf[10];
-			R = buf[11];
+			RR = buf[11] & 0x7f;
 			b12 = buf[12];
 			E = buf[13];
 			D = buf[14];
@@ -55,7 +55,7 @@ static uint8_t z80_loadfile(const char *fname) {
 			IFF2 = buf[28];
 			IM = buf[29] & 0x03;
 
-			R = (R & 0x7f) | (b12 << 7);
+			R8 = b12 << 7;
 			zx_border_color = (((b12 << 9) & 0x0800) | ((b12 << 3) & 0x0040) | ((b12 >> 1) & 0x0001)) * 0x18;
 			// (b12 & 0x20) --- RLE compression used
 
