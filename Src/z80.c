@@ -108,7 +108,7 @@ void z80_step() {
 //		uint16_t prvPC = PC;
 #endif
 		state.int_blocked = 0;
-		register uint8_t code = mem_read(PC++);
+		register uint32_t code = mem_read(PC++);
 
 #ifdef __SIMULATION
 //		printf("Exec 0x%04x: (0x%04x)0x%02x\n", prvPC, state.prefix, code);

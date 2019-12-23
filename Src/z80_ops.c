@@ -82,57 +82,57 @@ const uint8_t sz53p_table[256] = {
 		0xa4,0xa0,0xa0,0xa4,0xa0,0xa4,0xa4,0xa0,0xa8,0xac,0xac,0xa8,0xac,0xa8,0xa8,0xac
 };
 
-void NONI(register uint8_t code) {
+void NONI(register uint32_t code) {
 	state.int_blocked = 1;
 }
 
-void NOP(register uint8_t code) {
+void NOP(register uint32_t code) {
 }
 
-void HLT(register uint8_t code) {
+void HLT(register uint32_t code) {
 	state.halted = 1;
 }
 
-void DI_(register uint8_t code) {
+void DI_(register uint32_t code) {
 	IFF1 = IFF2 = 0;
 }
 
-void EI_(register uint8_t code) {
+void EI_(register uint32_t code) {
 	IFF1 = IFF2 = 1; state.int_blocked = 1;
 }
 
-void SCF(register uint8_t code) {
+void SCF(register uint32_t code) {
 	F = (F & (FLAG_P | FLAG_Z | FLAG_S)) | (A & (FLAG_3 | FLAG_5)) | FLAG_C;
 }
 
-void CCF(register uint8_t code) {
+void CCF(register uint32_t code) {
 	F = (F & (FLAG_P | FLAG_Z | FLAG_S)) | ((F & FLAG_C) ? FLAG_H : FLAG_C) | (A & (FLAG_3 | FLAG_5));
 }
 
-void RETN(register uint8_t code) {
+void RETN(register uint32_t code) {
 		IFF1=IFF2;
 		PCL = mem_read(SP++);
 		PCH = mem_read(SP++);
 }
 
-void RETI(register uint8_t code) {
+void RETI(register uint32_t code) {
 		PCL = mem_read(SP++);
 		PCH = mem_read(SP++);
 }
 
-void IM_0(register uint8_t code) {
+void IM_0(register uint32_t code) {
 		IM = 0;
 }
 
-void IM_1(register uint8_t code) {
+void IM_1(register uint32_t code) {
 		IM = 1;
 }
 
-void IM_2(register uint8_t code) {
+void IM_2(register uint32_t code) {
 		IM = 2;
 }
 
-void LDn(register uint8_t code) {
+void LDn(register uint32_t code) {
 	register int8_t tmp;
 	register int8_t ixiyshift = 0;
 
@@ -170,7 +170,7 @@ void LDn(register uint8_t code) {
 	}
 }
 
-void LDx(register uint8_t code) {
+void LDx(register uint32_t code) {
 	register uint16_t tmp;
 	tmp = mem_read(PC++);
 	tmp |= mem_read(PC++) << 8;
@@ -190,7 +190,7 @@ void LDx(register uint8_t code) {
 	}
 }
 
-void LDm(register uint8_t code) {
+void LDm(register uint32_t code) {
 	register uint16_t addr;
 	register uint8_t tmp, hcode;
 	hcode = code & 0xf0;
@@ -228,11 +228,11 @@ void LDm(register uint8_t code) {
 		A = tmp;
 }
 
-void LDs(register uint8_t code) {//LD SP, HL
+void LDs(register uint32_t code) {//LD SP, HL
 	SP = HLIXIY_REG;
 }
 
-void LD_(register uint8_t code) {
+void LD_(register uint32_t code) {
 	register int8_t ixiyshift = 0;
 	register uint8_t tmp;
 
@@ -273,7 +273,7 @@ void LD_(register uint8_t code) {
 	}
 }
 
-void LDBL(register uint8_t code) {
+void LDBL(register uint32_t code) {
 	register uint8_t tmp;
 	tmp=mem_read(HL);
 	BC--;
@@ -294,7 +294,7 @@ void LDBL(register uint8_t code) {
 	}
 }
 
-void LDIR(register uint8_t code) {
+void LDIR(register uint32_t code) {
 	switch(code >> 3) {
 	case 0x08://LD I,A
 		I = A; break;
@@ -309,7 +309,7 @@ void LDIR(register uint8_t code) {
 	}
 }
 
-void EDLD(register uint8_t code) {
+void EDLD(register uint32_t code) {
 	register uint16_t addr;
 	register uint16_t* reg;
 	addr = mem_read(PC++);
@@ -338,7 +338,7 @@ void EDLD(register uint8_t code) {
 	}
 }
 
-void ICx(register uint8_t code) {
+void ICx(register uint32_t code) {
 	switch (code >> 4) {
 	case 0x00://INC BC
 		BC++;
@@ -355,7 +355,7 @@ void ICx(register uint8_t code) {
 	}
 }
 
-void IC8(register uint8_t code) {
+void IC8(register uint32_t code) {
 	register uint8_t res;
 	switch (code >> 3) {
 	case 0x00://INC B
@@ -394,7 +394,7 @@ void IC8(register uint8_t code) {
 	F = (F & FLAG_C) | ((res == 0x80) ? FLAG_V : 0) | ((res & 0x0f) ? 0 : FLAG_H) | (sz53p_table[res] & ~FLAG_P);
 }
 
-void DCx(register uint8_t code) {
+void DCx(register uint32_t code) {
 	switch (code >> 4) {
 	case 0x00://DEC BC
 		BC--;
@@ -411,7 +411,7 @@ void DCx(register uint8_t code) {
 	}
 }
 
-void DC8(register uint8_t code) {
+void DC8(register uint32_t code) {
 	register uint8_t res;
 	switch (code >> 3) {
 	case 0x00://DEC B
@@ -450,12 +450,12 @@ void DC8(register uint8_t code) {
 	F = (F & FLAG_C) | (((res & 0x0f) == 0x0f) ? FLAG_H : 0) | FLAG_N | ((res == 0x7f) ? FLAG_V : 0) | (sz53p_table[res] & ~FLAG_P);
 }
 
-void CPL(register uint8_t code) {
+void CPL(register uint32_t code) {
 	A = ~A;
 	F = (F & (FLAG_C | FLAG_P | FLAG_Z | FLAG_S)) | (A & (FLAG_3 | FLAG_5)) | FLAG_N | FLAG_H;
 }
 
-void ALx(register uint8_t code) {
+void ALx(register uint32_t code) {
 	register uint32_t tmp;
 	register uint8_t hreg;
 
@@ -500,7 +500,7 @@ static uint8_t calc_F(register uint8_t src1, register uint8_t src2, register int
 	return newF;
 }
 
-void ALn(register uint8_t code) {
+void ALn(register uint32_t code) {
 	register uint8_t src = mem_read(PC++);
 	register int16_t res;
 	switch ((code & 0x38) >> 3) {
@@ -543,7 +543,7 @@ void ALn(register uint8_t code) {
 	}
 }
 
-void ALU(register uint8_t code) {
+void ALU(register uint32_t code) {
 	register int8_t ixiyshift = 0;
 	register uint8_t src;
 	register int16_t res;
@@ -612,7 +612,7 @@ void ALU(register uint8_t code) {
 	}
 }
 
-void NEG_(register uint8_t code) {
+void NEG_(register uint32_t code) {
 	register uint8_t src;
 	register int16_t res;
 	src = A;
@@ -622,7 +622,7 @@ void NEG_(register uint8_t code) {
 	A = res;
 }
 
-void SBCx(register uint8_t code) {
+void SBCx(register uint32_t code) {
 	register uint32_t tmp;
 	register uint8_t reg;
 
@@ -649,7 +649,7 @@ void SBCx(register uint8_t code) {
 	HL = (uint16_t)tmp;
 }
 
-void ADCx(register uint8_t code) {
+void ADCx(register uint32_t code) {
 	register uint32_t tmp;
 	register uint8_t reg;
 
@@ -676,7 +676,7 @@ void ADCx(register uint8_t code) {
 	HL = (uint16_t)tmp;
 }
 
-void CPBL(register uint8_t code) {
+void CPBL(register uint32_t code) {
 	register uint8_t tmp1, tmp2;
 
 	tmp2 = mem_read(HL);
@@ -695,7 +695,7 @@ void CPBL(register uint8_t code) {
 		PC -= 2;
 }
 
-void JR_(register uint8_t code) {
+void JR_(register uint32_t code) {
 	register int8_t d = mem_read(PC++);
 	register uint8_t cond = 0;
 
@@ -727,14 +727,14 @@ void JR_(register uint8_t code) {
 	}
 }
 
-void RST(register uint8_t code) {
+void RST(register uint32_t code) {
 	mem_write(--SP, PCH);
 	mem_write(--SP, PCL);
 	PCH = 0;
 	PCL = code & 0x38;
 }
 
-void JPc(register uint8_t code) {
+void JPc(register uint32_t code) {
 	register uint8_t dh, dl;
 	register uint8_t cond = 0;
 
@@ -787,7 +787,7 @@ void JPc(register uint8_t code) {
 	}
 }
 
-void JMP(register uint8_t code) {
+void JMP(register uint32_t code) {
 	register uint8_t dh, dl;
 
 	if(code == 0xc9) {//RET
@@ -811,7 +811,7 @@ void JMP(register uint8_t code) {
 	}
 }
 
-void POP(register uint8_t code) {
+void POP(register uint32_t code) {
 	register uint16_t tmp;
 	tmp = mem_read(SP++);
 	tmp |= mem_read(SP++) << 8;
@@ -832,7 +832,7 @@ void POP(register uint8_t code) {
 	}
 }
 
-void PSH(register uint8_t code) {
+void PSH(register uint32_t code) {
 	register uint16_t tmp;
 
 	switch (code >> 4) {
@@ -854,7 +854,7 @@ void PSH(register uint8_t code) {
 	mem_write(--SP, tmp);
 }
 
-void SFT(register uint8_t code) {
+void SFT(register uint32_t code) {
 	register uint8_t tmp;
 
 	switch (code >> 3) {
@@ -880,7 +880,7 @@ void SFT(register uint8_t code) {
 	}
 }
 
-void CBSFT(register uint8_t code) {
+void CBSFT(register uint32_t code) {
 	register uint8_t tmp, tmpres;
 	register uint8_t regnum = code & 0x07;
 
@@ -950,7 +950,7 @@ void CBSFT(register uint8_t code) {
 		*(regs + (regnum^1)) = tmpres;
 }
 
-void EDSF(register uint8_t code) {
+void EDSF(register uint32_t code) {
 	register uint8_t tmp;
 
 	tmp = mem_read(HL);
@@ -967,7 +967,7 @@ void EDSF(register uint8_t code) {
 	F = (F & FLAG_C) | sz53p_table[A];
 }
 
-void BIT(register uint8_t code) {
+void BIT(register uint32_t code) {
 	register uint8_t tmpres, hidden;
 	register uint8_t bitmask = 0x01 << ((code & 0x38) >> 3);
 	register uint8_t regnum = code & 0x07;
@@ -1025,7 +1025,7 @@ void BIT(register uint8_t code) {
 		*(regs + (regnum^1)) = tmpres;
 }
 
-void EX_(register uint8_t code) {
+void EX_(register uint32_t code) {
 	register uint16_t tmp;
 
 	switch (code) {
@@ -1045,7 +1045,7 @@ void EX_(register uint8_t code) {
 	}
 }
 
-void IO_(register uint8_t code) {
+void IO_(register uint32_t code) {
 	if(code == 0xd3) {//OUT (*),A
 		port_out(((uint16_t)A << 8) | mem_read(PC++), A);
 	}
@@ -1054,7 +1054,7 @@ void IO_(register uint8_t code) {
 	}
 }
 
-void EDIN(register uint8_t code) {
+void EDIN(register uint32_t code) {
 	register uint8_t tmp1, reg;
 
 	switch ((code & 0x38) >> 3) {
@@ -1079,7 +1079,7 @@ void EDIN(register uint8_t code) {
 	F = ( F & FLAG_C) | sz53p_table[reg];
 }
 
-void EDOU(register uint8_t code) {
+void EDOU(register uint32_t code) {
 	switch ((code & 0x38) >> 3) {
 	case 0x00://OUT
 		port_out(BC, B); break;
@@ -1100,7 +1100,7 @@ void EDOU(register uint8_t code) {
 	}
 }
 
-void IOBL(register uint8_t code) {
+void IOBL(register uint32_t code) {
 	register uint8_t tmp1, tmp2;
 
 	if((code & 0x03) == 0x02) {//INI , INIR, IND, INDR
@@ -1137,7 +1137,7 @@ void IOBL(register uint8_t code) {
 		PC -= 2;
 }
 
-void DAA(register uint8_t code) {
+void DAA(register uint32_t code) {
 	register uint8_t add = 0;
 	register uint8_t carry = (F & FLAG_C);
 
@@ -1165,7 +1165,7 @@ void DAA(register uint8_t code) {
 	F |= carry | sz53p_table[A];
 }
 
-void PFX(register uint8_t code) {
+void PFX(register uint32_t code) {
 	switch (code) {
 	case 0xed://ED
 		state.prefix = 0x00ed; hlixiyptr = &(HL); break;
