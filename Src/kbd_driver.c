@@ -34,8 +34,8 @@ static const char skeytable[8][5] = {
 uint8_t ext_kbdscans[8];
 #endif
 
-uint8_t zxkbd_scan(register uint8_t addr) {
-	register uint8_t scan = 0x1f;
+uint32_t zxkbd_scan(register uint32_t addr) {
+	register uint32_t scan = 0x1f;
 
 #ifndef __SIMULATION
 	register uint32_t pA, pB;
@@ -48,7 +48,7 @@ uint8_t zxkbd_scan(register uint8_t addr) {
 	pB = LL_GPIO_ReadOutputPort(KBDA_8_GPIO_Port);
 	LL_GPIO_WriteOutputPort(KBDA_8_GPIO_Port, (pB & 0xfffff807) | (0x000000ff<<3));
 #else
-	for(register uint8_t i=0;i<8;i++) {
+	for(register uint32_t i=0;i<8;i++) {
 		if(~addr & (0x01 << i))
 			return ~ext_kbdscans[i];
 	}
@@ -60,11 +60,11 @@ uint8_t zxkbd_scan(register uint8_t addr) {
 char cpmkbd_read() {
 	//TODO optimize algorithm
 	register char res='\0', sres='\0';
-	register uint8_t kbdscan, is_cs = 0, is_ss = 0;
+	register uint32_t kbdscan, is_cs = 0, is_ss = 0;
 
-	for(register uint8_t i=0; i<8; i++) {
+	for(register uint32_t i=0; i<8; i++) {
 		kbdscan = ~zxkbd_scan(~(0x01<<i));
-		for(register uint8_t j=0; j<5; j++) {
+		for(register uint32_t j=0; j<5; j++) {
 			if(kbdscan & (0x01<<j)) {
 				if(i == 0 && j == 0)
 					is_cs = 1;

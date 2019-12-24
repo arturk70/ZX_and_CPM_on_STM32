@@ -12,12 +12,12 @@ uint8_t regs[30];
 uint16_t* hlixiyptr;
 int8_t gixiyshift;
 z80_state_t state;
-int z80_tstates = 0;
+int z80_tstates;
 
-void (*port_out)(register uint16_t addr, register uint8_t data);
-uint8_t (*port_in)(register uint16_t addr);
+void (*port_out)(register uint32_t addr, register uint32_t data);
+uint8_t (*port_in)(register uint32_t addr);
 
-void z80_Init(void (*outfn)(register uint16_t addr, register uint8_t data), uint8_t (*infn)(register uint16_t addr)) {
+void z80_Init(void (*outfn)(register uint32_t addr, register uint32_t data), uint8_t (*infn)(register uint32_t addr)) {
 	port_out = outfn;
 	port_in = infn;
 
@@ -40,7 +40,7 @@ void z80_reset() {
 	gixiyshift = 0;
 	state.halted = 0;
 	state.prefix = 0;
-
+	z80_tstates = 0;
 }
 
 void z80_interrupt() {
@@ -85,13 +85,13 @@ void z80_nmi() {
 }
 
 //set interrupt requests for type
-void req_int(register uint8_t type) {
+void req_int(register uint32_t type) {
 	state.int_req = type;
 }
 
 void z80_step() {
 	RR++;
-	if((state.int_req) && !state.int_blocked) {
+	if(state.int_req && !state.int_blocked) {
 		if(state.int_req == INT_REQ) {
 			if(IFF1)
 				z80_interrupt();

@@ -99,7 +99,7 @@ void cpmsys_Run() {
 	cpmcons_clear();
 }
 
-void cpmports_out(register uint16_t addr, register uint8_t data) {
+void cpmports_out(register uint32_t addr, register uint32_t data) {
 	if((addr & 0x00ff) == 0x0001) {//ciop
 		cpmcons_putc(data);
 	}
@@ -138,7 +138,7 @@ void cpmports_out(register uint16_t addr, register uint8_t data) {
 	}
 }
 
-uint8_t cpmports_in(register uint16_t addr) {
+uint8_t cpmports_in(register uint32_t addr) {
 	if((addr & 0x00ff) == 0x0000) {//cstp
 		cpmcons_getkey();
 
@@ -150,7 +150,7 @@ uint8_t cpmports_in(register uint16_t addr) {
 		return cpmconsch;
 	}
 	else if((addr & 0x00ff) == 0x0002) {//sstp
-		register uint8_t status = 0x00;
+		register uint32_t status = 0x00;
 #ifndef __SIMULATION
 		if(LL_USART_IsActiveFlag_RXNE(USART1))//ready for Rx
 			status |= 0x02;

@@ -35,17 +35,17 @@ void zxsys_Run() {
 	}
 }
 
-void zxports_out(register uint16_t addr, register uint8_t data) {
+void zxports_out(register uint32_t addr, register uint32_t data) {
 	if((addr & 0x00ff) == 0x00fe) {
 		zx_border_color = (((data << 10) & 0x0800) | ((data << 4) & 0x0040) | (data & 0x0001)) * 0x18;
 	}
 }
 
-uint8_t zxports_in(register uint16_t addr) {
-	register uint8_t res = 0xff;
+uint8_t zxports_in(register uint32_t addr) {
+	register uint32_t res = 0xff;
 	if((addr & 0x00ff) == 0x00fe) {
 		res = zxkbd_scan(addr>>8);
-		if(((addr>>8) == 0x7f) && ((res & 0x1f) == 0x1c)) {//SS+Break
+		if(((addr>>8) == 0x007f) && ((res & 0x1f) == 0x1c)) {//SS+Break
 			z80_menu();
 			return 0xff;
 		}

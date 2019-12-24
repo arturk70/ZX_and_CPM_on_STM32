@@ -22,14 +22,14 @@ uint8_t ILI9341_DMA_busy = 0;
 static uint8_t is_inited = 0;
 static uint16_t fcolor;
 
-void ILI9341_setLEDpwm(register uint16_t val) {
+void ILI9341_setLEDpwm(register uint32_t val) {
 #ifndef __SIMULATION
 	if(val>999) val=999;
 	ILI9341_SETLED_PWM(val);
 #endif
 }
 
-void ILI9341_sendCommand(register uint8_t com) {
+void ILI9341_sendCommand(register uint32_t com) {
 #ifndef __SIMULATION
 	while(LL_SPI_IsActiveFlag_BSY(ILI9341_SPI) != 0);
 	ILI9341_DC_RESET;
@@ -39,7 +39,7 @@ void ILI9341_sendCommand(register uint8_t com) {
 #endif
 }
 
-void ILI9341_sendData(register uint8_t data) {
+void ILI9341_sendData(register uint32_t data) {
 #ifndef __SIMULATION
 	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
 	LL_SPI_TransmitData8(ILI9341_SPI, data);
@@ -161,20 +161,20 @@ void ILI9341_Init() {
 	is_inited = 1;
 }
 
-void ILI9341_setFrame(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2) {
+void ILI9341_setFrame(register uint32_t x1, register uint32_t y1, register uint32_t x2, register uint32_t y2) {
 #ifndef __SIMULATION
 	ILI9341_WAIT_DMA();
 	ILI9341_sendCommand(ILI9341_COLUMN_ADDR);
 	ILI9341_sendData(x1 >> 8);
-	ILI9341_sendData(x1 & 0xFF);
+	ILI9341_sendData(x1);
 	ILI9341_sendData(x2 >> 8);
-	ILI9341_sendData(x2 & 0xFF);
+	ILI9341_sendData(x2);
 
 	ILI9341_sendCommand(ILI9341_PAGE_ADDR);
 	ILI9341_sendData(y1 >> 8);
-	ILI9341_sendData(y1 & 0xFF);
+	ILI9341_sendData(y1);
 	ILI9341_sendData(y2 >> 8);
-	ILI9341_sendData(y2 & 0xFF);
+	ILI9341_sendData(y2);
 #else
 	frame.x1 = x1;
 	frame.y1 = y1;
@@ -183,7 +183,7 @@ void ILI9341_setFrame(register uint16_t x1, register uint16_t y1, register uint1
 #endif
 }
 
-void ILI9341_readPix(register uint16_t x, register uint16_t y, register uint16_t *pix) {
+void ILI9341_readPix(register uint32_t x, register uint32_t y, register uint16_t *pix) {
 	register uint8_t r, g, b;
 
 #ifdef __SIMULATION
@@ -220,7 +220,7 @@ void ILI9341_readPix(register uint16_t x, register uint16_t y, register uint16_t
 	*pix=(((r & 0xF8) << 8u) | ((g & 0xFC) << 3u) | (b >> 3u));
 }
 
-void ILI9341_writePix(register uint16_t x, register uint16_t y, register uint16_t color) {
+void ILI9341_writePix(register uint32_t x, register uint32_t y, register uint32_t color) {
 #ifdef __SIMULATION
 	ili9341_image[(y*320+x)*3  ] = (color >> 8) & 0xf8;
 	ili9341_image[(y*320+x)*3+1] = (color >> 3) & 0xfc;
@@ -234,7 +234,7 @@ void ILI9341_writePix(register uint16_t x, register uint16_t y, register uint16_
 }
 
 //note: (x2-x1+1)*(y2-y1+1) must be less then 65536
-void ILI9341_sendBuf(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2, register uint16_t *data, register uint16_t len) {
+void ILI9341_sendBuf(register uint32_t x1, register uint32_t y1, register uint32_t x2, register uint32_t y2, register uint16_t *data, register uint32_t len) {
 #ifndef __SIMULATION
 	ILI9341_WAIT_DMA();
 #endif
@@ -262,7 +262,7 @@ void ILI9341_sendBuf(register uint16_t x1, register uint16_t y1, register uint16
 }
 
 //note: (x2-x1+1)*(y2-y1+1) must be less then 65536
-void ILI9341_sendDMABuf(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2, register uint16_t *data, register uint16_t len) {
+void ILI9341_sendDMABuf(register uint32_t x1, register uint32_t y1, register uint32_t x2, register uint32_t y2, register uint16_t *data, register uint32_t len) {
 #ifndef __SIMULATION
 	ILI9341_WAIT_DMA();
 #endif
@@ -299,7 +299,7 @@ void ILI9341_sendDMABuf(register uint16_t x1, register uint16_t y1, register uin
 }
 
 //note: (x2-x1+1)*(y2-y1+1) must be less then 65536
-void ILI9341_readBuf(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2, register uint16_t *buf, register uint16_t len) {
+void ILI9341_readBuf(register uint32_t x1, register uint32_t y1, register uint32_t x2, register uint32_t y2, register uint16_t *buf, register uint32_t len) {
 #ifndef __SIMULATION
 	ILI9341_WAIT_DMA();
 #endif
@@ -357,7 +357,7 @@ void ILI9341_readBuf(register uint16_t x1, register uint16_t y1, register uint16
 }
 
 //note: (x2-x1+1)*(y2-y1+1) must be less then 65536
-void ILI9341_fillArea(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2, register uint16_t color) {
+void ILI9341_fillArea(register uint32_t x1, register uint32_t y1, register uint32_t x2, register uint32_t y2, register uint32_t color) {
 #ifndef __SIMULATION
 	ILI9341_WAIT_DMA();
 #endif

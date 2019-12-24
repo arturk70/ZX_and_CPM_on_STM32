@@ -10,7 +10,7 @@
 #include "stdlib.h"
 #include "cpm_font.h"
 
-static uint8_t cpos[2] = {0,0};
+static uint32_t cpos[2] = {0,0};
 static uint8_t escmode = 0;
 static uint16_t* chbuf;
 static uint8_t* scrbuf;
@@ -19,10 +19,10 @@ uint8_t cpmconsst = 0x00;
 char cpmconsch = '\0';
 
 //s - index in font table
-static void drawsymbol(register uint8_t row, register uint8_t col, register uint8_t inv) {
-		register uint8_t s;
+static void drawsymbol(register uint32_t row, register uint32_t col, register uint32_t inv) {
+		register uint32_t s;
 		register uint32_t fonts;
-		register uint16_t fg, bg;
+		register uint32_t fg, bg;
 
 		s = scrbuf[row*SCR_WIDTH+col];
 		if(s != 0x00)
@@ -39,8 +39,8 @@ static void drawsymbol(register uint8_t row, register uint8_t col, register uint
 		}
 
 		register uint16_t *ptr = chbuf;
-		for(register uint8_t l=0;l<8;l++) {
-			for(register uint8_t b=0;b<6;b++) {
+		for(register uint32_t l=0;l<8;l++) {
+			for(register uint32_t b=0;b<6;b++) {
 				if(b == 5)
 					*ptr = bg;
 				else {
@@ -67,7 +67,7 @@ static void drawsymbol(register uint8_t row, register uint8_t col, register uint
 
 }
 
-static void setcursor(register uint8_t row, register uint8_t col) {
+static void setcursor(register uint32_t row, register uint32_t col) {
 	drawsymbol(cpos[ROW], cpos[COL], 0);
 	if(row >= SCR_HEIGHT)
 		row = SCR_HEIGHT-1;
@@ -83,8 +83,8 @@ static void cpmcons_scroll() {
 	bufo = buf + SCR_WIDTH;
 	bufe = buf + SCR_HEIGHT*SCR_WIDTH;
 
-	for(register uint8_t i=0; i< SCR_HEIGHT-1; i++) {
-		for(register uint8_t j=0; j< SCR_WIDTH; j++) {
+	for(register uint32_t i=0; i< SCR_HEIGHT-1; i++) {
+		for(register uint32_t j=0; j< SCR_WIDTH; j++) {
 			*buf++ = *bufo++;
 			drawsymbol(i, j, 0);
 		}
@@ -108,8 +108,8 @@ void cpmcons_deinit() {
 }
 
 void cpmcons_clear() {
-	for(register uint8_t i=0;i<SCR_HEIGHT;i++)
-		for(register uint8_t j=0; j< SCR_WIDTH; j++)
+	for(register uint32_t i=0;i<SCR_HEIGHT;i++)
+		for(register uint32_t j=0; j< SCR_WIDTH; j++)
 			scrbuf[i*SCR_WIDTH+j]=0x00;
 	ILI9341_fillArea(CPMD_START_POS-2, CPMD_START_LINE, CPMD_END_POS+2, CPMD_END_LINE, BG_COLOR);
 	setcursor(0, 0);
@@ -120,7 +120,7 @@ void cpmcons_putc(register char c) {
 
 //	printf("%02x \'%c\'\n", c, (c > ' ' && c < '~') ? c : ' ');
 
-	register uint8_t newrow = cpos[ROW], newcol = cpos[COL];
+	register uint32_t newrow = cpos[ROW], newcol = cpos[COL];
 
 	if(escmode) {
 		if(escmode == 2) {
@@ -158,18 +158,18 @@ void cpmcons_putc(register char c) {
 			newrow = 0; newcol = 0;
 		}
 		else if(c == 'J') {
-			for(register uint8_t i=newcol; i<SCR_WIDTH; i++) {
+			for(register uint32_t i=newcol; i<SCR_WIDTH; i++) {
 				scrbuf[newrow*SCR_WIDTH+i] = 0x00;
 				drawsymbol(newrow, i, 0);
 			}
-			for(register uint8_t i=newrow+1; i<SCR_HEIGHT; i++)
-				for(register uint8_t j=0; j<SCR_WIDTH; j++) {
+			for(register uint32_t i=newrow+1; i<SCR_HEIGHT; i++)
+				for(register uint32_t j=0; j<SCR_WIDTH; j++) {
 					scrbuf[i*SCR_WIDTH+j] = 0x00;
 					drawsymbol(i, j, 0);
 				}
 		}
 		else if(c == 'K') {
-			for(register uint8_t i=newcol; i<SCR_WIDTH; i++) {
+			for(register uint32_t i=newcol; i<SCR_WIDTH; i++) {
 				scrbuf[newrow*SCR_WIDTH+i] = 0x00;
 				drawsymbol(newrow, i, 0);
 			}
@@ -181,7 +181,7 @@ void cpmcons_putc(register char c) {
 	else if(c == 0x07) {//Bell
 	}
 	else if(c == '\b') {//Backspace
-		for(register uint8_t i=newcol; i<SCR_WIDTH; i++) {
+		for(register uint32_t i=newcol; i<SCR_WIDTH; i++) {
 			scrbuf[newrow*SCR_WIDTH+(i-1)] = scrbuf[newrow*SCR_WIDTH+i];
 			drawsymbol(newrow, i-1, 0);
 		}
@@ -243,7 +243,7 @@ void cpmcons_puts(register const char *s) {
 		cpmcons_putc(*s++);
 }
 
-void cpmcons_errmsg(register uint8_t errno, register const char *s) {
+void cpmcons_errmsg(register uint32_t errno, register const char *s) {
 	//char buf[4];
 	cpmcons_puts("Error #");
 	cpmcons_putc('0'+errno);
@@ -271,8 +271,8 @@ char cpmcons_getc() {
 	return cpmconsch;
 }
 
-void cpmcons_gets(register char* buf, register uint8_t num) {
-	register uint8_t ptr = 0;
+void cpmcons_gets(register char* buf, register uint32_t num) {
+	register uint32_t ptr = 0;
 	register char sym;
 	do {
 		sym = cpmcons_getc();

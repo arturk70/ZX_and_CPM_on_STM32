@@ -38,10 +38,10 @@ void cpmcons_clear();
 void cpmcons_deinit();
 void cpmcons_putc(register char c);
 void cpmcons_puts(register const char *s);
-void cpmcons_errmsg(register uint8_t errno, register const char *s);
+void cpmcons_errmsg(register uint32_t errno, register const char *s);
 void cpmcons_getkey();
 char cpmcons_getc();
-void cpmcons_gets(register char *, register uint8_t num);
+void cpmcons_gets(register char *buf, register uint32_t num);
 
 
 #endif /* CPM_CONSOLE_H_ */

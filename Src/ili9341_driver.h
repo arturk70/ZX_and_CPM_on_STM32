@@ -41,17 +41,17 @@ extern uint8_t ili9341_image[ILI9341_PWIDTH*ILI9341_PHEIGHT*3];
 extern uint8_t ILI9341_DMA_busy;
 
 void ILI9341_Init();
-void ILI9341_sendCommand(register uint8_t com);
-void ILI9341_sendData(register uint8_t data);
-void ILI9341_setFrame(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2);
-void ILI9341_sendBuf(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2, register uint16_t *buf, register uint16_t len);
-void ILI9341_sendDMABuf(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2, register uint16_t *buf, register uint16_t len);
-void ILI9341_readBuf(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2, register uint16_t *buf, register uint16_t len);
-void ILI9341_fillArea(register uint16_t x1, register uint16_t y1, register uint16_t x2, register uint16_t y2, register uint16_t color);
+void ILI9341_sendCommand(register uint32_t com);
+void ILI9341_sendData(register uint32_t data);
+void ILI9341_setFrame(register uint32_t x1, register uint32_t y1, register uint32_t x2, register uint32_t y2);
+void ILI9341_sendBuf(register uint32_t x1, register uint32_t y1, register uint32_t x2, register uint32_t y2, register uint16_t *buf, register uint32_t len);
+void ILI9341_sendDMABuf(register uint32_t x1, register uint32_t y1, register uint32_t x2, register uint32_t y2, register uint16_t *buf, register uint32_t len);
+void ILI9341_readBuf(register uint32_t x1, register uint32_t y1, register uint32_t x2, register uint32_t y2, register uint16_t *buf, register uint32_t len);
+void ILI9341_fillArea(register uint32_t x1, register uint32_t y1, register uint32_t x2, register uint32_t y2, register uint32_t color);
 
-void ILI9341_setLEDpwm(register uint16_t val);
+void ILI9341_setLEDpwm(register uint32_t val);
 
-void ILI9341_readPix(register uint16_t x, register uint16_t y, register uint16_t *pix);
-void ILI9341_writePix(register uint16_t x, register uint16_t y, register uint16_t color);
+void ILI9341_readPix(register uint32_t x, register uint32_t y, register uint16_t *pix);
+void ILI9341_writePix(register uint32_t x, register uint32_t y, register uint32_t color);
 
 #endif /* ILI9341DRIVER_H_ */

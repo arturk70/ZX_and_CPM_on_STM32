@@ -21,10 +21,10 @@ static uint32_t zxcolors[] = {
 };
 
 static uint16_t* linebuf;
-static uint8_t frnum = 0;
-uint8_t zxlnum = 0;
+static uint32_t frnum = 0;
+uint32_t zxlnum = 0;
 uint8_t zx_newline_flag;
-uint16_t zx_border_color = 0;
+uint32_t zx_border_color = 0;
 
 void zxdisp_init() {
 	linebuf = malloc((ZX_PIXELS+64)*2);
@@ -35,8 +35,8 @@ void zxdisp_deinit() {
 }
 
 void zxdisp_drawnextline() {
-	register uint8_t lnum = zxlnum;
-	register uint8_t frnumi = frnum;
+	register uint32_t lnum = zxlnum;
+	register uint32_t frnumi = frnum;
 	if(lnum >= ZX_LINES) {
 		lnum = 0;
 		frnumi++;
@@ -45,12 +45,12 @@ void zxdisp_drawnextline() {
 
 	register uint8_t *attraddr;
 	register uint8_t *lineaddr;
-	register uint8_t attr;
+	register uint32_t attr;
 	register uint32_t bgfgcolor;
-	register uint8_t is_flash;
-	register uint8_t pixline;
+	register uint32_t is_flash;
+	register uint32_t pixline;
 	register uint16_t *bufptr;
-	register uint8_t bnum;
+	register uint32_t bnum;
 
 	attraddr = mem;
 	lineaddr = attraddr+(((uint16_t)lnum & 0x00c0)<<5)+(((uint16_t)lnum & 0x0038)<<2)+(((uint16_t)lnum & 0x0007)<<8);
@@ -66,7 +66,7 @@ void zxdisp_drawnextline() {
 		is_flash = (((attr & 0x80) >> 4) & frnumi) >> 3;
 
 		pixline = *(lineaddr++);
-		for(register uint8_t pixnum=0; pixnum<8; pixnum++) {
+		for(register uint32_t pixnum=0; pixnum<8; pixnum++) {
 			if(((pixline >> pixnum) & 0x01) ^ is_flash)
 				*(bufptr-pixnum) = bgfgcolor;
 			else
