@@ -63,7 +63,7 @@ void z80_interrupt() {
 		break;
 	case 2:
 	{
-		register uint16_t inttemp=(0x100*I)+0xff;
+		register uint32_t inttemp=(0x100*I)+0xff;
 		PCL = mem_read(inttemp++); PCH = mem_read(inttemp);
 		z80_tstates += 6;
 		break;

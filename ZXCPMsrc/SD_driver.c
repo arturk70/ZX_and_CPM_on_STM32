@@ -22,7 +22,7 @@ static uint32_t SD_rw(register uint32_t data) {
 }
 
 static uint32_t SD_cmd(register uint32_t cmd, register uint32_t arg) {
-	register uint8_t n, res;
+	register uint32_t n, res;
 
 	if (cmd & 0x80) {
 		cmd &= 0x7F;
@@ -34,10 +34,10 @@ static uint32_t SD_cmd(register uint32_t cmd, register uint32_t arg) {
 	while(SD_rw(0xff) != 0xff);
 
 	SD_rw(0x40 | cmd); // Start + Command index
-	SD_rw(arg >> 24); // Argument[31..24]
-	SD_rw(arg >> 16); // Argument[23..16]
-	SD_rw(arg >> 8); // Argument[15..8]
-	SD_rw(arg); // Argument[7..0]
+	SD_rw((uint8_t)(arg >> 24)); // Argument[31..24]
+	SD_rw((uint8_t)(arg >> 16)); // Argument[23..16]
+	SD_rw((uint8_t)(arg >> 8)); // Argument[15..8]
+	SD_rw((uint8_t)arg); // Argument[7..0]
 
 	n = 0x01; // Dummy CRC + Stop
 	if (cmd == CMD0) {n = 0x95;} // Valid CRC for CMD0(0)
@@ -192,7 +192,7 @@ uint32_t SD_init() {
 			}
 		}
 		else {//SDv1 or MMCv3
-			register uint8_t cmd;
+			register uint32_t cmd;
 			if (SD_cmd(ACMD41, 0) <= 0x01) {
 				sd_info.type = SD_SDv1;
 				cmd = ACMD41;
@@ -240,7 +240,7 @@ uint32_t SD_init() {
 #else
 	sd_info.type = SD_SDv1;
 	sd_info.size = 247040;
-	imgf = fopen("../SD256.img", "r+b");
+	imgf = fopen("/home/artur/tmp/SD256.img", "r+b");
 	if(imgf == NULL) {
 		printf("Error while open image file\n");
 		return 1;
@@ -249,7 +249,7 @@ uint32_t SD_init() {
 #endif
 }
 
-uint32_t SD_readblock(register uint32_t bnum, uint8_t *buf) {
+uint32_t SD_readblock(register uint32_t bnum, register uint8_t *buf) {
 #ifndef __SIMULATION
 	register uint32_t i;
 	register uint32_t error = 0;
@@ -284,7 +284,7 @@ uint32_t SD_readblock(register uint32_t bnum, uint8_t *buf) {
 #endif
 }
 
-uint32_t SD_writeblock(register uint32_t bnum, const uint8_t *buf) {
+uint32_t SD_writeblock(register uint32_t bnum, register const uint8_t *buf) {
 #ifndef __SIMULATION
 	register uint32_t i;
 	register uint32_t error = 0;

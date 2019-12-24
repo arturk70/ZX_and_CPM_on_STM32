@@ -67,7 +67,7 @@ typedef struct {
 extern SD_info sd_info;
 
 uint32_t SD_init();
-uint32_t SD_readblock(register uint32_t bnum, uint8_t *buf);
-uint32_t SD_writeblock(register uint32_t bnum, const uint8_t *buf);
+uint32_t SD_readblock(register uint32_t bnum, register uint8_t *buf);
+uint32_t SD_writeblock(register uint32_t bnum, register const uint8_t *buf);
 
 #endif /* SD_DRIVER_H_ */
