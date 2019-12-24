@@ -141,7 +141,7 @@ void z80_menu() {
 		else if(sym == 'r')//return
 			break;
 		else if(sym == 'd') {//dir files from 0:/ZX/Z80/
-			DIR dir;
+			ffDIR dir;
 			FILINFO fi;
 
 			retUSER = f_opendir(&dir, fname);

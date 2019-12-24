@@ -29,4 +29,11 @@
 		<nature>com.st.stm32cube.ide.mcu.MCUEndUserDisabledTrustZoneProjectNature</nature>
 		<nature>com.st.stm32cube.ide.mcu.MCURootProjectNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>Src/ZXCPMsrc</name>
+			<type>2</type>
+			<location>/home/artur/Programming_projects/ZX_and_CPM_on_STM32/ZXCPMsrc</location>
+		</link>
+	</linkedResources>
 </projectDescription>

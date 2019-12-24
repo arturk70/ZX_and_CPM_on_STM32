@@ -24,7 +24,7 @@
 / Additional user header to be used  
 /-----------------------------------------------------------------------------*/
 #include "main.h"
-#include "stm32f1xx_hal.h"
+//#include "stm32f1xx_hal.h"
 
 /*-----------------------------------------------------------------------------/
 / Functions and Buffer Configurations
