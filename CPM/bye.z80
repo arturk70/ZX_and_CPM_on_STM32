@@ -1,0 +1,8 @@
+;	exit to STM32ZXCPM menu from CPM command
+;
+exitp:	equ	15		;
+
+;
+    org	0100h		;origin of this program
+    out	(exitp),a		;out to port
+    ret

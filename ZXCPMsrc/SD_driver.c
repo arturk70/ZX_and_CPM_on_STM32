@@ -240,7 +240,7 @@ uint32_t SD_init() {
 #else
 	sd_info.type = SD_SDv1;
 	sd_info.size = 247040;
-	imgf = fopen("/home/artur/tmp/SD256.img", "r+b");
+	imgf = fopen("../SD256.img", "r+b");
 	if(imgf == NULL) {
 		printf("Error while open image file\n");
 		return 1;
