@@ -90,10 +90,9 @@ void req_int(register uint8_t type) {
 }
 
 void z80_step() {
-//	INC_R();
 	RR++;
 	if((state.int_req) && !state.int_blocked) {
-		if(state.int_req == 1) {
+		if(state.int_req == INT_REQ) {
 			if(IFF1)
 				z80_interrupt();
 		}

@@ -14,14 +14,14 @@ FILE* imgf;
 #endif
 
 #ifndef __SIMULATION
-static uint8_t SD_rw(uint8_t data) {
+static uint32_t SD_rw(register uint32_t data) {
 	while(LL_SPI_IsActiveFlag_TXE(SD_SPI) == 0);
 	LL_SPI_TransmitData8(SD_SPI, data);
 	while(LL_SPI_IsActiveFlag_RXNE(SD_SPI) == 0);
 	return LL_SPI_ReceiveData8(SD_SPI);
 }
 
-static uint8_t SD_cmd(uint8_t cmd, uint32_t arg) {
+static uint32_t SD_cmd(register uint32_t cmd, register uint32_t arg) {
 	register uint8_t n, res;
 
 	if (cmd & 0x80) {
@@ -34,10 +34,10 @@ static uint8_t SD_cmd(uint8_t cmd, uint32_t arg) {
 	while(SD_rw(0xff) != 0xff);
 
 	SD_rw(0x40 | cmd); // Start + Command index
-	SD_rw((uint8_t)(arg >> 24)); // Argument[31..24]
-	SD_rw((uint8_t)(arg >> 16)); // Argument[23..16]
-	SD_rw((uint8_t)(arg >> 8)); // Argument[15..8]
-	SD_rw((uint8_t)arg); // Argument[7..0]
+	SD_rw(arg >> 24); // Argument[31..24]
+	SD_rw(arg >> 16); // Argument[23..16]
+	SD_rw(arg >> 8); // Argument[15..8]
+	SD_rw(arg); // Argument[7..0]
 
 	n = 0x01; // Dummy CRC + Stop
 	if (cmd == CMD0) {n = 0x95;} // Valid CRC for CMD0(0)
@@ -56,8 +56,8 @@ static uint8_t SD_cmd(uint8_t cmd, uint32_t arg) {
 #endif
 
 #ifdef _SD_FULL_DRIVER
-static uint8_t SD_readCID() {
-	register uint8_t error = 0;
+static uint32_t SD_readCID() {
+	register uint32_t error = 0;
 
 	if(SD_cmd(CMD10, 0))//read cid
 		error = 0xf2;
@@ -99,8 +99,8 @@ static uint8_t SD_readCID() {
 #endif
 
 #ifndef __SIMULATION
-static uint8_t SD_readCSD() {
-	register uint8_t type, error = 0;
+static uint32_t SD_readCSD() {
+	register uint32_t type, error = 0;
 
 	if(SD_cmd(CMD9, 0))//read csd
 		error = 0xf1;
@@ -149,10 +149,10 @@ static uint8_t SD_readCSD() {
 }
 #endif
 
-uint8_t SD_init() {
+uint32_t SD_init() {
 #ifndef __SIMULATION
-	register uint16_t tmr;
-	register uint8_t i, error = 0;
+	register uint32_t tmr;
+	register uint32_t i, error = 0;
 	sd_info.type = SD_UNKNOWN;
 #ifdef _SD_FULL_DRIVER
 	for (i = 0; i < 4; i++)
@@ -249,10 +249,10 @@ uint8_t SD_init() {
 #endif
 }
 
-uint8_t SD_readblock(uint32_t bnum, uint8_t *buf) {
+uint32_t SD_readblock(register uint32_t bnum, uint8_t *buf) {
 #ifndef __SIMULATION
-	register uint16_t i;
-	register uint8_t error = 0;
+	register uint32_t i;
+	register uint32_t error = 0;
 
 	if(sd_info.type != SD_SDHC) bnum <<= 9;
 
@@ -284,10 +284,10 @@ uint8_t SD_readblock(uint32_t bnum, uint8_t *buf) {
 #endif
 }
 
-uint8_t SD_writeblock(uint32_t bnum, const uint8_t *buf) {
+uint32_t SD_writeblock(register uint32_t bnum, const uint8_t *buf) {
 #ifndef __SIMULATION
-	register uint16_t i;
-	register uint8_t error = 0;
+	register uint32_t i;
+	register uint32_t error = 0;
 
 	if(sd_info.type != SD_SDHC) bnum <<= 9;
 

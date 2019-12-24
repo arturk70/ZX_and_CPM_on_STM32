@@ -58,7 +58,7 @@ static void drawsymbol(register uint8_t row, register uint8_t col, register uint
 			}
 		}
 
-		ILI9341_sendBuf(
+		ILI9341_sendDMABuf(
 				CPMD_START_POS+col*FNT_WIDTH,
 				CPMD_START_LINE+row*FNT_HEIGHT,
 				CPMD_START_POS+col*FNT_WIDTH+FNT_WIDTH-1,

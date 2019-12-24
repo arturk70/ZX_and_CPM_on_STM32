@@ -61,7 +61,7 @@ void zxdisp_drawnextline() {
 	do {
 		attr = *(attraddr++);
 		bgfgcolor = zxcolors[attr & 0x3f];
-		if(!(attr & 0x40))
+		if(!(attr & 0x40)) //not bright
 			bgfgcolor &= 0xc618c618;
 		is_flash = (((attr & 0x80) >> 4) & frnumi) >> 3;
 

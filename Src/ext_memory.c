@@ -14,11 +14,13 @@ uint32_t mem_time = 0;
 
 uint8_t extmem_rw(register extmem_op_t op, register uint32_t addr, register uint32_t data) {
 	register cache_t *cur_cache, *last_cache, *lru_cache;
-	register uint8_t* cmapptr = cache_map;
+	register uint8_t *cmapptr, *cmapblkptr;
 	register uint32_t blknum;
+	cmapptr = cache_map;
 	blknum = addr >> 7;
+	cmapblkptr = &cmapptr[blknum];
 
-	if(cmapptr[blknum] == 0xff) { //no cache found
+	if(*cmapblkptr == 0xff) { //no cache found
 		cur_cache = lru_cache = cache;
 		last_cache = cur_cache + CACHE_BLOCKS_NUM;
 
@@ -27,7 +29,7 @@ uint8_t extmem_rw(register extmem_op_t op, register uint32_t addr, register uint
 			cur_cache++;
 		}
 
-		cmapptr[blknum] = (lru_cache - cache);
+		*cmapblkptr = (lru_cache - cache);
 		cmapptr[lru_cache->blknum] = 0xff;
 
 		if(lru_cache->writed) {
@@ -58,7 +60,7 @@ uint8_t extmem_rw(register extmem_op_t op, register uint32_t addr, register uint
 		ILI9341_readBuf(xi, yi, xi + 7, yi + 7, (uint16_t*)(lru_cache->data), 64);
 	}
 	else {
-		lru_cache = &cache[cmapptr[blknum]];
+		lru_cache = &cache[*cmapblkptr];
 	}
 
 	lru_cache->usaget = mem_time++;
