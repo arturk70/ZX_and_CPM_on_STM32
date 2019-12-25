@@ -1165,18 +1165,3 @@ void DAA(register uint32_t code) {
 	F |= carry | sz53p_table[A];
 }
 
-//void PFX(register uint32_t code) {
-//	switch (code) {
-//	case 0xed://ED
-//		z80_state.prefix = 0x00ed; hlixiyptr = &(HL); break;
-//	case 0xcb://CB
-//		z80_state.prefix = (z80_state.prefix & 0xff00) | 0x00cb; break;
-//	case 0xdd://DD
-//		z80_state.prefix = 0xdd00; break;
-//	case 0xfd://FD
-//		z80_state.prefix = 0xfd00; break;
-//	}
-//
-//	z80_state.int_blocked = 1;
-//}
-

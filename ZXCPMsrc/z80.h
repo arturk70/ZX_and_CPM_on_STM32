@@ -83,19 +83,11 @@
 #define HLIXIY_REGH (*((uint8_t*)hlixiyptr+1))
 #define HLIXIY_REGL (*((uint8_t*)hlixiyptr))
 
-//#define IS_PREFIX (z80_state.prefix)
-//#define IS_DD_PREFIX ((z80_state.prefix & 0xff00) == 0xdd00)
-//#define IS_FD_PREFIX ((z80_state.prefix & 0xff00) == 0xfd00)
-//#define IS_ED_PREFIX ((z80_state.prefix & 0x00ff) == 0x00ed)
-//#define IS_CB_PREFIX ((z80_state.prefix & 0x00ff) == 0x00cb)
-//#define CLR_PREFIX() { z80_state.prefix = 0; }
-
 #define INT_REQ	1
 #define NMI_REQ	2
 
 typedef struct {
 	uint8_t halted;
-//	uint16_t prefix;
 	int8_t int_req;//= INT_REQ, NMI_REQ
 	uint8_t int_blocked;//interrupt can be blocked for next command by prefixes or EI
 

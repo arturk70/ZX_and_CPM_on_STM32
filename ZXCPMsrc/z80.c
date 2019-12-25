@@ -39,7 +39,6 @@ void z80_reset() {
 	hlixiyptr = &(HL);
 	gixiyshift = 0;
 	z80_state.halted = 0;
-//	z80_state.prefix = 0;
 	z80_tstates = 0;
 }
 

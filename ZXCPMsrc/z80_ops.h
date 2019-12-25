@@ -71,8 +71,6 @@ void EDOU(register uint32_t code);
 void IOBL(register uint32_t code);
 void DAA(register uint32_t code);
 
-//void PFX(register uint32_t code);
-
 extern const uint8_t optstates[256];
 extern const uint8_t edoptstates[96];
 
