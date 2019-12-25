@@ -24,7 +24,7 @@
 #define ZX_NEWLINE_RESET {zx_newline_flag = 0;}
 
 extern uint32_t zxlnum;
-extern uint8_t zx_newline_flag;
+extern uint32_t zx_newline_flag;
 extern uint32_t zx_border_color;
 
 void zxdisp_init();

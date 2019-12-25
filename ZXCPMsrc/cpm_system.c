@@ -15,13 +15,13 @@
 #define DSKSECSIZE	128
 #define	DSKSECTRK	256
 
-static uint8_t cpmsys_isrun = 0;
+static uint32_t cpmsys_isrun = 0;
 
-static uint8_t dskdsk = 0x00;
-static uint8_t dsktrk = 0x00;
-static uint8_t dsksec = 0x00;
-static uint16_t dskdma = 0x0000;
-static uint8_t dskst = 0x00;
+static uint32_t dskdsk = 0x00;
+static uint32_t dsktrk = 0x00;
+static uint32_t dsksec = 0x00;
+static uint32_t dskdma = 0x0000;
+static uint32_t dskst = 0x00;
 
 static void cpmdsk_rwsec(register uint8_t op) {// op=0 for read, op=1 for write
 	uint8_t buf[DSKSECSIZE];
@@ -30,7 +30,7 @@ static void cpmdsk_rwsec(register uint8_t op) {// op=0 for read, op=1 for write
 	fname[12] = '0'+dskdsk;
 	fname[13] = '\0';
 
-	register uint8_t st = 0x00;
+	register uint32_t st = 0x00;
 
 	retUSER = f_open(&USERFile, fname, op+1);
 	if(retUSER != FR_OK) {
@@ -69,9 +69,9 @@ static void cpmsys_load() {
 
 	dskdsk = 0x00;
 	dsktrk = 0x00;
-	for(register uint8_t i=0; i<51; i++) {
-		dsksec = 0x01 + i;
-		dskdma = CCPADDR + i*DSKSECSIZE;
+	for(register uint32_t i=0; i<51; i++) {
+		dsksec = i + 0x01;
+		dskdma = i*DSKSECSIZE + CCPADDR;
 		cpmdsk_rwsec(0);
 		if(dskst) {
 			cpmcons_errmsg(retUSER, "load CP/M");

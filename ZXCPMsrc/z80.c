@@ -11,7 +11,7 @@
 uint8_t regs[30];
 uint16_t* hlixiyptr;
 int8_t gixiyshift;
-z80_state_t state;
+z80_state_t z80_state;
 int z80_tstates;
 
 void (*port_out)(register uint32_t addr, register uint32_t data);
@@ -21,8 +21,8 @@ void z80_Init(void (*outfn)(register uint32_t addr, register uint32_t data), uin
 	port_out = outfn;
 	port_in = infn;
 
-	state.int_req = 0;
-	state.int_blocked = 0;
+	z80_state.int_req = 0;
+	z80_state.int_blocked = 0;
 
 	BC = DE = HL = 0;
 	BC_= DE_= HL_= 0;
@@ -38,75 +38,64 @@ void z80_reset() {
 	IFF1 = IFF2 = IM = 0;
 	hlixiyptr = &(HL);
 	gixiyshift = 0;
-	state.halted = 0;
-	state.prefix = 0;
+	z80_state.halted = 0;
+	z80_state.prefix = 0;
 	z80_tstates = 0;
-}
-
-void z80_interrupt() {
-	z80_tstates += 13;
-
-	state.halted = 0;
-
-	IFF1 = IFF2 = 0;
-
-	mem_write( --SP, PCH );
-	mem_write( --SP, PCL );
-
-	switch(IM) {
-	case 0:
-		PC = 0x0038;
-		break;
-	case 1:
-		/* RST 38 */
-		PC = 0x0038;
-		break;
-	case 2:
-	{
-		register uint32_t inttemp=(0x100*I)+0xff;
-		PCL = mem_read(inttemp++); PCH = mem_read(inttemp);
-		z80_tstates += 6;
-		break;
-	}
-	}
-}
-
-void z80_nmi() {
-	state.halted = 0;
-
-	IFF1 = 0;
-
-	mem_write( --SP, PCH );
-	mem_write( --SP, PCL );
-
-	PC = 0x0066;
-
-	z80_tstates += 11;
-}
-
-//set interrupt requests for type
-void req_int(register uint32_t type) {
-	state.int_req = type;
 }
 
 void z80_step() {
 	RR++;
-	if(state.int_req && !state.int_blocked) {
-		if(state.int_req == INT_REQ) {
-			if(IFF1)
-				z80_interrupt();
+	if(z80_state.int_req && !z80_state.int_blocked) {
+		if(z80_state.int_req == INT_REQ) {
+			if(IFF1) {// process INT request
+				z80_tstates += 13;
+
+				z80_state.halted = 0;
+
+				IFF1 = IFF2 = 0;
+
+				mem_write( --SP, PCH );
+				mem_write( --SP, PCL );
+
+				switch(IM) {
+				case 0:
+					PC = 0x0038;
+					break;
+				case 1:
+					/* RST 38 */
+					PC = 0x0038;
+					break;
+				case 2:
+				{
+					register uint32_t inttemp=(0x100*I)+0xff;
+					PCL = mem_read(inttemp++); PCH = mem_read(inttemp);
+					z80_tstates += 6;
+					break;
+				}
+				}
+			}
 		}
-		else
-			z80_nmi();
+		else {//process NMI request
+			z80_state.halted = 0;
+
+			IFF1 = 0;
+
+			mem_write( --SP, PCH );
+			mem_write( --SP, PCL );
+
+			PC = 0x0066;
+
+			z80_tstates += 11;
+		}
 	}
-	else if(state.halted) {
+	else if(z80_state.halted) {
 		z80_tstates += 4;
 	}
 	else {
 #ifdef __SIMULATION
 //		uint16_t prvPC = PC;
 #endif
-		state.int_blocked = 0;
+		z80_state.int_blocked = 0;
 		register uint32_t code = mem_read(PC++);
 
 #ifdef __SIMULATION
@@ -162,6 +151,6 @@ void z80_step() {
 		}
 	}
 
-	state.int_req = 0;
+	z80_state.int_req = 0;
 }
 

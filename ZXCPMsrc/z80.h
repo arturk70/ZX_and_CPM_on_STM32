@@ -83,12 +83,12 @@
 #define HLIXIY_REGH (*((uint8_t*)hlixiyptr+1))
 #define HLIXIY_REGL (*((uint8_t*)hlixiyptr))
 
-#define IS_PREFIX (state.prefix)
-#define IS_DD_PREFIX ((state.prefix & 0xff00) == 0xdd00)
-#define IS_FD_PREFIX ((state.prefix & 0xff00) == 0xfd00)
-#define IS_ED_PREFIX ((state.prefix & 0x00ff) == 0x00ed)
-#define IS_CB_PREFIX ((state.prefix & 0x00ff) == 0x00cb)
-#define CLR_PREFIX() { state.prefix = 0; }
+#define IS_PREFIX (z80_state.prefix)
+#define IS_DD_PREFIX ((z80_state.prefix & 0xff00) == 0xdd00)
+#define IS_FD_PREFIX ((z80_state.prefix & 0xff00) == 0xfd00)
+#define IS_ED_PREFIX ((z80_state.prefix & 0x00ff) == 0x00ed)
+#define IS_CB_PREFIX ((z80_state.prefix & 0x00ff) == 0x00cb)
+#define CLR_PREFIX() { z80_state.prefix = 0; }
 
 #define INT_REQ	1
 #define NMI_REQ	2
@@ -104,7 +104,7 @@ typedef struct {
 extern uint8_t regs[30];
 extern uint16_t* hlixiyptr;
 extern int8_t gixiyshift;
-extern z80_state_t state;
+extern z80_state_t z80_state;
 extern int z80_tstates;
 
 extern void (*port_out)(register uint32_t addr, register uint32_t data);

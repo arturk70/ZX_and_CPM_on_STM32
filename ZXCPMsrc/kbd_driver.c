@@ -58,7 +58,6 @@ uint32_t zxkbd_scan(register uint32_t addr) {
 }
 
 char cpmkbd_read() {
-	//TODO optimize algorithm
 	register char res='\0', sres='\0';
 	register uint32_t kbdscan, is_cs = 0, is_ss = 0;
 

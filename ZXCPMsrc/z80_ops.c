@@ -83,14 +83,14 @@ const uint8_t sz53p_table[256] = {
 };
 
 void NONI(register uint32_t code) {
-	state.int_blocked = 1;
+	z80_state.int_blocked = 1;
 }
 
 void NOP(register uint32_t code) {
 }
 
 void HLT(register uint32_t code) {
-	state.halted = 1;
+	z80_state.halted = 1;
 }
 
 void DI_(register uint32_t code) {
@@ -98,7 +98,7 @@ void DI_(register uint32_t code) {
 }
 
 void EI_(register uint32_t code) {
-	IFF1 = IFF2 = 1; state.int_blocked = 1;
+	IFF1 = IFF2 = 1; z80_state.int_blocked = 1;
 }
 
 void SCF(register uint32_t code) {
@@ -1168,15 +1168,15 @@ void DAA(register uint32_t code) {
 void PFX(register uint32_t code) {
 	switch (code) {
 	case 0xed://ED
-		state.prefix = 0x00ed; hlixiyptr = &(HL); break;
+		z80_state.prefix = 0x00ed; hlixiyptr = &(HL); break;
 	case 0xcb://CB
-		state.prefix = (state.prefix & 0xff00) | 0x00cb; break;
+		z80_state.prefix = (z80_state.prefix & 0xff00) | 0x00cb; break;
 	case 0xdd://DD
-		state.prefix = 0xdd00; break;
+		z80_state.prefix = 0xdd00; break;
 	case 0xfd://FD
-		state.prefix = 0xfd00; break;
+		z80_state.prefix = 0xfd00; break;
 	}
 
-	state.int_blocked = 1;
+	z80_state.int_blocked = 1;
 }
 
