@@ -27,7 +27,17 @@
 		<link>
 			<name>Src/ZXCPMsrc</name>
 			<type>2</type>
-			<location>/home/artur/Programming_projects/ZX_and_CPM_on_STM32/ZXCPMsrc</location>
+			<location>PARENT-1-PROJECT_LOC/ZXCPMsrc</location>
+		</link>
+		<link>
+			<name>Src/FatFs/user_diskio.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32CubeIDE/Src/user_diskio.c</locationURI>
+		</link>
+		<link>
+			<name>Src/FatFs/user_diskio.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32CubeIDE/Inc/user_diskio.h</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

@@ -33,7 +33,7 @@
 		<link>
 			<name>Src/ZXCPMsrc</name>
 			<type>2</type>
-			<location>C:/work/Projects/ZX_and_CPM_on_STM32/ZXCPMsrc</location>
+			<locationURI>PARENT-1-PROJECT_LOC/ZXCPMsrc</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

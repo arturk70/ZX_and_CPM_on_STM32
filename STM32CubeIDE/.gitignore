@@ -4,7 +4,6 @@
 /Middlewares
 /.settings
 /Startup
-.cproject
 .mxproject
 STM32F103C8TX_FLASH.ld
 ZX_and_CPM_on_STM32.elf.launch
