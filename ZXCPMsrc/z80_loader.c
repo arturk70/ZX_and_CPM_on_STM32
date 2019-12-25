@@ -138,8 +138,11 @@ void z80_menu() {
 			zxsys_isrun = 0;
 			break;
 		}
-		else if(sym == 'r')//return
+		else if(sym == 'r') {//return
+			cpmcons_deinit();
+			zxdisp_init();
 			break;
+		}
 		else if(sym == 'd') {//dir files from 0:/ZX/Z80/
 #ifdef __SIMULATION
 			ffDIR dir;
@@ -194,13 +197,13 @@ void z80_menu() {
 			fname[fnptr++] = '0';
 			fname[fnptr] = '\0';
 
-			if((retUSER = z80_loadfile(fname)) == 0)
+			if((retUSER = z80_loadfile(fname)) == 0) {
+				cpmcons_deinit();
+				zxdisp_init();
 				break;
+			}
 			else
 				cpmcons_errmsg(retUSER, "load .z80 file");
 		}
 	}
-
-	cpmcons_deinit();
-	zxdisp_init();
 }

@@ -9,8 +9,7 @@
 #include "fatfs.h"
 #include "cpm_system.h"
 
-#define	MEMSIZE		(48*1024)
-#define CCPADDR		(MEMSIZE-7*1024)
+#define CCPADDR		(CPMMEMSIZE-7*1024)
 #define BIOSADDR	(CCPADDR+0x1600)
 #define DSKSECSIZE	128
 #define	DSKSECTRK	256

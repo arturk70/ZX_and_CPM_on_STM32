@@ -11,7 +11,7 @@
 #include "main.h"
 #include "ili9341_driver.h"
 
-#define CACHE_BLOCKS_NUM	20
+#define CACHE_BLOCKS_NUM	32
 
 typedef struct {
 	uint16_t blknum;

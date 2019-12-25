@@ -7,7 +7,7 @@
 
 #include "ext_memory.h"
 
-static uint8_t cache_map[289];// 288 = (320*24*2+8*192*2)/64 - number of 128 byte blocks in external memory + 1 fake block
+static uint8_t cache_map[337];// 336 = (320*24*2+8*192*2*2)/64 - number of 128 byte blocks in external memory + 1 fake block
 static cache_t cache[CACHE_BLOCKS_NUM];
 
 uint32_t mem_time = 0;
@@ -45,11 +45,11 @@ uint8_t extmem_rw(register extmem_op_t op, register uint32_t addr, register uint
 				yi += 192;
 		}
 		else {
-			xi = 0;
-			yi = (blknum - 240) * 8 + 24;
-			if(yi >= 216) {
-				xi = 312;
-				yi -= 192;
+			yi = (blknum - 240) * 8;
+			xi = yi / 192 * 8;
+			yi = yi % 192 + 24;
+			if(xi >= 16) {
+				xi += 272;
 			}
 		}
 

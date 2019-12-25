@@ -12,8 +12,8 @@
 
 static uint32_t cpos[2] = {0,0};
 static uint8_t escmode = 0;
-static uint16_t* chbuf;
-static uint8_t* scrbuf;
+static uint16_t chbuf[FNT_WIDTH*FNT_HEIGHT];
+static uint8_t scrbuf[SCR_HEIGHT*SCR_WIDTH];
 
 uint8_t cpmconsst = 0x00;
 char cpmconsch = '\0';
@@ -97,14 +97,14 @@ static void cpmcons_scroll() {
 }
 
 void cpmcons_init() {
-	scrbuf = malloc(SCR_HEIGHT*SCR_WIDTH);
-	chbuf = malloc(FNT_WIDTH*FNT_HEIGHT*2);
+//	scrbuf = malloc(SCR_HEIGHT*SCR_WIDTH);
+//	chbuf = malloc(FNT_WIDTH*FNT_HEIGHT*2);
 	cpmcons_clear();
 }
 
 void cpmcons_deinit() {
-	free(scrbuf);
-	free(chbuf);
+//	free(scrbuf);
+//	free(chbuf);
 }
 
 void cpmcons_clear() {

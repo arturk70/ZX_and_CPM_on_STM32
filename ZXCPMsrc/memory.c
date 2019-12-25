@@ -10,7 +10,7 @@
 #include "ZXROM.h"
 
 #define ZXROMSIZE	0x4000
-#define INTRAMSIZE	0x3000
+#define INTRAMSIZE	0x2000
 
 uint8_t mem[INTRAMSIZE];
 
@@ -36,19 +36,19 @@ void zxmem_write(register uint32_t addr, register uint32_t data) {
 }
 
 uint8_t cpmmem_read(register uint32_t addr) {
-	if(addr > 0xbfff)
+	if(addr > CPMMEMSIZE - 1)
 		return 0x00;
-	else if(addr > (0xbfff - INTRAMSIZE))
-		return mem[addr - (0xbfff - INTRAMSIZE + 1)];
+	else if(addr > (CPMMEMSIZE - 1 - INTRAMSIZE))
+		return mem[addr - (CPMMEMSIZE - INTRAMSIZE)];
 	else
 		return extmem_rw(EXTM_READ, addr, 0);
 }
 
 void cpmmem_write(register uint32_t addr, register uint32_t data) {
-	if(addr > 0xbfff)
+	if(addr > CPMMEMSIZE - 1)
 			return;
-	else if(addr > (0xbfff - INTRAMSIZE))
-		mem[addr - (0xbfff - INTRAMSIZE + 1)] = data;
+	else if(addr > (CPMMEMSIZE - 1 - INTRAMSIZE))
+		mem[addr - (CPMMEMSIZE - INTRAMSIZE)] = data;
 	else
 		extmem_rw(EXTM_WRITE, addr, data);
 }

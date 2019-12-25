@@ -11,7 +11,7 @@
 #include "ili9341_driver.h"
 #include "kbd_driver.h"
 
-#define SCR_WIDTH	50
+#define SCR_WIDTH	48
 #define SCR_HEIGHT	24
 
 #define FNT_WIDTH	6

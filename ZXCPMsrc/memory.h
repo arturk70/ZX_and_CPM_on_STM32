@@ -10,6 +10,8 @@
 
 #include "ext_memory.h"
 
+#define	CPMMEMSIZE		(54*1024)
+
 typedef enum {
 	MEMTYPE_ZX,
 	MEMTYPE_CPM
