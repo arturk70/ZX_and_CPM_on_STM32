@@ -39,7 +39,7 @@ void z80_reset() {
 	hlixiyptr = &(HL);
 	gixiyshift = 0;
 	z80_state.halted = 0;
-	z80_state.prefix = 0;
+//	z80_state.prefix = 0;
 	z80_tstates = 0;
 }
 
@@ -92,17 +92,18 @@ void z80_step() {
 		z80_tstates += 4;
 	}
 	else {
-#ifdef __SIMULATION
-//		uint16_t prvPC = PC;
-#endif
+		register uint32_t code;
+
 		z80_state.int_blocked = 0;
-		register uint32_t code = mem_read(PC++);
+nextcode:
+		code = mem_read(PC++);
 
-#ifdef __SIMULATION
-//		printf("Exec 0x%04x: (0x%04x)0x%02x\n", prvPC, state.prefix, code);
-#endif
+		if(code == 0xed) {
+			RR++;
+			z80_tstates += 4;
+			hlixiyptr = &(HL);
+			code = mem_read(PC++);
 
-		if(IS_ED_PREFIX) {
 			if(code > 0x3f && code < 0x80) {
 				z80_tstates += edoptstates[code-0x40];
 				z80edops[code-0x40](code);
@@ -113,41 +114,44 @@ void z80_step() {
 			}
 			else
 				NONI(code); //incorrect op NONI
-
-			CLR_PREFIX();
 		}
-		else {
-			if(IS_DD_PREFIX)
-					hlixiyptr = &(IX);
-				else if(IS_FD_PREFIX)
-					hlixiyptr = &(IY);
-				else
-					hlixiyptr = &(HL);
+		else if(code == 0xdd) {
+			RR++;
+			z80_tstates += 4;
+			hlixiyptr = &(IX);
+			goto nextcode;
+		}
+		else if(code == 0xfd) {
+			RR++;
+			z80_tstates += 4;
+			hlixiyptr = &(IY);
+			goto nextcode;
+		}
+		else if(code == 0xcb) {
+			RR++;
+			z80_tstates += 4;
+			code = mem_read(PC++);
+			if(hlixiyptr != &HL) {
+				gixiyshift = code;
+				code = mem_read(PC++);
+			}
 
-			if(IS_CB_PREFIX) {
-				if(hlixiyptr != &HL) {
-					gixiyshift = code;
-					code = mem_read(PC++);
-				}
-
-				if(code < 0x40) {
-					z80_tstates += 4;
-					CBSFT(code);
-				}
-				else {
-					z80_tstates += 4;
-					BIT(code);
-				}
-
-				CLR_PREFIX();
+			if(code < 0x40) {
+				z80_tstates += 4;
+				CBSFT(code);
 			}
 			else {
-				z80_tstates += optstates[code];
-				z80ops[code](code);
-
-				if(IS_PREFIX && !((code == 0xcb) | (code == 0xdd) | (code == 0xfd) | (code == 0xed)))
-					CLR_PREFIX();
+				z80_tstates += 4;
+				BIT(code);
 			}
+
+			hlixiyptr = &(HL);
+		}
+		else {
+			z80_tstates += optstates[code];
+			z80ops[code](code);
+
+			hlixiyptr = &(HL);
 		}
 	}
 

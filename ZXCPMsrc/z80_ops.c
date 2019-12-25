@@ -39,10 +39,10 @@ const z80cmd_t z80ops[256] = {
 		ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, //0x90-0x9f
 		ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, //0xa0-0xaf
 		ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, ALU, //0xb0-0xbf
-		JPc, POP, JPc, JMP, JPc, PSH, ALn, RST, JPc, JMP, JPc, PFX, JPc, JMP, ALn, RST, //0xc0-0xcf
-		JPc, POP, JPc, IO_, JPc, PSH, ALn, RST, JPc, EX_, JPc, IO_, JPc, PFX, ALn, RST, //0xd0-0xdf
-		JPc, POP, JPc, EX_, JPc, PSH, ALn, RST, JPc, JMP, JPc, EX_, JPc, PFX, ALn, RST, //0xe0-0xef
-		JPc, POP, JPc, DI_, JPc, PSH, ALn, RST, JPc, LDs, JPc, EI_, JPc, PFX, ALn, RST  //0xf0-0xff
+		JPc, POP, JPc, JMP, JPc, PSH, ALn, RST, JPc, JMP, JPc,   0, JPc, JMP, ALn, RST, //0xc0-0xcf
+		JPc, POP, JPc, IO_, JPc, PSH, ALn, RST, JPc, EX_, JPc, IO_, JPc,   0, ALn, RST, //0xd0-0xdf
+		JPc, POP, JPc, EX_, JPc, PSH, ALn, RST, JPc, JMP, JPc, EX_, JPc,   0, ALn, RST, //0xe0-0xef
+		JPc, POP, JPc, DI_, JPc, PSH, ALn, RST, JPc, LDs, JPc, EI_, JPc,   0, ALn, RST  //0xf0-0xff
 };
 
 const uint8_t edoptstates[96] = {
@@ -1165,18 +1165,18 @@ void DAA(register uint32_t code) {
 	F |= carry | sz53p_table[A];
 }
 
-void PFX(register uint32_t code) {
-	switch (code) {
-	case 0xed://ED
-		z80_state.prefix = 0x00ed; hlixiyptr = &(HL); break;
-	case 0xcb://CB
-		z80_state.prefix = (z80_state.prefix & 0xff00) | 0x00cb; break;
-	case 0xdd://DD
-		z80_state.prefix = 0xdd00; break;
-	case 0xfd://FD
-		z80_state.prefix = 0xfd00; break;
-	}
-
-	z80_state.int_blocked = 1;
-}
+//void PFX(register uint32_t code) {
+//	switch (code) {
+//	case 0xed://ED
+//		z80_state.prefix = 0x00ed; hlixiyptr = &(HL); break;
+//	case 0xcb://CB
+//		z80_state.prefix = (z80_state.prefix & 0xff00) | 0x00cb; break;
+//	case 0xdd://DD
+//		z80_state.prefix = 0xdd00; break;
+//	case 0xfd://FD
+//		z80_state.prefix = 0xfd00; break;
+//	}
+//
+//	z80_state.int_blocked = 1;
+//}
 
