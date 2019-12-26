@@ -9,9 +9,6 @@
 #include "memory.h"
 #include "ZXROM.h"
 
-#define ZXROMSIZE	0x4000
-#define INTRAMSIZE	0x2000
-
 uint8_t mem[INTRAMSIZE];
 
 uint8_t (*mem_read)(register uint32_t addr);

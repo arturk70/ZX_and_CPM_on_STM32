@@ -58,8 +58,10 @@ uint32_t zxkbd_scan(register uint32_t addr) {
 }
 
 char cpmkbd_read() {
-	register char res='\0', sres='\0';
-	register uint32_t kbdscan, is_cs = 0, is_ss = 0;
+	register char res, sres;
+	register uint32_t kbdscan, is_cs, is_ss;
+	res=sres='\0';
+	is_cs = is_ss = 0;
 
 	for(register uint32_t i=0; i<8; i++) {
 		kbdscan = ~zxkbd_scan(~(0x01<<i));
