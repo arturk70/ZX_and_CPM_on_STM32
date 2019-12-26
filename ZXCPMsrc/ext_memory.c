@@ -33,6 +33,7 @@ uint8_t extmem_rw(register extmem_op_t op, register uint32_t addr, register uint
 		cmapptr[lru_cache->blknum] = 0xff;
 
 		if(lru_cache->writed) {
+			//TODO try DMA
 			ILI9341_sendBuf(lru_cache->x, lru_cache->y, lru_cache->x + 7, lru_cache->y + 7, (uint16_t*)(lru_cache->data), 64);
 		}
 

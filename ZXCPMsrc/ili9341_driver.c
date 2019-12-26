@@ -312,6 +312,7 @@ void ILI9341_readBuf(register uint32_t x1, register uint32_t y1, register uint32
 
 	LL_SPI_SetBaudRatePrescaler(ILI9341_SPI, LL_SPI_BAUDRATEPRESCALER_DIV8);
 
+	//TODO try remove LL_SPI_IsActiveFlag_TXE check and speedup
 	while(LL_SPI_IsActiveFlag_TXE(ILI9341_SPI) == 0);
 	LL_SPI_TransmitData8(ILI9341_SPI, 0xff);
 	while(LL_SPI_IsActiveFlag_RXNE(ILI9341_SPI) == 0);
