@@ -15,11 +15,12 @@
 #define CACHE_BLOCKS_NUM	32
 
 typedef struct {
-	uint16_t blknum;
-	uint32_t usaget; //last read or write time
-	uint8_t writed; //write flag
 	uint8_t data[128];
+	uint16_t blknum;
+	uint8_t writed; //write flag
 	uint16_t x,y;
+	void *prev;
+	void *next;
 } cache_t;
 
 typedef enum {
