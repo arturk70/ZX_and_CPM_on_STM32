@@ -40,13 +40,8 @@ uint8_t extmem_rw(register extmem_op_t op, register uint32_t addr, register uint
 		*cmapblkptr = (cur_cache - cache);
 		cmapptr[cur_cache->blknum] = 0xff;
 
-<<<<<<< HEAD
-		if(lru_cache->writed) {
-			ILI9341_sendBuf(lru_cache->x, lru_cache->y, lru_cache->x + 7, lru_cache->y + 7, (uint16_t*)(lru_cache->data), 64);
-=======
 		if(cur_cache->writed) {
 			ILI9341_sendBuf(cur_cache->x, cur_cache->y, cur_cache->x + 7, cur_cache->y + 7, (uint16_t*)(cur_cache->data), 64);
->>>>>>> a85d6ec031f3b0037ff72383c0c772f9410b92b3
 		}
 
 		register uint16_t xi,yi;
