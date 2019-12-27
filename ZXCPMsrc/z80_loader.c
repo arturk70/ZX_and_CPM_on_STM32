@@ -12,18 +12,12 @@
 
 static uint8_t z80_loadfile(const char *fname) {
 	retUSER = f_open(&USERFile, fname, FA_READ);
-	if(retUSER != FR_OK) {
-		return retUSER;
-	}
-	else {
+	if(retUSER == FR_OK) {
 		uint8_t buf[BUFSIZE], b12;
 		UINT size = BUFSIZE;
 
 		retUSER = f_read(&USERFile, buf, 30, &size);
-		if(retUSER != FR_OK) {
-			return retUSER;
-		}
-		else {
+		if(retUSER == FR_OK) {
 			A = buf[0];
 			F = buf[1];
 			C = buf[2];
@@ -61,14 +55,15 @@ static uint8_t z80_loadfile(const char *fname) {
 
 			register uint16_t addr = 0x4000;
 			register uint8_t num = 0, edflag = 0, rle = 0;
-			while(f_read(&USERFile, buf, BUFSIZE, &size) == FR_OK) {
+			while((retUSER = f_read(&USERFile, buf, BUFSIZE, &size)) == FR_OK) {
 				for(register uint16_t i=0;i<size;i++) {
 					if(buf[i] == 0x00 && buf[i+1] == 0xed && buf[i+2] == 0xed && buf[i+3] == 0x00) {//end of Z80 marker found
 						break;
 					}
 
 					if(addr == 0) { //end of memory reached
-						return 0xff;
+						retUSER = 0x2f;
+						break;
 					}
 
 					if(rle) {
@@ -83,7 +78,8 @@ static uint8_t z80_loadfile(const char *fname) {
 						else {
 							num = buf[i];
 							if(num < 0x05 && !(num == 0x02 && buf[i+1] == 0xed)) {
-								return 0xfe;
+								retUSER = 0x2e;
+								break;
 							}
 						}
 
@@ -110,13 +106,14 @@ static uint8_t z80_loadfile(const char *fname) {
 					}
 				}
 
-				if(size < BUFSIZE) break;
+				if(size < BUFSIZE || retUSER)
+					break;
 			}
 		}
 	}
 	f_close(&USERFile);
 
-	return 0;
+	return retUSER;
 }
 
 void z80_menu() {
@@ -187,23 +184,25 @@ void z80_menu() {
 			register uint8_t inpptr = 0, fnptr = 9;
 			cpmcons_gets(strbuf, 8);
 			cpmcons_putc('\n');
-			fname[fnptr++] = '/';
-			while(strbuf[inpptr] != '\0') {
-				fname[fnptr++] = strbuf[inpptr++];
-			}
-			fname[fnptr++] = '.';
-			fname[fnptr++] = 'Z';
-			fname[fnptr++] = '8';
-			fname[fnptr++] = '0';
-			fname[fnptr] = '\0';
+			if(*strbuf != '\0') {
+				fname[fnptr++] = '/';
+				while(strbuf[inpptr] != '\0') {
+					fname[fnptr++] = strbuf[inpptr++];
+				}
+				fname[fnptr++] = '.';
+				fname[fnptr++] = 'Z';
+				fname[fnptr++] = '8';
+				fname[fnptr++] = '0';
+				fname[fnptr] = '\0';
 
-			if((retUSER = z80_loadfile(fname)) == 0) {
-				cpmcons_deinit();
-				zxdisp_init();
-				break;
+				if((retUSER = z80_loadfile(fname)) == 0) {
+					cpmcons_deinit();
+					zxdisp_init();
+					break;
+				}
+				else
+					cpmcons_errmsg(retUSER, "load .z80 file");
 			}
-			else
-				cpmcons_errmsg(retUSER, "load .z80 file");
 		}
 	}
 }
