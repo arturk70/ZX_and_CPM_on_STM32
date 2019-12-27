@@ -20,8 +20,8 @@ cp DISK_0 DISK_7
 cp CPM22.Z80 ASM
 
 cpmcp -f 8mb-hd DISK_0 UTILS/* 0:
-cpmcp -f 8mb-hd DISK_1 VEDIT/* 0:
-cpmcp -f 8mb-hd DISK_2 AZTEC_C/* 0:
+cpmcp -f 8mb-hd DISK_1 BASIC/* 0:
+cpmcp -f 8mb-hd DISK_1 BGAMES/* 1:
+cpmcp -f 8mb-hd DISK_2 HITECH_C/* 0:
 cpmcp -f 8mb-hd DISK_3 ASM/* 0:
-cpmcp -f 8mb-hd DISK_4 BASIC/* 0:
-cpmcp -f 8mb-hd DISK_5 GAMES/* 0:
+cpmcp -f 8mb-hd DISK_6 GAMES/* 0:
