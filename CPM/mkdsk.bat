@@ -42,7 +42,7 @@ copy CPM22.Z80 ASM
 cd win_tools/cpmtools
 cpmcp -f 8mb-hd ../../DISK_0 ../../UTILS/* 0:
 cpmcp -f 8mb-hd ../../DISK_1 ../../BASIC/* 0:
-cpmcp -f 8mb-hd ../../DISK_1 ../../BGAMES/* 1:
 cpmcp -f 8mb-hd ../../DISK_2 ../../HITECH_C/* 0:
 cpmcp -f 8mb-hd ../../DISK_3 ../../ASM/* 0:
+cpmcp -f 8mb-hd ../../DISK_4 ../../BGAMES/* 0:
 cpmcp -f 8mb-hd ../../DISK_6 ../../GAMES/* 0:
