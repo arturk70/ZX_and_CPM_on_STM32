@@ -90,50 +90,50 @@ static void Run (GtkImage *image)
 }
 
 static void which_key_press(GtkWidget *widget, GdkEventKey *event, gpointer data) {
-//	if(data == NULL)
-//		g_printerr ("Key pressed: %x\n", event->keyval);
+//	if(event->type == GDK_KEY_PRESS)
+//		g_printerr ("Key pressed: %x %x\n", event->keyval, event->hardware_keycode);
 //	else
-//		g_printerr ("Key released: %x\n", event->keyval);
+//		g_printerr ("Key released: %x %x\n", event->keyval, event->hardware_keycode);
 
 	if(event->keyval == GDK_KEY_Return) {
-		if(data == NULL)
+		if(event->type == GDK_KEY_PRESS)
 			ext_kbdscans[6] |= 0x01;
 		else
 			ext_kbdscans[6] &= ~0x01;
 	}
 	if(event->keyval == GDK_KEY_space) {
-		if(data == NULL)
+		if(event->type == GDK_KEY_PRESS)
 			ext_kbdscans[7] |= 0x01;
 		else
 			ext_kbdscans[7] &= ~0x01;
 	}
-	if(event->keyval >= GDK_KEY_0 && event->keyval <= GDK_KEY_9) {
-		if(data == NULL)
-			ext_kbdscans[zx_keyscans[event->keyval - GDK_KEY_0][ZX_KEYSCAN_ADDR]] |= zx_keyscans[event->keyval - GDK_KEY_0][ZX_KEYSCAN_BIT];
+	if(event->hardware_keycode >= 0x0a && event->hardware_keycode <= 0x13) {
+		if(event->type == GDK_KEY_PRESS)
+			ext_kbdscans[zx_keyscans[event->hardware_keycode - 0x0a][ZX_KEYSCAN_ADDR]] |= zx_keyscans[event->hardware_keycode - 0x0a][ZX_KEYSCAN_BIT];
 		else
-			ext_kbdscans[zx_keyscans[event->keyval - GDK_KEY_0][ZX_KEYSCAN_ADDR]] &= ~zx_keyscans[event->keyval - GDK_KEY_0][ZX_KEYSCAN_BIT];
+			ext_kbdscans[zx_keyscans[event->hardware_keycode - 0x0a][ZX_KEYSCAN_ADDR]] &= ~zx_keyscans[event->hardware_keycode - 0x0a][ZX_KEYSCAN_BIT];
 	}
 	if(event->keyval >= GDK_KEY_A && event->keyval <= GDK_KEY_Z) {
-		if(data == NULL)
+		if(event->type == GDK_KEY_PRESS)
 			ext_kbdscans[zx_keyscans[event->keyval - GDK_KEY_A + 10][ZX_KEYSCAN_ADDR]] |= zx_keyscans[event->keyval - GDK_KEY_A + 10][ZX_KEYSCAN_BIT];
 		else
 			ext_kbdscans[zx_keyscans[event->keyval - GDK_KEY_A + 10][ZX_KEYSCAN_ADDR]] &= ~zx_keyscans[event->keyval - GDK_KEY_A + 10][ZX_KEYSCAN_BIT];
 	}
 	if(event->keyval >= GDK_KEY_a && event->keyval <= GDK_KEY_z) {
-		if(data == NULL)
+		if(event->type == GDK_KEY_PRESS)
 			ext_kbdscans[zx_keyscans[event->keyval - GDK_KEY_a + 10][ZX_KEYSCAN_ADDR]] |= zx_keyscans[event->keyval - GDK_KEY_a + 10][ZX_KEYSCAN_BIT];
 		else
 			ext_kbdscans[zx_keyscans[event->keyval - GDK_KEY_a + 10][ZX_KEYSCAN_ADDR]] &= ~zx_keyscans[event->keyval - GDK_KEY_a + 10][ZX_KEYSCAN_BIT];
 	}
 
-	if(event->keyval == GDK_KEY_Control_L) {
-		if(data == NULL)
+	if(event->keyval == GDK_KEY_Shift_L) {
+		if(event->type == GDK_KEY_PRESS)
 			ext_kbdscans[0] |= 0x01;
 		else
 			ext_kbdscans[0] &= ~0x01;
 	}
-	if(event->keyval == GDK_KEY_Control_R) {
-		if(data == NULL)
+	if(event->keyval == GDK_KEY_Shift_R) {
+		if(event->type == GDK_KEY_PRESS)
 			ext_kbdscans[7] |= 0x02;
 		else
 			ext_kbdscans[7] &= ~0x02;
