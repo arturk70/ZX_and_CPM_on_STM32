@@ -20,7 +20,7 @@ uint8_t zxmem_read(register uint32_t addr) {
 	else if(addr < (ZXROMSIZE + INTRAMSIZE))
 		return mem[addr - ZXROMSIZE];
 	else
-		return extmem_rw(EXTM_READ, addr - (ZXROMSIZE + INTRAMSIZE), 0);
+		return extmem_rw(addr - (ZXROMSIZE + INTRAMSIZE), 0);
 }
 
 void zxmem_write(register uint32_t addr, register uint32_t data) {
@@ -29,7 +29,7 @@ void zxmem_write(register uint32_t addr, register uint32_t data) {
 	else if(addr < (ZXROMSIZE + INTRAMSIZE))
 		mem[addr - ZXROMSIZE] = data;
 	else
-		extmem_rw(EXTM_WRITE, addr - (ZXROMSIZE + INTRAMSIZE), data);
+		extmem_rw((addr - (ZXROMSIZE + INTRAMSIZE)) | WRITE_OP, data);
 }
 
 uint8_t cpmmem_read(register uint32_t addr) {
@@ -38,7 +38,7 @@ uint8_t cpmmem_read(register uint32_t addr) {
 	else if(addr > (CPMMEMSIZE - 1 - INTRAMSIZE))
 		return mem[addr - (CPMMEMSIZE - INTRAMSIZE)];
 	else
-		return extmem_rw(EXTM_READ, addr, 0);
+		return extmem_rw(addr, 0);
 }
 
 void cpmmem_write(register uint32_t addr, register uint32_t data) {
@@ -47,7 +47,7 @@ void cpmmem_write(register uint32_t addr, register uint32_t data) {
 	else if(addr > (CPMMEMSIZE - 1 - INTRAMSIZE))
 		mem[addr - (CPMMEMSIZE - INTRAMSIZE)] = data;
 	else
-		extmem_rw(EXTM_WRITE, addr, data);
+		extmem_rw(addr | WRITE_OP, data);
 }
 
 void mem_Init(register memtype_t type) {

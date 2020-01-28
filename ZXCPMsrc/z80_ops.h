@@ -72,9 +72,9 @@ void IOBL(register uint32_t code);
 void DAA(register uint32_t code);
 
 extern const uint8_t optstates[256];
-extern const uint8_t edoptstates[96];
+extern const uint8_t edoptstates[128];
 
 extern const z80cmd_t z80ops[256];
-extern const z80cmd_t z80edops[96];
+extern const z80cmd_t z80edops[128];
 
 #endif /* SRC_Z80_OPS_H_ */

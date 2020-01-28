@@ -99,20 +99,18 @@ nextcode:
 
 		if(code == 0xed) {
 			RR++;
-			z80_tstates += 4;
 			hlixiyptr = &(HL);
 			code = mem_read(PC++);
 
-			if(code > 0x3f && code < 0x80) {
-				z80_tstates += edoptstates[code-0x40];
-				z80edops[code-0x40](code);
-			}
-			else if(code > 0x9f && code < 0xc0){
-				z80_tstates += edoptstates[code-0x60];
-				z80edops[code-0x60](code);
-			}
-			else
+			if(code < 0x40 || code > 0xbf) {
+				z80_tstates += 4;
 				NONI(code); //incorrect op NONI
+			}
+			else {
+				register uint32_t codeid = code-0x40;
+				z80_tstates += edoptstates[codeid];
+				z80edops[codeid](code);
+			}
 		}
 		else if(code == 0xdd) {
 			RR++;
@@ -130,7 +128,7 @@ nextcode:
 			RR++;
 			z80_tstates += 4;
 			code = mem_read(PC++);
-			if(hlixiyptr != &HL) {
+			if(hlixiyptr != &(HL)) {
 				gixiyshift = code;
 				code = mem_read(PC++);
 			}

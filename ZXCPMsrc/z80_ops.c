@@ -45,20 +45,24 @@ const z80cmd_t z80ops[256] = {
 		JPc, POP, JPc, DI_, JPc, PSH, ALn, RST, JPc, LDs, JPc, EI_, JPc,   0, ALn, RST  //0xf0-0xff
 };
 
-const uint8_t edoptstates[96] = {
-		   8,    8,   11,   16,    4,   10,    4,    5,    8,    8,   11,   16,    4,   10,   4,    5,  //0x40-0x4f
-		   8,    8,   11,   16,    4,   10,    4,    5,    8,    8,   11,   16,    4,   10,   4,    5,  //0x50-0x5f
-		   8,    8,   11,   16,    4,   10,    4,   14,    8,    8,   11,   16,    4,   10,   4,   14,  //0x60-0x6f
-		   8,    8,   11,   16,    4,   10,    4,   14,    8,    8,   11,   16,    4,   10,   4,   14,  //0x70-0x7f
-		  12,   12,   12,   12,    4,    4,    4,    4,   12,   12,   12,   12,    4,    4,   4,    4,  //0xa0-0xaf
-		  12,   12,   12,   12,    4,    4,    4,    4,   12,   12,   12,   12,    4,    4,   4,    4   //0xb0-0xbf
+const uint8_t edoptstates[128] = {
+		  12,   12,   15,   20,    8,   14,    8,    9,   12,   12,   15,   20,    8,   14,   8,    9,  //0x40-0x4f
+		  12,   12,   15,   20,    8,   14,    8,    9,   12,   12,   15,   20,    8,   14,   8,    9,  //0x50-0x5f
+		  12,   12,   15,   20,    8,   14,    8,   18,   12,   12,   15,   20,    8,   14,   8,   18,  //0x60-0x6f
+		  12,   12,   15,   20,    8,   14,    8,    4,   12,   12,   15,   20,    8,   14,   8,    4,  //0x70-0x7f
+		   4,    4,    4,    4,    4,    4,    4,    4,    4,    4,    4,    4,    4,    4,   4,    4,  //0x80-0x8f
+		   4,    4,    4,    4,    4,    4,    4,    4,    4,    4,    4,    4,    4,    4,   4,    4,  //0x90-0x9f
+		  16,   16,   16,   16,    4,    4,    4,    4,   16,   16,   16,   16,    4,    4,   4,    4,  //0xa0-0xaf
+		  16,   16,   16,   16,    4,    4,    4,    4,   16,   16,   16,   16,    4,    4,   4,    4   //0xb0-0xbf
 };
 
-const z80cmd_t z80edops[96] = {
+const z80cmd_t z80edops[128] = {
 		EDIN, EDOU, SBCx, EDLD, NEG_, RETN, IM_0, LDIR, EDIN, EDOU, ADCx, EDLD, NEG_, RETI, IM_0, LDIR, //0x40-0x4f
 		EDIN, EDOU, SBCx, EDLD, NEG_, RETN, IM_1, LDIR, EDIN, EDOU, ADCx, EDLD, NEG_, RETN, IM_2, LDIR, //0x50-0x5f
 		EDIN, EDOU, SBCx, EDLD, NEG_, RETN, IM_0, EDSF, EDIN, EDOU, ADCx, EDLD, NEG_, RETN, IM_0, EDSF, //0x60-0x6f
 		EDIN, EDOU, SBCx, EDLD, NEG_, RETN, IM_1, NONI, EDIN, EDOU, ADCx, EDLD, NEG_, RETN, IM_2, NONI, //0x70-0x7f
+		NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, //0x80-0x8f
+		NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, NONI, //0x90-0x9f
 		LDBL, CPBL, IOBL, IOBL, NONI, NONI, NONI, NONI, LDBL, CPBL, IOBL, IOBL, NONI, NONI, NONI, NONI, //0xa0-0xaf
 		LDBL, CPBL, IOBL, IOBL, NONI, NONI, NONI, NONI, LDBL, CPBL, IOBL, IOBL, NONI, NONI, NONI, NONI  //0xb0-0xbf
 };

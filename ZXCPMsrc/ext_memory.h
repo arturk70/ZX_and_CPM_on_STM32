@@ -13,6 +13,7 @@
 
 #define MEM_BLOCS_NUM		336 // 336 = (320*24*2+8*192*2*2)/64 - number of 128 byte blocks in external memory
 #define CACHE_BLOCKS_NUM	40
+#define WRITE_OP	0xf0000000
 
 typedef struct {
 	uint8_t data[128];
@@ -23,12 +24,8 @@ typedef struct {
 	void *next;
 } cache_t;
 
-typedef enum {
-	EXTM_READ,
-	EXTM_WRITE
-} extmem_op_t;
-
-uint8_t extmem_rw(register extmem_op_t op, register uint32_t addr, register uint32_t data);
+//addr & 0xf0000000 --- 0-read, 1-write
+uint8_t extmem_rw(register uint32_t addr, register uint32_t data);
 void extmem_Init();
 //void extmem_deInit();
 

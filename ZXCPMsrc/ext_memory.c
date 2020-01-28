@@ -13,14 +13,15 @@ static cache_t *lru_cache, *mru_cache, *next_unused;
 
 uint32_t mem_time = 0;
 
-uint8_t extmem_rw(register extmem_op_t op, register uint32_t addr, register uint32_t data) {
+//addr & 0xf0000000 --- 0-read, 1-write
+uint8_t extmem_rw(register uint32_t addr, register uint32_t data) {
 	register cache_t *cur_cache, *ilru_cache, *imru_cache;
 	register uint8_t *cmapptr, *cmapblkptr;
 	register uint32_t blknum;
 	ilru_cache = lru_cache;
 	imru_cache = mru_cache;
 	cmapptr = cache_map;
-	blknum = addr >> 7;
+	blknum = (addr & 0xffff) >> 7;
 	cmapblkptr = &cmapptr[blknum];
 
 	if(*cmapblkptr == 0xff) { //no cache found for address
@@ -46,17 +47,19 @@ uint8_t extmem_rw(register extmem_op_t op, register uint32_t addr, register uint
 
 		register uint16_t xi,yi;
 
-		if(blknum < 240) {
-			yi = (blknum / 40) * 8;
-			xi = (blknum % 40) * 8;
-			if(yi >= 24)
+		if(blknum < 240) {//block in horizontal bar
+			yi = blknum / 40;
+			xi = (blknum - yi*40) * 8;
+			yi = yi * 8;
+			if(yi >= 24)//block in bottom bar
 				yi += 192;
 		}
-		else {
+		else {//block in vertical bar
 			yi = (blknum - 240) * 8;
-			xi = yi / 192 * 8;
-			yi = yi % 192 + 24;
-			if(xi >= 16) {
+			xi = yi / 192;
+			yi = (yi - xi * 192) + 24;
+			xi = xi * 8;
+			if(xi >= 16) {//block in right bar
 				xi += 288;
 			}
 		}
@@ -84,17 +87,18 @@ uint8_t extmem_rw(register extmem_op_t op, register uint32_t addr, register uint
 		if(imru_cache)
 			imru_cache->next = cur_cache;
 		cur_cache->prev = imru_cache;
-		mru_cache = cur_cache;
 		cur_cache->next = NULL;
+		mru_cache = cur_cache;
 	}
 
 	lru_cache = ilru_cache;
 
-	if(op == EXTM_READ)
-		return cur_cache->data[addr & 0x007f];
-	else {
+	if(addr & WRITE_OP) {//write
 		cur_cache->writed = 1;
 		return cur_cache->data[addr & 0x007f] = data;
+	}
+	else {//read
+		return cur_cache->data[addr & 0x007f];
 	}
 }
 
