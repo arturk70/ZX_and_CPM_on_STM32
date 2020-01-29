@@ -24,7 +24,7 @@ static uint16_t linebuf[ZX_PIXELS+32];
 static uint32_t frnum = 0;
 uint32_t zxlnum = 0;
 uint32_t zx_newline_flag;
-uint32_t zx_border_color = 0;
+uint8_t zx_border_color = 0;
 
 void zxdisp_init() {
 //	linebuf = malloc((ZX_PIXELS+64)*2);
@@ -46,39 +46,47 @@ void zxdisp_drawnextline() {
 	register uint8_t *attraddr;
 	register uint8_t *lineaddr;
 	register uint32_t attr;
-	register uint32_t bgfgcolor;
+	register uint32_t bgcolor, fgcolor;
+	register uint32_t bordercolor;
 	register uint32_t is_flash;
 	register uint32_t pixline;
-	register uint16_t *bufptr;
-	register uint32_t bnum;
+	register uint16_t *bufptr, *borderptr;
 
 	attraddr = mem;
 	lineaddr = attraddr+(((uint16_t)lnum & 0x00c0)<<5)+(((uint16_t)lnum & 0x0038)<<2)+(((uint16_t)lnum & 0x0007)<<8);
 	attraddr += 0x1800+(lnum/8)*32;
 
-	bufptr = linebuf+16+7;
-	bnum = 0;
+	bordercolor = zxcolors[zx_border_color] & 0xc618;
+
+	borderptr = linebuf;
+	bufptr = borderptr+BORDER_WIDTH+7;
+
 	do {
 		attr = *(attraddr++);
-		bgfgcolor = zxcolors[attr & 0x3f];
+		fgcolor = zxcolors[attr & 0x3f];
 		if(!(attr & 0x40)) //not bright
-			bgfgcolor &= 0xc618c618;
-		is_flash = (((attr & 0x80) >> 4) & frnumi) >> 3;
+			fgcolor &= 0xc618c618;
+		bgcolor = fgcolor >> 16;
+		is_flash = ((attr >> 4) & frnumi) >> 3;//swap bg/fg colors every 16 frames
 
-		pixline = *(lineaddr++);
-		for(register uint32_t pixnum=0; pixnum<8; pixnum++) {
-			if(((pixline >> pixnum) & 0x01) ^ is_flash)
-				*(bufptr-pixnum) = bgfgcolor;
+		pixline = *(lineaddr++) | 0x0100;
+		do {
+			if((pixline & 0x01) ^ is_flash)
+				*(bufptr) = fgcolor;
 			else
-				*(bufptr-pixnum) = bgfgcolor >> 16;
-		}
-		bufptr += 8;
-		linebuf[bnum & 0x0f] = linebuf[(bnum & 0x0f)+BORDER_WIDTH+ZX_PIXELS] = zx_border_color;
-	} while(++bnum < 32);
+				*(bufptr) = bgcolor;
+			pixline >>= 1;
+			bufptr--;
+		} while(pixline != 1);
+		bufptr += 16;
+		if(borderptr == linebuf+BORDER_WIDTH)
+			borderptr += ZX_PIXELS;
+		*(borderptr++) = bordercolor;
+	} while(borderptr < linebuf + ZX_PIXELS+BORDER_WIDTH*2 );
 
 	ILI9341_sendDMABuf(ZXD_START_POS-BORDER_WIDTH, ZXD_START_LINE+lnum, ZXD_END_POS+BORDER_WIDTH, ZXD_START_LINE+lnum, linebuf, (ZX_PIXELS+BORDER_WIDTH*2));
 
-	zxlnum = lnum+1;
+	zxlnum = ++lnum;
 	frnum = frnumi;
 
 	ZX_NEWLINE_RESET;

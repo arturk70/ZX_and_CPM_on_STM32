@@ -37,7 +37,7 @@ void zxsys_Run() {
 
 void zxports_out(register uint32_t addr, register uint32_t data) {
 	if((addr & 0x00ff) == 0x00fe) {
-		zx_border_color = (((data << 10) & 0x0800) | ((data << 4) & 0x0040) | (data & 0x0001)) * 0x18;
+		zx_border_color = data & 0x07;
 	}
 }
 
