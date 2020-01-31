@@ -86,6 +86,8 @@ void z80_step() {
 
 			z80_tstates += 11;
 		}
+
+		z80_state.int_req = 0;
 	}
 	else if(z80_state.halted) {
 		z80_tstates += 4;
@@ -151,7 +153,5 @@ nextcode:
 			hlixiyptr = &(HL);
 		}
 	}
-
-	z80_state.int_req = 0;
 }
 
