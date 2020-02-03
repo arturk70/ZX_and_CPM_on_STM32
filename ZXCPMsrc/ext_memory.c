@@ -18,14 +18,14 @@ uint8_t extmem_rw(register uint32_t addr, register uint32_t data) {
 	register cache_t *cur_cache, *ilru_cache, *imru_cache;
 	register uint8_t *cmapptr, *cmapblkptr;
 	register uint32_t blknum;
-	ilru_cache = lru_cache;
-	imru_cache = mru_cache;
+	ilru_cache = lru_cache;//less recently used block
+	imru_cache = mru_cache;//most recently used block
 	cmapptr = cache_map;
 	blknum = (addr & 0xffff) >> 7;
 	cmapblkptr = &cmapptr[blknum];
 
 	if(*cmapblkptr == 0xff) { //no cache found for address
-		if(next_unused < cache + CACHE_BLOCKS_NUM) {
+		if(next_unused < cache + CACHE_BLOCKS_NUM) {//not all cache blocks used
 			cur_cache = next_unused++;
 			if(!ilru_cache)
 				ilru_cache = cur_cache;
@@ -45,6 +45,7 @@ uint8_t extmem_rw(register uint32_t addr, register uint32_t data) {
 			ILI9341_sendBuf(cur_cache->x, cur_cache->y, cur_cache->x + 7, cur_cache->y + 7, (uint16_t*)(cur_cache->data), 64);
 		}
 
+		//calculate coordinates of block on screen
 		register uint16_t xi,yi;
 
 		if(blknum < 240) {//block in horizontal bar

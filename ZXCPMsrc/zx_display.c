@@ -11,14 +11,14 @@
 
 const uint32_t zxcolors[] = {
 		//normal colors
-		0x00000000, 0x00000018, 0x0000c000, 0x0000c018, 0x00000600, 0x00000618, 0x0000c600, 0x0000c618,
-		0x00180000, 0x00180018, 0x0018c000, 0x0018c018, 0x00180600, 0x00180618, 0x0018c600, 0x0018c618,
-		0xc0000000, 0xc0000018, 0xc000c000, 0xc000c018, 0xc0000600, 0xc0000618, 0xc000c600, 0xc000c618,
-		0xc0180000, 0xc0180018, 0xc018c000, 0xc018c018, 0xc0180600, 0xc0180618, 0xc018c600, 0xc018c618,
-		0x06000000, 0x06000018, 0x0600c000, 0x0600c018, 0x06000600, 0x06000618, 0x0600c600, 0x0600c618,
-		0x06180000, 0x06180018, 0x0618c000, 0x0618c018, 0x06180600, 0x06180618, 0x0618c600, 0x0618c618,
-		0xc6000000, 0xc6000018, 0xc600c000, 0xc600c018, 0xc6000600, 0xc6000618, 0xc600c600, 0xc600c618,
-		0xc6180000, 0xc6180018, 0xc618c000, 0xc618c018, 0xc6180600, 0xc6180618, 0xc618c600, 0xc618c618,
+		0x00000000, 0x00000014, 0x0000a000, 0x0000a014, 0x00000500, 0x00000514, 0x0000a500, 0x0000a514,
+		0x00140000, 0x00140014, 0x0014a000, 0x0014a014, 0x00140500, 0x00140514, 0x0014a500, 0x0014a514,
+		0xa0000000, 0xa0000014, 0xa000a000, 0xa000a014, 0xa0000500, 0xa0000514, 0xa000a500, 0xa000a514,
+		0xa0140000, 0xa0140014, 0xa014a000, 0xa014a014, 0xa0140500, 0xa0140514, 0xa014a500, 0xa014a514,
+		0x05000000, 0x05000014, 0x0500a000, 0x0500a014, 0x05000500, 0x05000514, 0x0500a500, 0x0500a514,
+		0x05140000, 0x05140014, 0x0514a000, 0x0514a014, 0x05140500, 0x05140514, 0x0514a500, 0x0514a514,
+		0xa5000000, 0xa5000014, 0xa500a000, 0xa500a014, 0xa5000500, 0xa5000514, 0xa500a500, 0xa500a514,
+		0xa5140000, 0xa5140014, 0xa514a000, 0xa514a014, 0xa5140500, 0xa5140514, 0xa514a500, 0xa514a514,
 		//bright colors
 		0x00000000, 0x0000003f, 0x0000f800, 0x0000f81f, 0x000007e0, 0x000007ff, 0x0000ffe0, 0x0000ffff,
 		0x003f0000, 0x003f003f, 0x003ff800, 0x003ff81f, 0x003f07e0, 0x003f07ff, 0x003fffe0, 0x003fffff,
@@ -46,24 +46,18 @@ void zxdisp_deinit() {
 
 void zxdisp_drawnextline() {
 	register uint32_t lnum = zxlnum;
-	register uint32_t frnumi = frnum;
-	if(lnum >= ZX_LINES) {
-		lnum = 0;
-		frnumi++;
-		if(frnumi > 0x0f) frnumi = 0;//16 fps
-	}
+	register uint32_t frnumi = frnum++;
 
 	register uint8_t *attraddr;
 	register uint8_t *lineaddr;
 	register uint32_t attr;
 	register uint32_t bgcolor, fgcolor;
 	register uint32_t bordercolor;
-	register uint32_t is_flash;
 	register uint32_t pixline;
 	register uint16_t *bufptr, *borderptr;
 
-	attraddr = mem;
-	lineaddr = attraddr+(((uint16_t)lnum & 0x00c0)<<5)+(((uint16_t)lnum & 0x0038)<<2)+(((uint16_t)lnum & 0x0007)<<8);
+	lineaddr = attraddr = mem;
+	lineaddr += ((lnum & 0x00c0)<<5) | ((lnum & 0x0038)<<2) | ((lnum & 0x0007)<<8);
 	attraddr += 0x1800+(lnum/8)*32;
 
 	bordercolor = zxcolors[zx_border_color];
@@ -74,8 +68,7 @@ void zxdisp_drawnextline() {
 	do {
 		attr = *(attraddr++);
 
-		is_flash = ((attr >> 7) & (frnumi >> 3));//swap bg/fg colors every 16 frames
-		if(is_flash) {
+		if((attr >> 7) & (frnumi >> 3)) {//swap bg/fg colors every 16 frames for flash effect
 			bgcolor = zxcolors[attr & 0x7f];
 			fgcolor = bgcolor >> 16;
 		}
@@ -101,8 +94,10 @@ void zxdisp_drawnextline() {
 
 	ILI9341_sendDMABuf(ZXD_START_POS-BORDER_WIDTH, ZXD_START_LINE+lnum, ZXD_END_POS+BORDER_WIDTH, ZXD_START_LINE+lnum, linebuf, (ZX_PIXELS+BORDER_WIDTH*2));
 
-	zxlnum = ++lnum;
-	frnum = frnumi;
+	if(++lnum >= ZX_LINES)
+		zxlnum = 0;
+	else
+		zxlnum = lnum;
 
 	ZX_NEWLINE_RESET;
 }
