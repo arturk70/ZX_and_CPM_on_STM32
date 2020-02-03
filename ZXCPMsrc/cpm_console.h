@@ -33,9 +33,7 @@ extern uint8_t cpmconsst;
 extern char cpmconsch;
 
 
-void cpmcons_init();
 void cpmcons_clear();
-void cpmcons_deinit();
 void cpmcons_putc(register char c);
 void cpmcons_puts(register const char *s);
 void cpmcons_errmsg(register uint32_t errno, register const char *s);

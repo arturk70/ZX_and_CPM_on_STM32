@@ -120,8 +120,7 @@ void z80_menu() {
 	register char sym = '\0';
 	char fname[22] = "0:/ZX/Z80";
 
-	zxdisp_deinit();
-	cpmcons_init();
+	cpmcons_clear();
 
 	while(1) {
 		while(cpmkbd_read() != '\0');
@@ -136,8 +135,6 @@ void z80_menu() {
 			break;
 		}
 		else if(sym == 'r') {//return
-			cpmcons_deinit();
-			zxdisp_init();
 			break;
 		}
 		else if(sym == 'd') {//dir files from 0:/ZX/Z80/
@@ -196,8 +193,6 @@ void z80_menu() {
 				fname[fnptr] = '\0';
 
 				if((retUSER = z80_loadfile(fname)) == 0) {
-					cpmcons_deinit();
-					zxdisp_init();
 					break;
 				}
 				else

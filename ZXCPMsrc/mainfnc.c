@@ -21,7 +21,7 @@ void main_init() {
 	LL_TIM_EnableIT_UPDATE(TIM3);
 #endif
 	ILI9341_Init();
-	cpmcons_init();
+	cpmcons_clear();
 
 	retUSER = f_mount(&USERFatFS, "0", 1);
 	if(retUSER != FR_OK) {
@@ -38,9 +38,7 @@ void main_loop() {
 	sym = cpmcons_getc();
 	cpmcons_putc(sym);
 	if(sym == '6') {
-		cpmcons_deinit();
 		zxsys_Run();
-		cpmcons_init();
 
 ////memory test
 //		extmem_Init();
@@ -99,5 +97,5 @@ void main_loop() {
 		}
 	}
 
-	cpmcons_puts("\n\n");
+	cpmcons_clear();
 }

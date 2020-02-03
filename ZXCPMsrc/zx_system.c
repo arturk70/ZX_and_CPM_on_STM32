@@ -14,7 +14,6 @@ uint8_t zxsys_isrun = 0;
 
 void zxsys_Run() {
 	mem_Init(MEMTYPE_ZX);
-	zxdisp_init();
 	z80_Init(zxports_out, zxports_in);
 
 	zxsys_isrun = 1;

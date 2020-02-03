@@ -36,14 +36,6 @@ uint32_t zxlnum = 0;
 uint32_t zx_newline_flag;
 uint8_t zx_border_color = 0;
 
-void zxdisp_init() {
-//	linebuf = malloc((ZX_PIXELS+64)*2);
-//	ILI9341_fillArea(ZXD_START_POS, ZXD_START_LINE, ZXD_END_POS, ZXD_END_LINE, BLACK);
-}
-void zxdisp_deinit() {
-//	free(linebuf);
-}
-
 void zxdisp_drawnextline() {
 	register uint32_t lnum = zxlnum;
 	register uint32_t frnumi = frnum++;

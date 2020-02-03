@@ -96,17 +96,6 @@ static void cpmcons_scroll() {
 	ILI9341_fillArea(CPMD_START_POS, CPMD_END_LINE-FNT_HEIGHT+1, CPMD_END_POS, CPMD_END_LINE, BG_COLOR);
 }
 
-void cpmcons_init() {
-//	scrbuf = malloc(SCR_HEIGHT*SCR_WIDTH);
-//	chbuf = malloc(FNT_WIDTH*FNT_HEIGHT*2);
-	cpmcons_clear();
-}
-
-void cpmcons_deinit() {
-//	free(scrbuf);
-//	free(chbuf);
-}
-
 void cpmcons_clear() {
 	for(register uint32_t i=0;i<SCR_HEIGHT;i++)
 		for(register uint32_t j=0; j< SCR_WIDTH; j++)

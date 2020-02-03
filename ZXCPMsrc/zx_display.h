@@ -27,8 +27,6 @@ extern uint32_t zxlnum;
 extern uint32_t zx_newline_flag;
 extern uint8_t zx_border_color;
 
-void zxdisp_init();
-void zxdisp_deinit();
 void zxdisp_drawnextline();
 
 

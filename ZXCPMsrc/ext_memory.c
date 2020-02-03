@@ -9,7 +9,7 @@
 
 static uint8_t cache_map[MEM_BLOCS_NUM+1];// + 1 fake block
 static cache_t cache[CACHE_BLOCKS_NUM];
-static cache_t *lru_cache, *mru_cache, *next_unused;
+static cache_t *lru_cache, *mru_cache;
 
 uint32_t mem_time = 0;
 
@@ -25,16 +25,9 @@ uint8_t* extmem_armaddr(register uint32_t addr) {
 	cmapblkptr = &cmapptr[blknum];//get pointer to number of cache
 
 	if(*cmapblkptr == 0xff) { //no cache found for address
-		if(next_unused < cache + CACHE_BLOCKS_NUM) {//not all cache blocks used
-			cur_cache = next_unused++;
-			if(!ilru_cache)//first time cache use
-				ilru_cache = cur_cache;
-		}
-		else {//all cache blocks used
-			cur_cache = ilru_cache;//then use less recently used
-			ilru_cache = cur_cache->next;
-			ilru_cache->prev = NULL;
-		}
+		cur_cache = ilru_cache;//then use less recently used
+		ilru_cache = cur_cache->next;
+		ilru_cache->prev = NULL;
 
 		if(cur_cache->writed) {//if data in cache was changed
 			//write cache block back to the screen
@@ -79,11 +72,9 @@ uint8_t* extmem_armaddr(register uint32_t addr) {
 			//crop them from middle of sorted by usage cache blocks array
 			if(cur_cache->prev)
 				((cache_t*)(cur_cache->prev))->next = cur_cache->next;
-//			if(cur_cache->next) {
-				if(cur_cache == ilru_cache)
-					ilru_cache = cur_cache->next;
-				((cache_t*)(cur_cache->next))->prev = cur_cache->prev;
-//			}
+			if(cur_cache == ilru_cache)
+				ilru_cache = cur_cache->next;
+			((cache_t*)(cur_cache->next))->prev = cur_cache->prev;
 		}
 	}
 
@@ -106,18 +97,38 @@ uint8_t* extmem_armaddr(register uint32_t addr) {
 }
 
 void extmem_Init() {
-	for(register int i=0; i<MEM_BLOCS_NUM+1; i++)
-			cache_map[i] = 0xff;
+	register int i;
+	register uint16_t xi,yi;
+	register cache_t *cur_cache;
 
-	lru_cache = NULL;
-	mru_cache = NULL;
-	next_unused = cache;
+	for(i=0; i<CACHE_BLOCKS_NUM;i++) {
+		cur_cache = cache + i;
+		cur_cache->blknum = i;
+		cur_cache->writed = 0;
+		if(i == 0) {
+			cur_cache->prev = NULL;
+			lru_cache = cur_cache;
+		}
+		else
+			cur_cache->prev = cur_cache - 1;
+		if(i == CACHE_BLOCKS_NUM - 1) {
+			cur_cache->next = NULL;
+			mru_cache = cur_cache;
+		}
+		else
+			cur_cache->next = cur_cache + 1;
 
-	for(register int i=0; i<CACHE_BLOCKS_NUM;i++) {
-			cache[i].blknum = MEM_BLOCS_NUM;
-			cache[i].writed = 0;
-			cache[i].prev = NULL;
-			cache[i].next = NULL;
+		yi = i / 40;
+		xi = (i - yi*40) * 8;
+		yi = yi * 8;
+		cur_cache->x = xi;
+		cur_cache->y = yi;
+		ILI9341_readBuf(xi, yi, xi + 7, yi + 7, (uint16_t*)(cur_cache->data), 64);
+
+		cache_map[i] = i;
 	}
+
+	for(; i<MEM_BLOCS_NUM+1; i++)
+			cache_map[i] = 0xff;
 }
 
