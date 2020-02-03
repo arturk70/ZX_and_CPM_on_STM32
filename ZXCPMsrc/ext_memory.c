@@ -14,34 +14,30 @@ static cache_t *lru_cache, *mru_cache, *next_unused;
 uint32_t mem_time = 0;
 
 //addr & 0xf0000000 --- 0-read, 1-write
-uint8_t extmem_rw(register uint32_t addr, register uint32_t data) {
+uint8_t* extmem_armaddr(register uint32_t addr) {
 	register cache_t *cur_cache, *ilru_cache, *imru_cache;
 	register uint8_t *cmapptr, *cmapblkptr;
 	register uint32_t blknum;
 	ilru_cache = lru_cache;//less recently used block
 	imru_cache = mru_cache;//most recently used block
 	cmapptr = cache_map;
-	blknum = (addr & 0xffff) >> 7;
-	cmapblkptr = &cmapptr[blknum];
+	blknum = (addr & 0xffff) >> 7;//calculate number of block on the screen
+	cmapblkptr = &cmapptr[blknum];//get pointer to number of cache
 
 	if(*cmapblkptr == 0xff) { //no cache found for address
 		if(next_unused < cache + CACHE_BLOCKS_NUM) {//not all cache blocks used
 			cur_cache = next_unused++;
-			if(!ilru_cache)
+			if(!ilru_cache)//first time cache use
 				ilru_cache = cur_cache;
 		}
-		else {
-			cur_cache = ilru_cache;
-			if(cur_cache->next) {
-				ilru_cache = cur_cache->next;
-				ilru_cache->prev = NULL;
-			}
+		else {//all cache blocks used
+			cur_cache = ilru_cache;//then use less recently used
+			ilru_cache = cur_cache->next;
+			ilru_cache->prev = NULL;
 		}
 
-		*cmapblkptr = (cur_cache - cache);
-		cmapptr[cur_cache->blknum] = 0xff;
-
-		if(cur_cache->writed) {
+		if(cur_cache->writed) {//if data in cache was changed
+			//write cache block back to the screen
 			ILI9341_sendBuf(cur_cache->x, cur_cache->y, cur_cache->x + 7, cur_cache->y + 7, (uint16_t*)(cur_cache->data), 64);
 		}
 
@@ -65,26 +61,34 @@ uint8_t extmem_rw(register uint32_t addr, register uint32_t data) {
 			}
 		}
 
+		//change number of cache in cache map
+		*cmapblkptr = (cur_cache - cache);
+		//clear number of previous cache block in cache map
+		cmapptr[cur_cache->blknum] = 0xff;
+
+		//set parameters of new cache block
 		cur_cache->blknum = blknum;
 		cur_cache->x=xi; cur_cache->y=yi;
 		cur_cache->writed = 0;
-
+		//read data of new cache block from the screen
 		ILI9341_readBuf(xi, yi, xi + 7, yi + 7, (uint16_t*)(cur_cache->data), 64);
 	}
-	else {
-		cur_cache = &cache[*cmapblkptr];
-		if(imru_cache != cur_cache) {
+	else {//cache found for address
+		cur_cache = &cache[*cmapblkptr];//use cache, pointed by cache map
+		if(imru_cache != cur_cache) {//current cache block is not most recently used cache block
+			//crop them from middle of sorted by usage cache blocks array
 			if(cur_cache->prev)
 				((cache_t*)(cur_cache->prev))->next = cur_cache->next;
-			if(cur_cache->next) {
+//			if(cur_cache->next) {
 				if(cur_cache == ilru_cache)
 					ilru_cache = cur_cache->next;
 				((cache_t*)(cur_cache->next))->prev = cur_cache->prev;
-			}
+//			}
 		}
 	}
 
-	if(imru_cache != cur_cache) {
+	if(imru_cache != cur_cache) {//current cache block is not most recently used cache block
+		//set current cache as most recently used
 		if(imru_cache)
 			imru_cache->next = cur_cache;
 		cur_cache->prev = imru_cache;
@@ -94,13 +98,11 @@ uint8_t extmem_rw(register uint32_t addr, register uint32_t data) {
 
 	lru_cache = ilru_cache;
 
-	if(addr & WRITE_OP) {//write
+	if(addr & WRITE_OP) //write
 		cur_cache->writed = 1;
-		return cur_cache->data[addr & 0x007f] = data;
-	}
-	else {//read
-		return cur_cache->data[addr & 0x007f];
-	}
+
+	return cur_cache->data +(addr & 0x007f);
+
 }
 
 void extmem_Init() {

@@ -12,7 +12,7 @@
 #include "ili9341_driver.h"
 
 #define MEM_BLOCS_NUM		336 // 336 = (320*24*2+8*192*2*2)/64 - number of 128 byte blocks in external memory
-#define CACHE_BLOCKS_NUM	40
+#define CACHE_BLOCKS_NUM	48
 #define WRITE_OP	0xf0000000
 
 typedef struct {
@@ -25,8 +25,8 @@ typedef struct {
 } cache_t;
 
 //addr & 0xf0000000 --- 0-read, 1-write
-uint8_t extmem_rw(register uint32_t addr, register uint32_t data);
+//return address in ARM memory of cached byte
+uint8_t* extmem_armaddr(register uint32_t addr);
 void extmem_Init();
-//void extmem_deInit();
 
 #endif /* EXT_MEMORY_H_ */
