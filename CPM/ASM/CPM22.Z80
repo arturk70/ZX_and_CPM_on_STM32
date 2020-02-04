@@ -11,7 +11,7 @@
 ;   Set memory limit here. This is the amount of contigeous
 ; ram starting from 0000. CP/M will reside at the end of this space.
 ;
-MEM:	EQU	50		;total amount of memory.
+MEM:	EQU	48		;total amount of memory.
 ;
 IOBYTE:	EQU	3		;i/o definition byte.
 TDRIVE:	EQU	4		;current drive name and user number.
@@ -3918,7 +3918,7 @@ msgloop:
 		inc HL
 		JP	msgloop
 bmsg:	defb 0dh, 0ah
-	defb '50k CP/M 2.2 for STM32ZXCPM', 0dh, 0ah, 0
+	defb '48k CP/M 2.2 for STM32ZXCPM', 0dh, 0ah, 0
 ;
 gocpm1:
     ei			;enable the interrupt system

@@ -12,7 +12,7 @@
 #include "ili9341_driver.h"
 
 #define MEM_BLOCS_NUM		336 // 336 = (320*24*2+8*192*2*2)/64 - number of 128 byte blocks in external memory
-#define CACHE_BLOCKS_NUM	48
+#define CACHE_BLOCKS_NUM	42
 #define WRITE_OP	0xf0000000
 
 typedef struct {

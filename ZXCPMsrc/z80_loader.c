@@ -178,19 +178,19 @@ void z80_menu() {
 			cpmcons_puts("Enter file name w/o ext>");
 
 			char strbuf[9];
-			register uint8_t inpptr = 0, fnptr = 9;
+			register char *inpptr = strbuf, *fnptr = fname+9;
 			cpmcons_gets(strbuf, 8);
 			cpmcons_putc('\n');
 			if(*strbuf != '\0') {
-				fname[fnptr++] = '/';
-				while(strbuf[inpptr] != '\0') {
-					fname[fnptr++] = strbuf[inpptr++];
+				*(fnptr++) = '/';
+				while(*inpptr != '\0') {
+					*(fnptr++) = *(inpptr++);
 				}
-				fname[fnptr++] = '.';
-				fname[fnptr++] = 'Z';
-				fname[fnptr++] = '8';
-				fname[fnptr++] = '0';
-				fname[fnptr] = '\0';
+				*(fnptr++) = '.';
+				*(fnptr++) = 'Z';
+				*(fnptr++) = '8';
+				*(fnptr++) = '0';
+				*fnptr = '\0';
 
 				if((retUSER = z80_loadfile(fname)) == 0) {
 					break;

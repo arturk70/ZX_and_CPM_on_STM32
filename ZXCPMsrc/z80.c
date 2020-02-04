@@ -135,12 +135,11 @@ nextcode:
 				code = mem_read(PC++);
 			}
 
+			z80_tstates += 4;
 			if(code < 0x40) {
-				z80_tstates += 4;
 				CBSFT(code);
 			}
 			else {
-				z80_tstates += 4;
 				BIT(code);
 			}
 

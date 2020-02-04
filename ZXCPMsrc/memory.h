@@ -12,7 +12,7 @@
 
 #define ZXROMSIZE	0x4000
 #define INTRAMSIZE	0x1c00
-#define	CPMMEMSIZE	(50*1024)
+#define	CPMMEMSIZE	(48*1024)
 
 typedef enum {
 	MEMTYPE_ZX,

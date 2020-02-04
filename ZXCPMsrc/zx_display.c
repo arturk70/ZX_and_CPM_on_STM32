@@ -38,7 +38,7 @@ uint8_t zx_border_color = 0;
 
 void zxdisp_drawnextline() {
 	register uint32_t lnum = zxlnum;
-	register uint32_t frnumi = frnum++;
+	register uint32_t frnumi = frnum;
 
 	register uint8_t *attraddr;
 	register uint8_t *lineaddr;
@@ -86,8 +86,10 @@ void zxdisp_drawnextline() {
 
 	ILI9341_sendDMABuf(ZXD_START_POS-BORDER_WIDTH, ZXD_START_LINE+lnum, ZXD_END_POS+BORDER_WIDTH, ZXD_START_LINE+lnum, linebuf, (ZX_PIXELS+BORDER_WIDTH*2));
 
-	if(++lnum >= ZX_LINES)
+	if(++lnum >= ZX_LINES) {
 		zxlnum = 0;
+		frnum = frnumi+1;
+	}
 	else
 		zxlnum = lnum;
 
