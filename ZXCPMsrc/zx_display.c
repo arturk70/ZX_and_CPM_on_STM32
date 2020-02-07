@@ -84,7 +84,8 @@ void zxdisp_drawnextline() {
 		*(borderptr++) = bordercolor;
 	} while(borderptr < linebuf + ZX_PIXELS+BORDER_WIDTH*2 );
 
-	ILI9341_sendDMABuf(ZXD_START_POS-BORDER_WIDTH, ZXD_START_LINE+lnum, ZXD_END_POS+BORDER_WIDTH, ZXD_START_LINE+lnum, linebuf, (ZX_PIXELS+BORDER_WIDTH*2));
+	pixline = lnum+ZXD_START_LINE;
+	ILI9341_sendDMABuf(ZXD_START_POS-BORDER_WIDTH, pixline, ZXD_END_POS+BORDER_WIDTH, pixline, linebuf, (ZX_PIXELS+BORDER_WIDTH*2));
 
 	if(++lnum >= ZX_LINES) {
 		zxlnum = 0;
