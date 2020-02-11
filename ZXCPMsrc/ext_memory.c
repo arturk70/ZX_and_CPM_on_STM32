@@ -11,8 +11,6 @@ static cache_t* cache_map[MEM_BLOCS_NUM];
 static cache_t cache[CACHE_BLOCKS_NUM];
 static cache_t *lru_cache, *mru_cache;
 
-uint32_t mem_time = 0;
-
 //addr & 0xf0000000 --- 0-read, 1-write
 uint8_t* extmem_armaddr(register uint32_t addr) {
 	register cache_t *cur_cache, *ilru_cache, *imru_cache;
@@ -70,10 +68,10 @@ uint8_t* extmem_armaddr(register uint32_t addr) {
 			}
 		}
 
-		//set cache in cache map for block
-		cmapptr[blknum] = cur_cache;
 		//clear previous cache block in cache map
 		cmapptr[cur_cache->blknum] = NULL;
+		//set cache in cache map for block
+		cmapptr[blknum] = cur_cache;
 
 		//set parameters of new cache block
 		cur_cache->blknum = blknum;
