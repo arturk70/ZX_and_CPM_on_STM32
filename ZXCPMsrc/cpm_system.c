@@ -43,13 +43,13 @@ static void cpmdsk_rwsec(register uint8_t op) {// op=0 for read, op=1 for write
 		else {
 			if(op) {//write
 				for(register uint8_t i=0; i<DSKSECSIZE; i++)
-					buf[i] = mem_read(dskdma+i);
+					buf[i] = MEM_READ(dskdma+i);
 				retUSER = f_write(&USERFile, buf, DSKSECSIZE, &num);
 			}
 			else {//read
 				retUSER = f_read(&USERFile, buf, DSKSECSIZE, &num);
 				for(register uint8_t i=0; i<DSKSECSIZE; i++) {
-					mem_write(dskdma+i, buf[i]);
+					MEM_WRITE(dskdma+i, buf[i]);
 				}
 			}
 
