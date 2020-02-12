@@ -53,8 +53,8 @@ void z80_step() {
 
 				IFF1 = IFF2 = 0;
 
-				MEM_WRITE( --SP, PCH );
-				MEM_WRITE( --SP, PCL );
+				mem_write( --SP, PCH );
+				mem_write( --SP, PCL );
 
 				switch(IM) {
 				case 0:
@@ -67,7 +67,7 @@ void z80_step() {
 				case 2:
 				{
 					register uint32_t inttemp=(0x100*I)+0xff;
-					PCL = MEM_READ(inttemp++); PCH = MEM_READ(inttemp);
+					PCL = mem_read(inttemp++); PCH = mem_read(inttemp);
 					z80_tstates += 6;
 					break;
 				}
@@ -79,8 +79,8 @@ void z80_step() {
 
 			IFF1 = 0;
 
-			MEM_WRITE( --SP, PCH );
-			MEM_WRITE( --SP, PCL );
+			mem_write( --SP, PCH );
+			mem_write( --SP, PCL );
 
 			PC = 0x0066;
 
@@ -97,14 +97,12 @@ void z80_step() {
 
 		z80_state.int_blocked = 0;
 nextcode:
-//		code = mem_read(PC++);
-		code = MEM_READ(PC++);
+		code = mem_read(PC++);
 
 		if(code == 0xed) {
 			RR++;
 			hlixiyptr = &(HL);
-//			code = mem_read(PC++);
-			code = MEM_READ(PC++);
+			code = mem_read(PC++);
 
 			if(code < 0x40 || code > 0xbf) {
 				z80_tstates += 4;
@@ -131,12 +129,10 @@ nextcode:
 		else if(code == 0xcb) {
 			RR++;
 			z80_tstates += 4;
-//			code = mem_read(PC++);
-			code = MEM_READ(PC++);
+			code = mem_read(PC++);
 			if(hlixiyptr != &(HL)) {
 				gixiyshift = code;
-//				code = mem_read(PC++);
-				code = MEM_READ(PC++);
+				code = mem_read(PC++);
 			}
 
 			z80_tstates += 4;

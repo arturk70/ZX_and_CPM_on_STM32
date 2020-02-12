@@ -70,8 +70,7 @@ static uint8_t z80_loadfile(const char *fname) {
 						if(num) {
 							rle = buf[i];
 							for(register uint8_t j=0; j<num; j++)
-//								mem_write(addr++, rle);
-								MEM_WRITE(addr++, rle);
+								mem_write(addr++, rle);
 
 							num = 0;
 							rle = 0;
@@ -91,10 +90,8 @@ static uint8_t z80_loadfile(const char *fname) {
 								rle = 1;
 							}
 							else {
-//								mem_write(addr++, 0xed);
-								MEM_WRITE(addr++, 0xed);
-//								mem_write(addr++, buf[i]);
-								MEM_WRITE(addr++, buf[i]);
+								mem_write(addr++, 0xed);
+								mem_write(addr++, buf[i]);
 							}
 
 							edflag = 0;
@@ -104,8 +101,7 @@ static uint8_t z80_loadfile(const char *fname) {
 								edflag = 1;
 							}
 							else
-//								mem_write(addr++, buf[i]);
-								MEM_WRITE(addr++, buf[i]);
+								mem_write(addr++, buf[i]);
 						}
 					}
 				}

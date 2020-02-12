@@ -114,14 +114,14 @@ void CCF(register uint32_t code) {
 }
 
 void RETN(register uint32_t code) {
-	IFF1=IFF2;
-	PCL = MEM_READ(SP++);
-	PCH = MEM_READ(SP++);
+		IFF1=IFF2;
+		PCL = mem_read(SP++);
+		PCH = mem_read(SP++);
 }
 
 void RETI(register uint32_t code) {
-	PCL = MEM_READ(SP++);
-	PCH = MEM_READ(SP++);
+		PCL = mem_read(SP++);
+		PCH = mem_read(SP++);
 }
 
 void IM_0(register uint32_t code) {
@@ -140,8 +140,7 @@ void LDn(register uint32_t code) {
 	register int8_t tmp;
 	register int8_t ixiyshift = 0;
 
-	tmp = MEM_READ(PC++);
-
+	tmp = mem_read(PC++);
 
 	switch (code >> 3) {
 	case 0x00://LD  B,*
@@ -156,9 +155,9 @@ void LDn(register uint32_t code) {
 	case 0x06://LD  (HL),*
 		if(hlixiyptr != &HL) {
 			ixiyshift = tmp;
-			tmp = MEM_READ(PC++);
+			tmp = mem_read(PC++);
 		}
-		MEM_WRITE(HLIXIY_REG+ixiyshift, tmp);
+		mem_write(HLIXIY_REG+ixiyshift, tmp);
 		break;
 	case 0x01://LD  C,*
 		C = tmp;
@@ -177,8 +176,8 @@ void LDn(register uint32_t code) {
 
 void LDx(register uint32_t code) {
 	register uint16_t tmp;
-	tmp = MEM_READ(PC++);
-	tmp |= MEM_READ(PC++) << 8;
+	tmp = mem_read(PC++);
+	tmp |= mem_read(PC++) << 8;
 	switch (code >> 4) {
 	case 0x00://LD BC,**
 		BC = tmp;
@@ -200,8 +199,8 @@ void LDm(register uint32_t code) {
 	register uint8_t tmp, hcode;
 	hcode = code & 0xf0;
 	if(hcode  > 0x10) { // (**) ops: LD (**),HL ; LD (**),A ; LD HL,(**) ; LD A,(**)
-		addr = MEM_READ(PC++);
-		addr |= MEM_READ(PC++) << 8;
+		addr = mem_read(PC++);
+		addr |= mem_read(PC++) << 8;
 	}
 	else {
 		if(code & 0xf0)
@@ -216,17 +215,17 @@ void LDm(register uint32_t code) {
 		tmp = A;
 
 	if(code & 0x08) //read
-		tmp = MEM_READ(addr);
+		tmp = mem_read(addr);
 	else //write
-		MEM_WRITE(addr, tmp);
+		mem_write(addr, tmp);
 
 	if(hcode == 0x20) {//for HL
 		if(code & 0x08) {//read
 			HLIXIY_REGL = tmp;
-			HLIXIY_REGH = MEM_READ(++addr);
+			HLIXIY_REGH = mem_read(++addr);
 		}
 		else {//write
-			MEM_WRITE(++addr, HLIXIY_REGH);
+			mem_write(++addr, HLIXIY_REGH);
 		}
 	}
 	else
@@ -242,7 +241,7 @@ void LD_(register uint32_t code) {
 	register uint8_t tmp;
 
 	if(hlixiyptr != &HL)
-		ixiyshift = MEM_READ(PC++);
+		ixiyshift = mem_read(PC++);
 
 	register uint8_t srcnum = code & 0x07;
 	register uint8_t dstnum = (code & 0x38) >> 3;
@@ -250,7 +249,7 @@ void LD_(register uint32_t code) {
 	if(srcnum == 0x07) {//A
 		tmp = A;
 	} else if(srcnum == 0x06) {//(HL)
-		tmp = MEM_READ(HLIXIY_REG + ixiyshift);
+		tmp = mem_read(HLIXIY_REG + ixiyshift);
 	} else if(srcnum == 0x04) {//H
 		tmp = (code == 0x74) ? H : HLIXIY_REGH;
 	} else if(srcnum == 0x05) {//L
@@ -262,7 +261,7 @@ void LD_(register uint32_t code) {
 	if(dstnum == 0x07) {//A
 		A = tmp;
 	} else if(dstnum == 0x06) {//(HL)
-		MEM_WRITE(HLIXIY_REG + ixiyshift, tmp);
+		mem_write(HLIXIY_REG + ixiyshift, tmp);
 	} else if(dstnum == 0x04) {//H
 		if(code == 0x66)
 			H = tmp;
@@ -280,9 +279,9 @@ void LD_(register uint32_t code) {
 
 void LDBL(register uint32_t code) {
 	register uint8_t tmp;
-	tmp=MEM_READ(HL);
+	tmp=mem_read(HL);
 	BC--;
-	MEM_WRITE(DE,tmp);
+	mem_write(DE,tmp);
 
 	if((code & 0x0f) == 0x00) {//LDI , LDIR
 		DE++; HL++;
@@ -317,8 +316,8 @@ void LDIR(register uint32_t code) {
 void EDLD(register uint32_t code) {
 	register uint16_t addr;
 	register uint16_t* reg;
-	addr = MEM_READ(PC++);
-	addr |= MEM_READ(PC++) << 8;
+	addr = mem_read(PC++);
+	addr |= mem_read(PC++) << 8;
 
 	switch ((code & 0x30) >> 4) {
 	case 0x00://LD (**),BC
@@ -335,11 +334,11 @@ void EDLD(register uint32_t code) {
 		break;
 	}
 	if(code & 0x08) {
-		*reg = MEM_READ(addr) | (MEM_READ(addr+1) << 8);
+		*reg = mem_read(addr) | (mem_read(addr+1) << 8);
 	}
 	else {
-		MEM_WRITE(addr, (*reg & 0x00ff));
-		MEM_WRITE(addr+1, (*reg >> 8));
+		mem_write(addr, (*reg & 0x00ff));
+		mem_write(addr+1, (*reg >> 8));
 	}
 }
 
@@ -376,10 +375,10 @@ void IC8(register uint32_t code) {
 	{
 		register int8_t ixiyshift = 0;
 		if(hlixiyptr != &HL)
-			ixiyshift = MEM_READ(PC++);
-		register uint8_t tmp = MEM_READ(HLIXIY_REG + ixiyshift);
+			ixiyshift = mem_read(PC++);
+		register uint8_t tmp = mem_read(HLIXIY_REG + ixiyshift);
 		res = ++tmp;
-		MEM_WRITE(HLIXIY_REG + ixiyshift, tmp);
+		mem_write(HLIXIY_REG + ixiyshift, tmp);
 	}
 	break;
 	case 0x01://INC C
@@ -432,10 +431,10 @@ void DC8(register uint32_t code) {
 	{
 		register int8_t ixiyshift = 0;
 		if(hlixiyptr != &HL)
-			ixiyshift = MEM_READ(PC++);
-		register uint8_t tmp = MEM_READ(HLIXIY_REG + ixiyshift);
+			ixiyshift = mem_read(PC++);
+		register uint8_t tmp = mem_read(HLIXIY_REG + ixiyshift);
 		res = --tmp;
-		MEM_WRITE(HLIXIY_REG + ixiyshift, tmp);
+		mem_write(HLIXIY_REG + ixiyshift, tmp);
 	}
 	break;
 	case 0x01://DEC C
@@ -506,7 +505,7 @@ static uint8_t calc_F(register uint8_t src1, register uint8_t src2, register int
 }
 
 void ALn(register uint32_t code) {
-	register uint8_t src = MEM_READ(PC++);
+	register uint8_t src = mem_read(PC++);
 	register int16_t res;
 	switch ((code & 0x38) >> 3) {
 	case 0x00://ADD A,*
@@ -558,10 +557,10 @@ void ALU(register uint32_t code) {
 		src = A; break;
 	case 0x06://(HL)
 		if(hlixiyptr != &HL) {
-			ixiyshift = MEM_READ(PC++);
+			ixiyshift = mem_read(PC++);
 			z80_tstates+=8;
 		}
-		src = MEM_READ(HLIXIY_REG + ixiyshift);
+		src = mem_read(HLIXIY_REG + ixiyshift);
 		break;
 	case 0x05://L
 		src = HLIXIY_REGL; break;
@@ -684,7 +683,7 @@ void ADCx(register uint32_t code) {
 void CPBL(register uint32_t code) {
 	register uint8_t tmp1, tmp2;
 
-	tmp2 = MEM_READ(HL);
+	tmp2 = mem_read(HL);
 	tmp1 = A - tmp2;
 	if(code & 0x08)
 		HL--;
@@ -701,7 +700,7 @@ void CPBL(register uint32_t code) {
 }
 
 void JR_(register uint32_t code) {
-	register int8_t d = MEM_READ(PC++);
+	register int8_t d = mem_read(PC++);
 	register uint8_t cond = 0;
 
 	switch (code >> 3) {
@@ -733,14 +732,14 @@ void JR_(register uint32_t code) {
 }
 
 void RST(register uint32_t code) {
-	MEM_WRITE(--SP, PCH);
-	MEM_WRITE(--SP, PCL);
+	mem_write(--SP, PCH);
+	mem_write(--SP, PCL);
 	PCH = 0;
 	PCL = code & 0x38;
 }
 
 void JPc(register uint32_t code) {
-	register uint16_t d;
+	register uint8_t dh, dl;
 	register uint8_t cond = 0;
 
 	switch ((code & 0x38) >> 3) {
@@ -771,54 +770,55 @@ void JPc(register uint32_t code) {
 	}
 
 	if((code &0x07) != 0x00) {//for JP & CALL
-		d = MEM_READ(PC++);
-		d |= MEM_READ(PC++)<<8;
+		dl = mem_read(PC++);
+		dh = mem_read(PC++);
 	}
 
 	if(cond) {
 		if((code & 0x07) == 0x00) {//for RET
 			z80_tstates += 6;
-			d = MEM_READ(SP++);
-			d |= MEM_READ(SP++)<<8;
+			dl = mem_read(SP++);
+			dh = mem_read(SP++);
 		}
 		else if(code & 0x04) {//for CALL only
 			z80_tstates += 7;
-			MEM_WRITE(--SP, PCH);
-			MEM_WRITE(--SP, PCL);
+			mem_write(--SP, PCH);
+			mem_write(--SP, PCL);
 		}
 
-		PC = d;
+		PCL = dl;
+		PCH = dh;
 	}
 }
 
 void JMP(register uint32_t code) {
-	register uint16_t d;
+	register uint8_t dh, dl;
 
 	if(code == 0xc9) {//RET
-		PCL = MEM_READ(SP++);
-		PCH = MEM_READ(SP++);
+		PCL = mem_read(SP++);
+		PCH = mem_read(SP++);
 	}
 	else if(code == 0xcd) {//CALL
-		d = MEM_READ(PC++);
-		d |= MEM_READ(PC++)<<8;
-		MEM_WRITE(--SP, PCH);
-		MEM_WRITE(--SP, PCL);
-		PC = d;
+		dl = mem_read(PC++);
+		dh = mem_read(PC++);
+		mem_write(--SP, PCH);
+		mem_write(--SP, PCL);
+		PCL = dl; PCH = dh;
 	}
 	else if(code == 0xe9) {//JP (HL)
 		PC = HLIXIY_REG;
 	}
 	else if(code == 0xc3) {//JP
-		d = MEM_READ(PC++);
-		d |= MEM_READ(PC++)<<8;
-		PC = d;
+		dl = mem_read(PC++);
+		dh = mem_read(PC++);
+		PCL = dl; PCH = dh;
 	}
 }
 
 void POP(register uint32_t code) {
 	register uint16_t tmp;
-	tmp = MEM_READ(SP++);
-	tmp |= MEM_READ(SP++) << 8;
+	tmp = mem_read(SP++);
+	tmp |= mem_read(SP++) << 8;
 
 	switch (code >> 4) {
 	case 0x0c://POP BC
@@ -854,8 +854,8 @@ void PSH(register uint32_t code) {
 		break;
 	}
 
-	MEM_WRITE(--SP, tmp >> 8);
-	MEM_WRITE(--SP, tmp);
+	mem_write(--SP, tmp >> 8);
+	mem_write(--SP, tmp);
 }
 
 void SFT(register uint32_t code) {
@@ -889,14 +889,14 @@ void CBSFT(register uint32_t code) {
 	register uint8_t regnum = code & 0x07;
 
 	if(hlixiyptr != &HL) {
-		tmpres = MEM_READ(HLIXIY_REG+gixiyshift);
+		tmpres = mem_read(HLIXIY_REG+gixiyshift);
 		z80_tstates += 15;
 	}
 	else if(regnum == 0x07) {//A
 		tmpres = A;
 	}
 	else if(regnum == 0x06) {//F
-		tmpres = MEM_READ(HL);
+		tmpres = mem_read(HL);
 		z80_tstates += 7;
 	}
 	else
@@ -941,14 +941,14 @@ void CBSFT(register uint32_t code) {
 	F |= sz53p_table[tmpres];
 
 	if(hlixiyptr != &HL) {
-		MEM_WRITE(HLIXIY_REG+gixiyshift, tmpres);
+		mem_write(HLIXIY_REG+gixiyshift, tmpres);
 		gixiyshift = 0;
 	}
 	else if(regnum == 0x07) {//A
 		A = tmpres;
 	}
 	else if(regnum == 0x06) {//F
-		MEM_WRITE(HL, tmpres);
+		mem_write(HL, tmpres);
 	}
 	else
 		*(regs + (regnum^1)) = tmpres;
@@ -957,14 +957,14 @@ void CBSFT(register uint32_t code) {
 void EDSF(register uint32_t code) {
 	register uint8_t tmp;
 
-	tmp = MEM_READ(HL);
+	tmp = mem_read(HL);
 
 	if(code == 0x67) {//RRD
-		MEM_WRITE(HL, (A << 4) | (tmp >> 4));
+		mem_write(HL, (A << 4) | (tmp >> 4));
 		A = (A & 0xf0) | (tmp & 0x0f);
 	}
 	else {//RLD
-		MEM_WRITE(HL, (tmp << 4) | (A & 0x0f));
+		mem_write(HL, (tmp << 4) | (A & 0x0f));
 		A = (A & 0xf0) | (tmp >> 4);
 	}
 
@@ -977,7 +977,7 @@ void BIT(register uint32_t code) {
 	register uint8_t regnum = code & 0x07;
 
 	if(hlixiyptr != &HL) {
-		tmpres = MEM_READ(HLIXIY_REG+gixiyshift);
+		tmpres = mem_read(HLIXIY_REG+gixiyshift);
 		hidden = ((HLIXIY_REG + gixiyshift) >> 8) & 0x00ff;
 		z80_tstates += 15;
 	}
@@ -985,7 +985,7 @@ void BIT(register uint32_t code) {
 		tmpres = A;
 	}
 	else if(regnum == 0x06) {//(HL)
-		tmpres = MEM_READ(HL);
+		tmpres = mem_read(HL);
 		hidden = H;
 		z80_tstates += 7;
 	}
@@ -1016,14 +1016,14 @@ void BIT(register uint32_t code) {
 	}
 
 	if(hlixiyptr != &HL) {
-		MEM_WRITE(HLIXIY_REG+gixiyshift, tmpres);
+		mem_write(HLIXIY_REG+gixiyshift, tmpres);
 		gixiyshift = 0;
 	}
 	else if(regnum == 0x07) {//A
 		A = tmpres;
 	}
 	else if(regnum == 0x06) {//F
-		MEM_WRITE(HL, tmpres);
+		mem_write(HL, tmpres);
 	}
 	else
 		*(regs + (regnum^1)) = tmpres;
@@ -1041,13 +1041,8 @@ void EX_(register uint32_t code) {
 		tmp = HL; HL = HL_; HL_ = tmp;
 		break;
 	case 0xe3: //EX (SP), HL
-//		tmp = MEM_READ(SP); MEM_WRITE(SP, HLIXIY_REGL); HLIXIY_REGL = tmp;
-//		tmp = MEM_READ(SP+1); MEM_WRITE(SP+1, HLIXIY_REGH); HLIXIY_REGH = tmp;
-		tmp = MEM_READ(SP);
-		tmp |= MEM_READ(SP+1)<<8;
-		MEM_WRITE(SP, HLIXIY_REGL);
-		MEM_WRITE(SP+1, HLIXIY_REGH);
-		HLIXIY_REG = tmp;
+		tmp = mem_read(SP); mem_write(SP, HLIXIY_REGL); ; HLIXIY_REGL = tmp;
+		tmp = mem_read(SP+1); mem_write(SP+1, HLIXIY_REGH); ; HLIXIY_REGH = tmp;
 		break;
 	case 0xeb: //EX DE, HL
 		tmp = DE; DE = HL; HL = tmp; break;
@@ -1056,10 +1051,10 @@ void EX_(register uint32_t code) {
 
 void IO_(register uint32_t code) {
 	if(code == 0xd3) {//OUT (*),A
-		port_out(((uint16_t)A << 8) | MEM_READ(PC++), A);
+		port_out(((uint16_t)A << 8) | mem_read(PC++), A);
 	}
 	else {//0xdb IN A,(*)
-		A = port_in(((uint16_t)A << 8) | MEM_READ(PC++));
+		A = port_in(((uint16_t)A << 8) | mem_read(PC++));
 	}
 }
 
@@ -1114,7 +1109,7 @@ void IOBL(register uint32_t code) {
 
 	if((code & 0x03) == 0x02) {//INI , INIR, IND, INDR
 		tmp1 = port_in(BC);
-		MEM_WRITE(HL, tmp1);
+		mem_write(HL, tmp1);
 		B--;
 		tmp2 = tmp1 + C;
 		if(code & 0x08) {//decrement
@@ -1126,7 +1121,7 @@ void IOBL(register uint32_t code) {
 
 	}
 	else {//OUTI, OUTIR, OUTD, OUTDR
-		tmp1 = MEM_READ(HL);
+		tmp1 = mem_read(HL);
 		B--;
 
 		if(code & 0x08) {//decrement

@@ -10,54 +10,72 @@
 #include "ZXROM.h"
 
 uint8_t mem[INTRAMSIZE];
-uint16_t fakeROM;
 
-void* (*mem_ptr)(register uint32_t addr, register uint32_t write_flag);
+uint8_t (*mem_read)(register uint32_t addr);
+void (*mem_write)(register uint32_t addr, register uint8_t data);
 
-void* zxmem_ptr(register uint32_t addr, register uint32_t write_flag) {
-	register void* armaddr;
+uint8_t zxmem_read(register uint32_t addr) {
+	register uint8_t* armaddr;
 
-	if(addr < ZXROMSIZE) {
-		if(write_flag)
-			armaddr = &fakeROM;
-		else
-			armaddr = (uint8_t*)ZXROM + addr;
-	}
+	if(addr < ZXROMSIZE)
+		armaddr = (uint8_t*)ZXROM + addr;
 	else if(addr < (ZXROMSIZE + INTRAMSIZE))
 		armaddr = mem + addr - ZXROMSIZE;
-	else {
-		if(write_flag)
-			addr |= WRITE_OP;
+	else
 		armaddr = extmem_armaddr(addr - (ZXROMSIZE + INTRAMSIZE));
-	}
 
-	return armaddr;
+	return *(armaddr);
 }
 
-void* cpmmem_ptr(register uint32_t addr, register uint32_t write_flag) {
-	register void* armaddr;
+void zxmem_write(register uint32_t addr, register uint8_t data) {
+	register uint8_t* armaddr;
+
+	if(addr < ZXROMSIZE)
+		return;
+	else if(addr < (ZXROMSIZE + INTRAMSIZE))
+		armaddr = mem + addr - ZXROMSIZE;
+	else
+		armaddr = extmem_armaddr((addr - (ZXROMSIZE + INTRAMSIZE)) | WRITE_OP);
+
+	*(armaddr) = data;
+}
+
+uint8_t cpmmem_read(register uint32_t addr) {
+	register uint8_t* armaddr;
 
 	if(addr > CPMMEMSIZE - 1)
-		return &fakeROM;
+		return 0x00;
 	else if(addr > (CPMMEMSIZE - 1 - INTRAMSIZE))
 		armaddr = mem + addr - (CPMMEMSIZE - INTRAMSIZE);
-	else {
-		if(write_flag)
-			addr |= WRITE_OP;
+	else
 		armaddr = extmem_armaddr(addr);
-	}
 
-	return armaddr;
+	return *(armaddr);
+}
+
+void cpmmem_write(register uint32_t addr, register uint8_t data) {
+	register uint8_t* armaddr;
+
+	if(addr > CPMMEMSIZE - 1)
+		return;
+	else if(addr > (CPMMEMSIZE - 1 - INTRAMSIZE))
+		armaddr = mem + addr - (CPMMEMSIZE - INTRAMSIZE);
+	else
+		armaddr = extmem_armaddr(addr | WRITE_OP);
+
+	*(armaddr) = data;
 }
 
 void mem_Init(register memtype_t type) {
 	extmem_Init();
 
 	if(type == MEMTYPE_ZX) {
-		mem_ptr = zxmem_ptr;
+		mem_read = zxmem_read;
+		mem_write = zxmem_write;
 	}
 	else {
-		mem_ptr = cpmmem_ptr;
+		mem_read = cpmmem_read;
+		mem_write = cpmmem_write;
 	}
 }
 
