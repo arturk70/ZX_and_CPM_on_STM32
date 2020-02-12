@@ -14,6 +14,11 @@
 #define INTRAMSIZE	0x1c00
 #define	CPMMEMSIZE	(48*1024)
 
+#define MEM_READ(addr) (*((uint8_t*)mem_ptr(addr, 0)))
+//#define MEM_READ16(addr) (*((uint16_t*)mem_ptr(addr, 0)))
+#define MEM_WRITE(addr, data) {*((uint8_t*)mem_ptr(addr, 1)) = data;}
+//#define MEM_WRITE16(addr, data) {*((uint16_t*)mem_ptr(addr, 1)) = data;}
+
 typedef enum {
 	MEMTYPE_ZX,
 	MEMTYPE_CPM
@@ -21,13 +26,10 @@ typedef enum {
 
 extern uint8_t mem[];
 
-extern uint8_t (*mem_read)(register uint32_t addr);
-extern void (*mem_write)(register uint32_t addr, register uint8_t data);
+extern void* (*mem_ptr)(register uint32_t addr, register uint32_t write_flag);
 
-uint8_t zxmem_read(register uint32_t addr);
-void zxmem_write(register uint32_t addr, register uint8_t data);
-uint8_t cpmmem_read(register uint32_t addr);
-void cpmmem_write(register uint32_t addr, register uint8_t data);
+void* zxmem_ptr(register uint32_t addr, register uint32_t write_flag);
+void* cpmmem_ptr(register uint32_t addr, register uint32_t write_flag);
 void mem_Init(register memtype_t type);
 
 #endif /* MEMORY_H_ */
