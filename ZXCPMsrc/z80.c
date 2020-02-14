@@ -104,15 +104,8 @@ nextcode:
 			hlixiyptr = &(HL);
 			code = mem_read(PC++);
 
-			if(code < 0x40 || code > 0xbf) {
-				z80_tstates += 4;
-				NONI(code); //incorrect op NONI
-			}
-			else {
-				register uint32_t codeid = code-0x40;
-				z80_tstates += edoptstates[codeid];
-				z80edops[codeid](code);
-			}
+			z80_tstates += edoptstates[code];
+#include "z80_ED_ops.h"
 		}
 		else if(code == 0xdd) {
 			RR++;
@@ -136,12 +129,7 @@ nextcode:
 			}
 
 			z80_tstates += 4;
-			if(code < 0x40) {
-				CBSFT(code);
-			}
-			else {
-				BIT(code);
-			}
+#include "z80_CB_ops.h"
 
 			hlixiyptr = &(HL);
 		}
