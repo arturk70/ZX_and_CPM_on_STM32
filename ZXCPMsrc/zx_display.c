@@ -55,7 +55,7 @@ void zxdisp_drawnextline() {
 	bordercolor = zxcolors[zx_border_color];
 
 	borderptr = linebuf;
-	bufptr = borderptr+BORDER_WIDTH+7;
+	bufptr = borderptr+BORDER_WIDTH;
 
 	do {
 		attr = *(attraddr++);
@@ -71,14 +71,14 @@ void zxdisp_drawnextline() {
 
 		pixline = *(lineaddr++) | 0x0100;
 		do {
-			if(pixline & 0x01)
+			if(pixline & 0x80)
 				*(bufptr) = fgcolor;
 			else
 				*(bufptr) = bgcolor;
-			pixline >>= 1;
-			bufptr--;
-		} while(pixline != 1);
-		bufptr += 16;
+			pixline <<= 1;
+			bufptr++;
+		} while(pixline < 0x10000);
+
 		if(borderptr == linebuf+BORDER_WIDTH)
 			borderptr += ZX_PIXELS;
 		*(borderptr++) = bordercolor;
