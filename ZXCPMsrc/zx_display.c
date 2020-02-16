@@ -30,7 +30,7 @@ const uint32_t zxcolors[] = {
 		0xffff0000, 0xffff003f, 0xfffff800, 0xfffff81f, 0xffff07e0, 0xffff07ff, 0xffffffe0, 0xffffffff
 };
 
-static uint16_t linebuf[ZX_PIXELS+32];
+static uint16_t linebuf[ZX_PIXELS+BORDER_WIDTH*2];
 static uint32_t frnum = 0;
 uint32_t zxlnum = 0;
 uint32_t zx_newline_flag;

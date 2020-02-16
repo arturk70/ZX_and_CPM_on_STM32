@@ -27,7 +27,7 @@ void zxsys_Run() {
 
 		zxdisp_drawnextline();
 
-		if(!(zxlnum & 0x3f))
+		if(!(zxlnum & 0x3f))//every 64 lines ~ 50Hz
 			z80_state.int_req = INT_REQ;
 
 		z80_tstates -= 1140; // 3500000/192/16 = 1140 - number of tstates for one line drawing
