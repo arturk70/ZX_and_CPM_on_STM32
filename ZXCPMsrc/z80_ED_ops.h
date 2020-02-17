@@ -8,6 +8,8 @@
 #ifndef SRC_ZXCPMSRC_Z80_ED_OPS_H_
 #define SRC_ZXCPMSRC_Z80_ED_OPS_H_
 
+__attribute__((always_inline)) void ed_ops_process(register uint32_t code)
+{
 switch (code) {
 
 case 0x40:
@@ -362,5 +364,5 @@ break;
 default://NONI
 	z80_state.int_blocked = 1;
 }
-
+}
 #endif /* SRC_ZXCPMSRC_Z80_ED_OPS_H_ */

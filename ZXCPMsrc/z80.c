@@ -5,8 +5,10 @@
  *      Author: artur
  */
 
-#include "z80_ops.h"
 #include "z80.h"
+#include "z80_ops.h"
+#include "z80_ED_ops.h"
+#include "z80_CB_ops.h"
 
 uint8_t regs[30];
 uint16_t* hlixiyptr;
@@ -105,7 +107,7 @@ nextcode:
 			code = mem_read(PC++);
 
 			z80_tstates += edoptstates[code];
-#include "z80_ED_ops.h"
+			ed_ops_process(code);
 		}
 		else if(code == 0xdd) {
 			RR++;
@@ -129,7 +131,7 @@ nextcode:
 			}
 
 			z80_tstates += 4;
-#include "z80_CB_ops.h"
+			cb_ops_process(code);
 
 			hlixiyptr = &(HL);
 		}
