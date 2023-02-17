@@ -2,7 +2,9 @@
 
 STM32F103C8T6 "BluePill" + ILI9341 TFT + SDcard based emulator for ZX Spectrum 48 and for CP/M
 
+
 Folders:
+
 GTKlinux - Eclipse project and specific source code for GTK-based application on Linux
 
 STM32CubeIDE - STM32CubeIDE project and specific source code
